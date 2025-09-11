@@ -2,9 +2,9 @@ from django.db import models
 import secrets
 
 class Usuario(models.Model):
-    nombre = models.CharField(max_length=100),
-    apellido = models.CharField(max_length=100),
-    email = models.EmailField(unique=True),
+    nombre = models.CharField(max_length=100)
+    apellido = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
 
 
 # Guardamos la contraseña hasheada acá (nunca en texto plano)
