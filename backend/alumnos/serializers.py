@@ -6,7 +6,7 @@ class AlumnoSerializer(serializers.ModelSerializer): # Creamos un serializer par
     class Meta:
         model = Alumno
         fields = [
-            'id', 'nombre', 'apellido', 'dni', 'email', 'ciudad', 'direccion', 'telefono',
+            'id_alumno', 'nombre', 'apellido', 'dni', 'email', 'ciudad', 'direccion', 'telefono',
             'telefono_respaldo', 'inscripcion', 'fecha_nacimiento'
         ]
-        read_only_fields = ['id']
+        read_only_fields = ['id_alumno']

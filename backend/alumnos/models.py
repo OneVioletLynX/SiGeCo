@@ -1,6 +1,8 @@
 from django.db import models
 
 class Alumno(models.Model):
+    id_alumno = models.AutoField(primary_key=True)
+
     nombre = models.CharField(max_length=100, null=True, blank=True)
     apellido = models.CharField(max_length=100, null=True, blank=True)
     dni = models.IntegerField(max_length=10)
