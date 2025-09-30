@@ -4,7 +4,9 @@ from rest_framework.response import Response
 from rest_framework import status 
 from django.shortcuts import get_object_or_404 
 from .models import Usuario 
-from .serializers import UsuarioSerializer 
+from .serializers import UsuarioSerializer, UsuarioTokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+
 
 class UsuarioListCreate(APIView): 
     def get(self, request): 
@@ -36,3 +38,5 @@ class UsuarioDetail(APIView):
         usuario.delete() 
         return Response(status=status.HTTP_204_NO_CONTENT)
     
+class LoginView(TokenObtainPairView):
+    serializer_class = UsuarioTokenObtainPairSerializer
