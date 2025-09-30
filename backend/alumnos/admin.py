@@ -1,3 +1,8 @@
 from django.contrib import admin
+from .models import Alumno
 
-# Register your models here.
+@admin.register(Alumno)
+class AlumnoAdmin(admin.ModelAdmin):
+    list_display  = ('id', 'apellido', 'nombre', 'dni')   # sacá 'legajo' si no existe
+    search_fields = ('apellido', 'nombre', 'dni', 'id')
+    list_filter   = ()  # o ('ciudad',) si ese campo existe en tu modelo

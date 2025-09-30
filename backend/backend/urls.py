@@ -2,6 +2,9 @@ from django.contrib import admin
 from django.urls import path 
 from usuarios.views import UsuarioListCreate, UsuarioDetail
 from alumnos.views import AlumnoListCreate, AlumnoDetail
+# from ctacte.views import ctacteListCreate, ctacteDetail
+
+from django.urls import path, include
 
 urlpatterns = [ 
     path('admin/', admin.site.urls), 
@@ -14,4 +17,5 @@ urlpatterns = [
     # Para operaciones sobre un alumnos específico 
     path('api/alumnos/<int:pk>/', AlumnoDetail.as_view(), name='alumno-detalle'), 
     
+    path('api/ctacte/', include('ctacte.urls')),
 ]
