@@ -8,7 +8,7 @@ from .serializers import AlumnoSerializer
 
 class AlumnoListCreate(APIView): 
     def get(self, request): 
-        alumnos = Alumno.objects.all().order_by('id') 
+        alumnos = Alumno.objects.all().order_by('id_alumno') 
         serializer = AlumnoSerializer(alumnos, many=True) 
         return Response(serializer.data) 
     def post(self, request): 

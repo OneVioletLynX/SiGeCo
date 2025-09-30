@@ -3,7 +3,6 @@ from django.urls import path
 from usuarios.views import UsuarioListCreate, UsuarioDetail
 from alumnos.views import AlumnoListCreate, AlumnoDetail
 from carreras.views import CarreraListCreate, CarreraDetail, EstadoListCreate, EstadoDetail, CarreraCursadasListCreate, CarreraCursadasDetail
-
 from valores.views import ValoresListCreate, ValoresDetail, ConceptoListCreate, ConceptoDetail
 
 urlpatterns = [ 
@@ -28,11 +27,14 @@ urlpatterns = [
 
     path('api/carreras-cursadas/', CarreraCursadasListCreate.as_view(), name='carreras-cursadas-lista'), 
     # Para operaciones sobre carreras-cursadas
-    path('api/carreras-cursadas/<int:pk>/', CarreraCursadasDetail.as_view(), name='carreras-cursadas-detalle'),
+    path('api/carreras-cursadas/<int:alumno_id>/<int:carrera_id>/', CarreraCursadasDetail.as_view(), name='carreras-cursadas-detalle'),
 
     path('api/valores/', ValoresListCreate.as_view(), name='valores-lista'), 
     path('api/valores/<int:pk>/', ValoresDetail.as_view(), name='valor-detalle'),    
     
     path('api/concepto/', ConceptoListCreate.as_view(), name='conceptos-lista'), 
-    path('api/concepto/<int:pk>/', ConceptoDetail.as_view(), name='concepto-detalle'),    
+    path('api/concepto/<int:pk>/', ConceptoDetail.as_view(), name='concepto-detalle'),   
+
+    path('api/login/', ConceptoListCreate.as_view(), name='login-lista'), 
+    path('api/login/<int:pk>/', ConceptoDetail.as_view(), name='login-detalle'),     
 ]

@@ -19,12 +19,11 @@ class Estado(models.Model):
 
 
 class CarreraCursada(models.Model):
-    id_alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE)
-    id_carrera = models.ForeignKey(Carrera, on_delete=models.CASCADE)
-    id_estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
+    alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE)
+    carrera = models.ForeignKey(Carrera, on_delete=models.CASCADE, default=1)
+    id_estado = models.ForeignKey(Estado, on_delete=models.CASCADE, default=1)
+
+    pk = models.CompositePrimaryKey("alumno_id", "carrera_id")
 
     class Meta:
-        unique_together = ("id_alumno", "id_carrera")  # PK compuesta
-
-    def __str__(self):
-        return f"{self.id_alumno} - {self.id_carrera} ({self.id_estado})"
+        db_table = "carreras_cursadas"

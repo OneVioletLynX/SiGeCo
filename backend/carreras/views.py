@@ -90,7 +90,7 @@ class EstadoDetail(APIView):
 
 class CarreraCursadasListCreate(APIView):
     def get(self, request):
-        carrerasCursadas = CarreraCursada.objects.all().order_by('id_alumno')
+        carrerasCursadas = CarreraCursada.objects.all().order_by('alumno_id')
 
         serializer = CarrerasCursadasSerializer(carrerasCursadas, many=True)
 
@@ -106,22 +106,29 @@ class CarreraCursadasListCreate(APIView):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 class CarreraCursadasDetail(APIView):
-    def get(self, request, pk):
-        carrerasCursadas = get_object_or_404(CarreraCursada, pk=pk)
+    def get_object(self, alumno_id, carrera_id):
+        return get_object_or_404(
+            CarreraCursada,
+            alumno_id=alumno_id,
+            carrera_id=carrera_id
+        )
+
+    def get(self, request, alumno_id, carrera_id):
+        carrerasCursadas = self.get_object(alumno_id, carrera_id)
         serializer = CarrerasCursadasSerializer(carrerasCursadas)
-
         return Response(serializer.data)
-    
-    def put(self, request, pk):
-        serializer = CarrerasCursadasSerializer(CarreraCursada, data=request.data)
 
-        if serializer.is_valid(): 
+    def put(self, request, alumno_id, carrera_id):
+        carrerasCursadas = self.get_object(alumno_id, carrera_id)
+        serializer = CarrerasCursadasSerializer(
+            carrerasCursadas, data=request.data
+        )
+        if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def delete(self, request, pk):
-        carrerasCursadas = get_object_or_404(CarreraCursada, pk=pk)
+
+    def delete(self, request, alumno_id, carrera_id):
+        carrerasCursadas = self.get_object(alumno_id, carrera_id)
         carrerasCursadas.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
