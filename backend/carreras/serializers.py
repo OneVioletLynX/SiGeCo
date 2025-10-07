@@ -7,9 +7,9 @@ class CarreraSerializer(serializers.ModelSerializer):
         fields = ['id_carrera', 'descripcion']
         read_only_fields = ['id_carrera']
 
-{
-  "descripcion": "Ingeniería en Sistemas"
-}
+# {
+#   "descripcion": "Ingeniería en Sistemas"
+# }
 
 class CarrerasCursadasSerializer(serializers.ModelSerializer):
     alumno_id = serializers.IntegerField(source="alumno.id_alumno", read_only=True)

@@ -8,7 +8,7 @@ from .serializers import ValoresSerializer, ConceptoSerializer
 
 class ValoresListCreate(APIView): 
     def get(self, request): 
-        valores = Valor.objects.all().order_by('id') 
+        valores = Valor.objects.all().order_by('id_valor') 
         serializer = ValoresSerializer(valores, many=True) 
         return Response(serializer.data) 
     def post(self, request): 
@@ -39,7 +39,7 @@ class ValoresDetail(APIView):
 
 class ConceptoListCreate(APIView): 
     def get(self, request): 
-        conceptos = Concepto.objects.all().order_by('id') 
+        conceptos = Concepto.objects.all().order_by('id_concepto') 
         serializer = ConceptoSerializer(conceptos, many=True) 
         return Response(serializer.data) 
     def post(self, request): 

@@ -6,14 +6,14 @@ class ValoresSerializer(serializers.ModelSerializer): # Creamos un serializer pa
     class Meta:
         model = Valor
         fields = [
-            'id', 'id_carrera', 'id_concepto', 'modificacion', 'importe'
+            'id_valor', 'id_carrera', 'id_concepto', 'modificacion', 'importe'
         ]
-        read_only_fields = ['id']
+        read_only_fields = ['id_valor']
 
 class ConceptoSerializer(serializers.ModelSerializer): # Creamos un serializer para el modelo 
     class Meta:
         model = Concepto
         fields = [
-            'id', 'descripcion'
+            'id_concepto', 'descripcion'
         ]
-        read_only_fields = ['id']
+        read_only_fields = ['id_concepto']
