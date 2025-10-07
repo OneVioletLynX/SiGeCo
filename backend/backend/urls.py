@@ -2,9 +2,9 @@ from django.contrib import admin
 from django.urls import path 
 from usuarios.views import UsuarioListCreate, UsuarioDetail
 from alumnos.views import AlumnoListCreate, AlumnoDetail
-# from ctacte.views import ctacteListCreate, ctacteDetail
-
-from django.urls import path, include
+from carreras.views import CarreraListCreate, CarreraDetail, EstadoListCreate, EstadoDetail, CarreraCursadasListCreate, CarreraCursadasDetail
+from valores.views import ValoresListCreate, ValoresDetail, ConceptoListCreate, ConceptoDetail
+from ctacte.views import MesPagoListCreate, MesPagoDetail, MetodoPagoListCreate, MetodoPagoDetail, PagoDetail, PagoListCreate, PagoDetalleListCreate, PagoDetalleDetail, MesPagoDetail
 
 urlpatterns = [ 
     path('admin/', admin.site.urls), 
@@ -16,6 +16,41 @@ urlpatterns = [
     path('api/alumnos/', AlumnoListCreate.as_view(), name='alumnos-lista'), 
     # Para operaciones sobre un alumnos específico 
     path('api/alumnos/<int:pk>/', AlumnoDetail.as_view(), name='alumno-detalle'), 
+
+    # Para listar y crear carreras
+    path('api/carreras/', CarreraListCreate.as_view(), name='carrera-lista'), 
+    # Para operaciones sobre una carrera específica 
+    path('api/carreras/<int:pk>/', CarreraDetail.as_view(), name='carrera-detalle'), 
     
-    path('api/ctacte/', include('ctacte.urls')),
+    path('api/estados/', EstadoListCreate.as_view(), name='estado-lista'), 
+    # Para operaciones sobre un estado específico
+    path('api/estados/<int:pk>/', EstadoDetail.as_view(), name='estado-detalle'),
+
+    path('api/carreras-cursadas/', CarreraCursadasListCreate.as_view(), name='carreras-cursadas-lista'), 
+    # Para operaciones sobre carreras-cursadas
+    path('api/carreras-cursadas/<int:alumno_id>/<int:carrera_id>/', CarreraCursadasDetail.as_view(), name='carreras-cursadas-detalle'),
+
+    path('api/valores/', ValoresListCreate.as_view(), name='valores-lista'), 
+    path('api/valores/<int:pk>/', ValoresDetail.as_view(), name='valor-detalle'),    
+    
+    path('api/concepto/', ConceptoListCreate.as_view(), name='concepto-lista'), 
+    path('api/concepto/<int:pk>/', ConceptoDetail.as_view(), name='concepto-detalle'),  
+
+    path('api/mes-pago/', MesPagoListCreate.as_view(), name='mes-pago-lista'), 
+    path('api/mes-pago/<int:pk>/', MesPagoDetail.as_view(), name='mes-pago-detalle'), 
+
+    path('api/metodo-pago/', MetodoPagoListCreate.as_view(), name='metodo-pago-lista'), 
+    path('api/metodo-pago/<int:pk>/', MetodoPagoDetail.as_view(), name='metodo-pago-detalle'),  
+
+    path('api/pago/', PagoListCreate.as_view(), name='pago-lista'), 
+    path('api/pago/<int:pk>/', PagoDetail.as_view(), name='pago-detalle'),  
+
+    #path('api/login/', ConceptoListCreate.as_view(), name='login-lista'), 
+    #path('api/login/<int:pk>/', ConceptoDetail.as_view(), name='login-detalle'),     
+
+    path('api/pago-detalle/', PagoDetalleListCreate.as_view(), name='pago-detalle-lista'), 
+    # Para operaciones sobre carreras-cursadas
+    path('api/pago-detalle/<int:pago_id>/<int:mes_id>/', PagoDetalleDetail.as_view(), name='pago-detalle-detalle'),
+
+
 ]

@@ -28,8 +28,8 @@ class PagoSerializer(serializers.ModelSerializer):
             'id_alumno',
             'fecha_pago',
             'importe_total',
-            'id_metodo_pago',
-            'id_usuario',
+            'id_metodo_pago'
+            #'id_usuario',
         ]
         read_only_fields = ['id_pago']
         
@@ -41,5 +41,4 @@ class PagoDetalleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PagoDetalle
-        fields = ['id_detalle', 'id_pago', 'id_mes', 'importe']
-        read_only_fields = ['id_detalle']
+        fields = ['id_pago', 'id_mes', 'importe']

@@ -40,7 +40,7 @@ def ctacte_api_root(request):
     })
 
 # -------- MesPago --------
-class ListaYCreaMesPago(APIView):
+class MesPagoListCreate(APIView):
     def get(self, request):
         objs = MesPago.objects.all().order_by('id_mes')
         ser = MesPagoSerializer(objs, many=True)
@@ -54,7 +54,7 @@ class ListaYCreaMesPago(APIView):
         return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class DetalleMesPago(APIView):
+class MesPagoDetail(APIView):
     def get(self, request, pk):
         obj = get_object_or_404(MesPago, pk=pk)
         return Response(MesPagoSerializer(obj).data)
@@ -74,7 +74,7 @@ class DetalleMesPago(APIView):
 
 
 # -------- MetodoPago --------
-class ListaYCreaMetodoPago(APIView):
+class MetodoPagoListCreate(APIView):
     def get(self, request):
         objs = MetodoPago.objects.all().order_by('id_metodo_pago')
         ser = MetodoPagoSerializer(objs, many=True)
@@ -88,7 +88,7 @@ class ListaYCreaMetodoPago(APIView):
         return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class DetalleMetodoPago(APIView):
+class MetodoPagoDetail(APIView):
     def get(self, request, pk):
         obj = get_object_or_404(MetodoPago, pk=pk)
         return Response(MetodoPagoSerializer(obj).data)
@@ -108,7 +108,7 @@ class DetalleMetodoPago(APIView):
 
 
 # -------- Pago --------
-class ListaYCreaPago(APIView):
+class PagoListCreate(APIView):
     def get(self, request):
         objs = Pago.objects.all().order_by('-fecha_pago', '-id_pago')
         ser = PagoSerializer(objs, many=True)
@@ -128,7 +128,7 @@ class ListaYCreaPago(APIView):
         return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class DetallePago(APIView):
+class PagoDetail(APIView):
     def get(self, request, pk):
         obj = get_object_or_404(Pago, pk=pk)
         return Response(PagoSerializer(obj).data)
@@ -148,7 +148,7 @@ class DetallePago(APIView):
 
 
 # -------- PagoDetalle --------
-class ListaYCreaPagoDetalle(APIView):
+class PagoDetalleListCreate(APIView):
     def get(self, request):
         objs = PagoDetalle.objects.all().order_by('id_detalle')
         ser = PagoDetalleSerializer(objs, many=True)
@@ -162,7 +162,7 @@ class ListaYCreaPagoDetalle(APIView):
         return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class DetallePagoDetalle(APIView):
+class PagoDetalleDetail(APIView):
     def get(self, request, pk):
         obj = get_object_or_404(PagoDetalle, pk=pk)
         return Response(PagoDetalleSerializer(obj).data)

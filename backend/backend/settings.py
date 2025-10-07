@@ -39,8 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',    
     'rest_framework',
     'usuarios', 
-    'ctacte.apps.CtacteConfig',
+    'ctacte',
     'alumnos',
+    'carreras',
+    'valores',
 ]
 
 MIDDLEWARE = [
