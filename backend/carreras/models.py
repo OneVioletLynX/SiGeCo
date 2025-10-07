@@ -23,7 +23,7 @@ class CarreraCursada(models.Model):
     carrera = models.ForeignKey(Carrera, on_delete=models.CASCADE, default=1)
     id_estado = models.ForeignKey(Estado, on_delete=models.CASCADE, default=1)
 
-    pk = models.CompositePrimaryKey("alumno_id", "carrera_id")
+    pk = models.CompositePrimaryKey("alumno", "carrera")
 
     class Meta:
         db_table = "carreras_cursadas"

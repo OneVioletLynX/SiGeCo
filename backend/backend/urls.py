@@ -4,6 +4,7 @@ from usuarios.views import UsuarioListCreate, UsuarioDetail
 from alumnos.views import AlumnoListCreate, AlumnoDetail
 from carreras.views import CarreraListCreate, CarreraDetail, EstadoListCreate, EstadoDetail, CarreraCursadasListCreate, CarreraCursadasDetail
 from valores.views import ValoresListCreate, ValoresDetail, ConceptoListCreate, ConceptoDetail
+from ctacte.views import MesPagoListCreate, MesPagoDetail, MetodoPagoListCreate, MetodoPagoDetail, PagoDetail, PagoListCreate, PagoDetalleListCreate, PagoDetalleDetail, MesPagoDetail
 
 urlpatterns = [ 
     path('admin/', admin.site.urls), 
@@ -32,9 +33,24 @@ urlpatterns = [
     path('api/valores/', ValoresListCreate.as_view(), name='valores-lista'), 
     path('api/valores/<int:pk>/', ValoresDetail.as_view(), name='valor-detalle'),    
     
-    path('api/concepto/', ConceptoListCreate.as_view(), name='conceptos-lista'), 
-    path('api/concepto/<int:pk>/', ConceptoDetail.as_view(), name='concepto-detalle'),   
+    path('api/concepto/', ConceptoListCreate.as_view(), name='concepto-lista'), 
+    path('api/concepto/<int:pk>/', ConceptoDetail.as_view(), name='concepto-detalle'),  
 
-    path('api/login/', ConceptoListCreate.as_view(), name='login-lista'), 
-    path('api/login/<int:pk>/', ConceptoDetail.as_view(), name='login-detalle'),     
+    path('api/mes-pago/', MesPagoListCreate.as_view(), name='mes-pago-lista'), 
+    path('api/mes-pago/<int:pk>/', MesPagoDetail.as_view(), name='mes-pago-detalle'), 
+
+    path('api/metodo-pago/', MetodoPagoListCreate.as_view(), name='metodo-pago-lista'), 
+    path('api/metodo-pago/<int:pk>/', MetodoPagoDetail.as_view(), name='metodo-pago-detalle'),  
+
+    path('api/pago/', PagoListCreate.as_view(), name='pago-lista'), 
+    path('api/pago/<int:pk>/', PagoDetail.as_view(), name='pago-detalle'),  
+
+    #path('api/login/', ConceptoListCreate.as_view(), name='login-lista'), 
+    #path('api/login/<int:pk>/', ConceptoDetail.as_view(), name='login-detalle'),     
+
+    path('api/pago-detalle/', PagoDetalleListCreate.as_view(), name='pago-detalle-lista'), 
+    # Para operaciones sobre carreras-cursadas
+    path('api/pago-detalle/<int:pago_id>/<int:mes_id>/', PagoDetalleDetail.as_view(), name='pago-detalle-detalle'),
+
+
 ]
