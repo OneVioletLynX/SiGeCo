@@ -1,5 +1,5 @@
 from django.contrib import admin 
-from django.urls import path 
+from django.urls import path, include
 from usuarios.views import UsuarioListCreate, UsuarioDetail, LoginView
 from alumnos.views import AlumnoListCreate, AlumnoDetail
 from carreras.views import CarreraListCreate, CarreraDetail, EstadoListCreate, EstadoDetail, CarreraCursadasListCreate, CarreraCursadasDetail
@@ -52,6 +52,4 @@ urlpatterns = [
     path('api/pago-detalle/', PagoDetalleListCreate.as_view(), name='pago-detalle-lista'), 
     # Para operaciones sobre carreras-cursadas
     path('api/pago-detalle/<int:pago_id>/<int:mes_id>/', PagoDetalleDetail.as_view(), name='pago-detalle-detalle'),
-
-
 ]
