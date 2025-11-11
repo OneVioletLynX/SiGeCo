@@ -29,22 +29,44 @@ class CarreraDetail(APIView):
     def get(self, request, pk):
         carrera = get_object_or_404(Carrera, pk=pk)
         serializer = CarreraSerializer(carrera)
-
         return Response(serializer.data)
-    
-    def put(self, request, pk):
-        serializer = CarreraSerializer(Carrera, data=request.data)
 
+    def put(self, request, pk):
+        carrera = get_object_or_404(Carrera, pk=pk)
+        serializer = CarreraSerializer(carrera, data=request.data)
         if serializer.is_valid(): 
             serializer.save()
             return Response(serializer.data)
-        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+            
+    def patch(self, request, pk):
+        carrera = get_object_or_404(Carrera, pk=pk)
+        nuevo_estado_id = request.data.get('id_estado')
+
+        if not nuevo_estado_id:
+            return Response({"error": "Debe indicar un id_estado"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            nuevo_estado = Estado.objects.get(pk=nuevo_estado_id)
+        except Estado.DoesNotExist:
+            return Response({"error": "El estado indicado no existe"}, status=status.HTTP_400_BAD_REQUEST)
+
+        carrera.id_estado = nuevo_estado
+        carrera.save()
+
+        return Response({
+            "status": "actualizado",
+            "id_carrera": carrera.id_carrera,
+            "nuevo_estado": nuevo_estado.descripcion
+        }, status=status.HTTP_200_OK)
+
+
+
     def delete(self, request, pk):
         carrera = get_object_or_404(Carrera, pk=pk)
         carrera.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
     
 #/////////////////////////////////////////////////////////////////////////////////////////////////////
 

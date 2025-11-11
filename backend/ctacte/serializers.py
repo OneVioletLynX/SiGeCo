@@ -20,7 +20,15 @@ class MetodoPagoSerializer(serializers.ModelSerializer):
 
 #3
 
+class PagoDetalleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PagoDetalle
+        fields = ['mes', 'importe']
+
 class PagoSerializer(serializers.ModelSerializer):
+    detalles = PagoDetalleSerializer(many=True, write_only=True, required=False)
+    detalles_info = PagoDetalleSerializer(source='pagodetalle_set', many=True, read_only=True)
+
     class Meta:
         model = Pago
         fields = [
@@ -28,17 +36,15 @@ class PagoSerializer(serializers.ModelSerializer):
             'id_alumno',
             'fecha_pago',
             'importe_total',
-            'id_metodo_pago'
-            #'id_usuario',
+            'id_metodo_pago',
+            'detalles',        # para crear
+            'detalles_info',   # para ver
         ]
         read_only_fields = ['id_pago']
-        
-#4  
-      
-class PagoDetalleSerializer(serializers.ModelSerializer):
-    id_pago = serializers.IntegerField(source='pago_id')
-    id_mes  = serializers.IntegerField(source='mes_id')
 
-    class Meta:
-        model = PagoDetalle
-        fields = ['id_pago', 'id_mes', 'importe']
+    def create(self, validated_data):
+        detalles_data = validated_data.pop('detalles', [])
+        pago = Pago.objects.create(**validated_data)
+        for detalle_data in detalles_data:
+            PagoDetalle.objects.create(pago=pago, **detalle_data)
+        return pago

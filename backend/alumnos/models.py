@@ -23,13 +23,12 @@ class Alumno(models.Model):
     dni = models.IntegerField()
     ciudad = models.CharField(max_length=100)
     direccion = models.CharField(max_length=100)
+    numero = models.IntegerField()
+    prefijo = models.IntegerField()
     telefono = models.PositiveIntegerField(default=0)
     email = models.EmailField(unique=True)
-    #descripcion
     inscripcion = models.DateField(auto_now_add=True) #Año Ingreso, tiene que ser INT
     fecha_inscripcion = models.DateTimeField(blank=True, null=True)
-
-    telefono_respaldo = models.PositiveIntegerField(default=0) #VER
     
     anio_ingreso = models.PositiveIntegerField(blank=True, null=True, validators=[MinValueValidator(1900), MaxValueValidator(2100)])
 

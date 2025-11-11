@@ -367,3 +367,238 @@ th.asc img {
 }
 
 /* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ TOOLBAR ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
+
+tr.selected {
+  background-color: #cce5ff;
+}
+/* --- Modal general --- */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* --- Contenido del modal --- */
+.modal-content {
+  background-color: #fff;
+  margin: 5% auto;
+  padding: 30px;
+  border-radius: 15px;
+  width: 70%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* --- Encabezado del modal --- */
+.modal-content h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* --- Formulario con dos columnas --- */
+#alumnoForm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px 20px;
+}
+
+/* --- Inputs --- */
+#alumnoForm input,
+#alumnoForm select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  width: 100%;
+}
+
+/* --- Botón --- */
+#alumnoForm button {
+  grid-column: span 2;
+  padding: 10px 0;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+#alumnoForm button:hover {
+  background-color: #0056b3;
+}
+
+/* --- Botón de cierre --- */
+.close {
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: red;
+}
+
+/* 🔍 Barra de búsqueda */
+.search-bar {
+  display: flex;
+  align-items: center;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.2s ease-in-out;
+}
+
+.search-bar input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+.search-bar button {
+  padding: 8px 14px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.search-bar button:hover {
+  background-color: #0056b3;
+}
+
+/* ===============================
+   🔍 Barra de búsqueda con sugerencias
+   =============================== */
+
+.search-container {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 15px;
+}
+
+#buscador {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+#buscador:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+  outline: none;
+}
+
+.suggestions-box {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: white;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+  display: none; /* se muestra dinámicamente con JS */
+}
+
+.suggestions-box div {
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.15s ease-in-out;
+}
+
+.suggestions-box div:hover {
+  background: #007bff;
+  color: white;
+}
+
+
+.readonly {
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.filter-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.filter-container label {
+  font-weight: 600;
+}
+
+/* --- Tabla de alumnos --- */
+
+#tabla-alumnos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  text-align: left;
+}
+
+#tabla-alumnos th, #tabla-alumnos td {
+  border: 1px solid #ddd;
+  padding: 8px 10px;
+  white-space: nowrap; /* evita que corte palabras */
+}
+
+#tabla-alumnos thead {
+  background-color: #f4f4f4;
+  position: sticky;
+  top: 0; /* fija el encabezado si hay scroll */
+  z-index: 2;
+}
+
+#tabla-alumnos tbody tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+#tabla-alumnos tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+#tabla-alumnos tbody {
+  display: block;
+  max-height: 500px; /* 👈 ajustá esta altura a tu gusto */
+  overflow-y: auto;  /* hace scroll solo dentro del cuerpo */
+}
+
+#tabla-alumnos thead, #tabla-alumnos tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* --- contenedor general de la tabla --- */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto; /* permite desplazamiento horizontal si hay muchas columnas */
+}

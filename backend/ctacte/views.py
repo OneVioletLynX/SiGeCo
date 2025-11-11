@@ -110,18 +110,16 @@ class MetodoPagoDetail(APIView):
 # -------- Pago --------
 class PagoListCreate(APIView):
     def get(self, request):
-        objs = Pago.objects.all().order_by('-fecha_pago', '-id_pago')
-        ser = PagoSerializer(objs, many=True)
+        alumno_id = request.query_params.get('alumno')
+        pagos = Pago.objects.all().order_by('-fecha_pago', '-id_pago')
+        if alumno_id:
+            pagos = pagos.filter(id_alumno_id=alumno_id)
+
+        ser = PagoSerializer(pagos, many=True)
         return Response(ser.data)
 
     def post(self, request):
-        # Si quisieras tomar el usuario del request en lugar de id_usuario en el body:
-        # data = request.data.copy()
-        # if request.user and request.user.is_authenticated:
-        #     data['id_usuario'] = request.user.id
-        # else:
-        #     data = request.data
-        ser = PagoSerializer(data=request.data, context={'request': request})
+        ser = PagoSerializer(data=request.data)
         if ser.is_valid():
             ser.save()
             return Response(ser.data, status=status.HTTP_201_CREATED)

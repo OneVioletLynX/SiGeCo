@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from usuarios.views import UsuarioListCreate, UsuarioDetail, LoginView
 from alumnos.views import AlumnoListCreate, AlumnoDetail
+
 from carreras.views import CarreraListCreate, CarreraDetail, EstadoListCreate, EstadoDetail, CarreraCursadasListCreate, CarreraCursadasDetail
 from valores.views import ValoresListCreate, ValoresDetail, ConceptoListCreate, ConceptoDetail
 from ctacte.views import MesPagoListCreate, MesPagoDetail, MetodoPagoListCreate, MetodoPagoDetail, PagoDetail, PagoListCreate, PagoDetalleListCreate, PagoDetalleDetail, MesPagoDetail
@@ -14,9 +15,8 @@ urlpatterns = [
     path('api/usuarios/<int:pk>/', UsuarioDetail.as_view(), name='usuario-detalle'), 
     path('api/login/', LoginView.as_view(), name='login'),
 
-    path('api/alumnos/', AlumnoListCreate.as_view(), name='alumnos-lista'), 
-    # Para operaciones sobre un alumnos específico 
-    path('api/alumnos/<int:pk>/', AlumnoDetail.as_view(), name='alumno-detalle'), 
+    path('api/alumnos/', AlumnoListCreate.as_view(), name='alumnos-lista'),
+    path('api/alumnos/<int:pk>/', AlumnoDetail.as_view(), name='alumno-detalle'),
 
     # Para listar y crear carreras
     path('api/carreras/', CarreraListCreate.as_view(), name='carrera-lista'), 
