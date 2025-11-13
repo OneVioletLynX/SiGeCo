@@ -1,0 +1,54 @@
+# Entorno virtual
+SiGeCoEnv/
+venv/
+env/
+
+# Archivos de compilación Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Archivos de base de datos locales
+db.sqlite3
+
+# Archivos de logs
+*.log
+
+# Migraciones compiladas
+*/migrations/__pycache__/
+
+# Archivos de IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de cobertura y test
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# Archivos de distribución
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Variables de entorno
+.env
+*.env
+
+# Archivos de medios y estáticos
+#/media/
+#staticfiles/
