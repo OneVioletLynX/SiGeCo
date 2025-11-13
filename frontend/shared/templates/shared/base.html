@@ -1,0 +1,85 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Centro Universitario{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'shared/css/style.css' %}">
+
+    {% block extra_css %}
+    <!-- Aquí se insertará CSS adicional de cada página -->
+    {% endblock %}
+</head>
+
+<body>
+
+    <header>
+        <div class="left">
+            <div class="brand">
+                <!-- <img src="{% static 'shared/assets/logoCentroUni.png' %}" alt="" class="logo"> -->
+                <span class="name">Centro Universitario</span>
+            </div>
+        </div>
+        <div class="right">
+            <!-- <a href="#"><img src="{% static 'shared/assets/school.svg' %}" alt="carrera"></a>
+        <a href="#"><img src="{% static 'shared/assets/payments.svg' %}" alt="cobros"></a>
+        <a href="#"><img src="{% static 'shared/assets/group.svg' %}" alt="alumnos"></a>
+        <a href="#"><img src="{% static 'shared/assets/mail.svg' %}" alt="notificaciones"></a> -->
+            <a href="#"><img src="{% static 'shared/assets/settings.svg' %}" alt="configuracion"></a>
+            <img src="{% static 'shared/assets/account.svg' %}" alt="img-user" class="user">
+        </div>
+    </header>
+
+    <div class="sidebar" id="sidebar">
+        <nav>
+            <ul>
+                <li><a href="{% url 'carreras_front:carreras' %}" class="selected"><img
+                            src="{% static 'shared/assets/school.svg' %}" alt="carrera"><span>Carreras</span></a></li>
+                <li><a href="{% url 'cobros_front:cobros' %}"><img src="{% static 'shared/assets/payments.svg' %}" alt="cobros"><span>Cobros</span></a>
+                </li>
+                <li><a href="{% url 'alumnos_front:alumnos' %}"><img src="{% static 'shared/assets/group.svg' %}"
+                            alt="alumnos"><span>Alumnos</span></a></li>
+                <li><a href=""><img src="{% static 'shared/assets/mail.svg' %}"
+                            alt="notificaciones"><span>Comunicaciones</span></a></li>
+                <!-- 🔹 Reportes con submenú -->
+                <li class="has-submenu">
+                    <a href="#" class="submenu-toggle">
+                        <img src="{% static 'shared/assets/file_export.svg' %}" alt="reportes">
+                        <span>Reportes</span>
+                        <svg class="arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                    </a>
+                    <ul class="submenu">
+                        <li><a href="#"><img src="{% static 'shared/assets/docs.svg' %}" alt="cobros"><span>Bonos
+                                    pagados por alumno</span></a></li>
+                        <li><a href="#"><img src="{% static 'shared/assets/docs.svg' %}" alt="cobros"><span>Listado de
+                                    alumnos</span></a></li>
+                        <li><a href="#"><img src="{% static 'shared/assets/docs.svg' %}"
+                                    alt="cobros"><span>Recaudacion</span></a></li>
+                    </ul>
+                </li>
+                <li><a href="#"><img src="{% static 'shared/assets/finance.svg' %}"
+                            alt="notificaciones"><span>Estadisticas</span></a></li>
+
+            </ul>
+        </nav>
+    </div>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="{% static 'shared/js/script.js' %}"></script>
+
+    {% block extra_js %}
+    <!-- Aquí se insertará JS adicional de cada página -->
+    {% endblock %}
+</body>
+
+</html>

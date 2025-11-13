@@ -1,0 +1,645 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap');
+
+:root {
+    --background-color: #fff;
+    --text-title-color: #053D4E;
+    --text-color: #323638;
+    --menu-color: #707780;
+    --text-selected-color: #355CC0;
+    --background-selected: #EBF0FF;
+    --background-hover: #AFD3FF;
+    --border-color: #E6E9ED;
+}
+
+/* ==== Reset ==== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Nunito Sans", sans-serif;
+}
+
+body {
+    width: 100%;
+    height: 100vh;
+    background-color: var(--background-color);
+    overflow-x: hidden;
+}
+
+/* ==== HEADER ==== */
+header {
+    z-index: 200;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0.45rem 2rem 0.45rem 1.27rem;
+    border-bottom: 1px solid var(--border-color);
+    position: fixed;
+    background-color: var(--background-color);
+    top: 0;
+    left: 0;
+}
+
+.left {
+    display: flex;
+    align-items: center;
+    gap: 1.4rem;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.brand .logo {
+    width: 1.75rem;
+}
+
+.brand .name {
+    font-size: 1rem;
+    font-weight: 900;
+    color: var(--text-title-color);
+}
+
+.right {
+    display: flex;
+    align-items: center;
+    gap: 1.6rem;
+}
+
+.right a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+
+.right a:hover {
+    background-color: var(--background-hover);
+}
+
+.right img {
+    width: 1.5rem;
+    margin: 0.5rem;
+}
+
+.right .user {
+    width: 2.1rem;
+    border-radius: 50%;
+}
+
+/* ==== SIDEBAR (Overlay) ==== */
+.sidebar {
+    margin-top: 4rem;
+    width: 4.5rem;
+    height: calc(100% - 4rem);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 300;
+    /* 🔹 ahora está por encima del main */
+    padding: 1.1rem 0;
+    border-right: 1px solid var(--border-color);
+    overflow: hidden;
+    background-color: var(--background-color);
+    transition: width 0.4s ease, box-shadow 0.3s ease;
+}
+
+/* 🔹 Expande al pasar el mouse */
+.sidebar:hover {
+    width: 20rem;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+}
+
+/* ==== NAV ITEMS ==== */
+.sidebar nav ul {
+    list-style: none;
+}
+
+.sidebar nav ul li {
+    margin-bottom: 0.3rem;
+}
+
+.sidebar a,
+.has-submenu a {
+    display: flex;
+    align-items: center;
+    gap: 1.3rem;
+    padding: 0.9rem;
+    text-decoration: none;
+    margin: 0 0.5rem;
+    border-radius: 0.5rem;
+    color: var(--text-color);
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sidebar a:hover {
+    background-color: var(--background-hover);
+}
+
+.sidebar a.selected {
+    color: var(--text-selected-color);
+    background-color: var(--background-selected);
+}
+
+/* 🔹 Oculta los textos si no está expandido */
+.sidebar span {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    font-weight: 600;
+}
+
+/* 🔹 Muestra los textos al hacer hover */
+.sidebar:hover span {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ==== MAIN CONTENT ==== */
+main {
+    margin-left: 5rem;
+    margin-top: 4rem;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+
+
+/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ NAV-BAR ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
+
+
+
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 10px;
+}
+
+.has-submenu {
+    position: relative;
+}
+
+.has-submenu>.submenu-toggle {
+    justify-content: space-between;
+    padding-right: 0.8rem;
+    display: flex;
+    align-items: center;
+    width: auto;
+    transition: background-color 0.2s ease;
+}
+
+.arrow {
+    margin-left: auto;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+.submenu {
+    list-style: none;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: all 0.35s ease;
+    margin-left: 2.7rem;
+    white-space: nowrap;
+}
+
+.has-submenu:hover .submenu {
+    max-height: 10rem;
+    opacity: 1;
+}
+
+.has-submenu:hover .arrow {
+    transform: rotate(180deg);
+}
+
+.submenu li a {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    font-size: 0.9rem;
+    color: var(--menu-color);
+    text-decoration: none;
+    border-radius: 0.3rem;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    white-space: nowrap;
+}
+
+.submenu li a:hover {
+    background-color: var(--background-hover);
+}
+
+.sidebar a span {
+    display: inline-block;
+    width: 100px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.sidebar:hover a span {
+    opacity: 1;
+    visibility: visible;
+}
+
+.sidebar img {
+    width: 1.6rem;
+    flex-shrink: 0;
+}
+
+.submenu img {
+    width: 1.3rem;
+    flex-shrink: 0;
+}
+
+
+/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ NAV-BAR ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
+
+
+
+/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ TABLA ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
+
+table {
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    width: fit-content;
+}
+
+thead {
+    background-color: #eaecf0;
+}
+
+th {
+    text-align: left;
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #667085;
+    border-bottom: 1px solid #e5e7eb;
+    cursor: pointer;
+    user-select: none;
+}
+
+td {
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #667085;
+    border-bottom: 3px solid #f3f4f6;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+th img {
+    width: 15px;
+    vertical-align: middle;
+    opacity: 0.5;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+th.active img {
+    opacity: 1;
+}
+
+th.asc img {
+    transform: rotate(180deg);
+}
+
+
+/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ TABLA ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
+
+
+
+/* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ TOOLBAR ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
+
+.toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 72px;
+}
+
+.toolbar .action-button {
+    width: 142px;
+    padding: 10px;
+    background: white;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    border-radius: 12px;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4px;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-content: center;
+    cursor: pointer;
+}
+
+.action-button:hover {
+    background-color: var(--background-hover);
+}
+
+.action-button img {
+    width: 20px;
+    height: 20px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.action-button .text {
+    align-self: stretch;
+    text-align: right;
+    color: black;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    word-wrap: break-word;
+}
+
+/* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ TOOLBAR ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
+
+tr.selected {
+  background-color: #cce5ff;
+}
+/* --- Modal general --- */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* --- Contenido del modal --- */
+.modal-content {
+  background-color: #fff;
+  margin: 5% auto;
+  padding: 30px;
+  border-radius: 15px;
+  width: 50%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* --- Encabezado del modal --- */
+.modal-content h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* --- Formulario con dos columnas --- */
+#alumnoForm {
+  display: grid;
+  grid-template-columns: 0.75fr 1.25fr 1.25fr 0.75fr;
+  gap: 15px 20px;
+}
+
+.gc-2 {
+  grid-column: span 2;
+}
+
+.gc-1 {
+  grid-column: span 1;
+}
+
+
+
+/* --- Inputs --- */
+#alumnoForm input,
+#alumnoForm select {
+  padding: 10px;
+  border: 1px solid #D9D9D9;
+  border-radius: 8px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.form-select {
+    width: 142px;
+    padding: 5px;
+    background: white;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4px;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-content: center;
+    cursor: pointer;
+    height: 40px;
+}
+
+.form-control {
+    width: 30%;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s 
+    ease;
+}
+
+/* --- Botón --- */
+#alumnoForm button {
+  grid-column: span 2;
+  padding: 10px 0;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+#alumnoForm button:hover {
+  background-color: #0056b3;
+}
+
+/* --- Botón de cierre --- */
+.close {
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: red;
+}
+
+/* 🔍 Barra de búsqueda */
+.search-bar {
+  display: flex;
+  align-items: center;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.2s ease-in-out;
+}
+
+.search-bar input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+.search-bar button {
+  padding: 8px 14px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.search-bar button:hover {
+  background-color: #0056b3;
+}
+
+/* ===============================
+   🔍 Barra de búsqueda con sugerencias
+   =============================== */
+
+.search-container {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 15px;
+}
+
+#buscador {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+#buscador:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+  outline: none;
+}
+
+.suggestions-box {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: white;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+  display: none; /* se muestra dinámicamente con JS */
+}
+
+.suggestions-box div {
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.15s ease-in-out;
+}
+
+.suggestions-box div:hover {
+  background: #007bff;
+  color: white;
+}
+
+
+.readonly {
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.filter-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-bottom: 10px;
+  
+}
+.filter-container label {
+  font-weight: 600;
+}
+
+/* --- Tabla de alumnos --- */
+
+#tabla-alumnos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  text-align: left;
+}
+
+#tabla-alumnos th, #tabla-alumnos td {
+  border: 1px solid #ddd;
+  padding: 8px 10px;
+  white-space: nowrap; /* evita que corte palabras */
+}
+
+#tabla-alumnos thead {
+  background-color: #f4f4f4;
+  position: sticky;
+  top: 0; /* fija el encabezado si hay scroll */
+  z-index: 2;
+}
+
+#tabla-alumnos tbody tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+#tabla-alumnos tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+#tabla-alumnos tbody {
+  display: block;
+  max-height: 500px; /* 👈 ajustá esta altura a tu gusto */
+  overflow-y: auto;  /* hace scroll solo dentro del cuerpo */
+}
+
+#tabla-alumnos thead, #tabla-alumnos tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* --- contenedor general de la tabla --- */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto; /* permite desplazamiento horizontal si hay muchas columnas */
+}
