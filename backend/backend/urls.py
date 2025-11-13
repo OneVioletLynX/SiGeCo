@@ -2,10 +2,10 @@ from django.contrib import admin
 from django.urls import path, include
 from usuarios.views import UsuarioListCreate, UsuarioDetail, LoginView
 from alumnos.views import AlumnoListCreate, AlumnoDetail
-
 from carreras.views import CarreraListCreate, CarreraDetail, EstadoListCreate, EstadoDetail, CarreraCursadasListCreate, CarreraCursadasDetail
 from valores.views import ValoresListCreate, ValoresDetail, ConceptoListCreate, ConceptoDetail
 from ctacte.views import MesPagoListCreate, MesPagoDetail, MetodoPagoListCreate, MetodoPagoDetail, PagoDetail, PagoListCreate, PagoDetalleListCreate, PagoDetalleDetail, MesPagoDetail
+from reportes.views import seccion_contabilidad, seccion_alumnos, seccion_admin
 
 urlpatterns = [ 
     path('admin/', admin.site.urls), 
@@ -52,4 +52,8 @@ urlpatterns = [
     path('api/pago-detalle/', PagoDetalleListCreate.as_view(), name='pago-detalle-lista'), 
     # Para operaciones sobre carreras-cursadas
     path('api/pago-detalle/<int:pago_id>/<int:mes_id>/', PagoDetalleDetail.as_view(), name='pago-detalle-detalle'),
-]
+    
+    path('api/seccion/contabilidad/', seccion_contabilidad, name='seccion_contabilidad'), 
+    path('api/seccion/alumnos/', seccion_alumnos, name='seccion_alumnos'), 
+    path('api/seccion/administrativo/', seccion_admin, name='seccion_admin'), 
+    ]

@@ -21,7 +21,7 @@ class Carrera(models.Model):
 
 class CarreraCursada(models.Model):
     alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE, related_name='carreras_cursadas')
-    carrera = models.ForeignKey(Carrera, on_delete=models.CASCADE, default=1)
+    carrera = models.ForeignKey(Carrera, on_delete=models.CASCADE, default=1, related_name="carreras_cursadas")
     id_estado = models.ForeignKey(Estado, on_delete=models.CASCADE, default=1)
 
     pk = models.CompositePrimaryKey("alumno", "carrera")
