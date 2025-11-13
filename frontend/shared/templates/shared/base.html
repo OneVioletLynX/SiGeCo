@@ -38,7 +38,8 @@
             <ul>
                 <li><a href="{% url 'carreras:carreras' %}" class="selected"><img
                             src="{% static 'shared/assets/school.svg' %}" alt="carrera"><span>Carreras</span></a></li>
-                <li><a href="{% url 'cobros:cobros' %}"><img src="{% static 'shared/assets/payments.svg' %}" alt="cobros"><span>Cobros</span></a>
+                <li><a href="{% url 'cobros:cobros' %}"><img src="{% static 'shared/assets/payments.svg' %}"
+                            alt="cobros"><span>Cobros</span></a>
                 </li>
                 <li><a href="{% url 'alumnos:alumnos' %}"><img src="{% static 'shared/assets/group.svg' %}"
                             alt="alumnos"><span>Alumnos</span></a></li>
@@ -64,8 +65,8 @@
                                     alt="cobros"><span>Recaudacion</span></a></li>
                     </ul>
                 </li>
-                <li><a href="#"><img src="{% static 'shared/assets/finance.svg' %}"
-                            alt="notificaciones"><span>Estadisticas</span></a></li>
+                <li><a href="{% url 'reportes:estadisticas' %}"><img src="{% static 'shared/assets/finance.svg' %}"
+                            alt="estadisticas"><span>Estadísticas</span></a></li>
 
             </ul>
         </nav>

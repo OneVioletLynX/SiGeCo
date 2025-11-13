@@ -36,7 +36,8 @@
    ================ */
 .months-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 columnas */
+  grid-template-columns: repeat(3, 1fr);
+  /* 3 columnas */
   gap: 15px;
   margin-bottom: 20px;
 }
@@ -74,7 +75,8 @@
 }
 
 .month.selected img.icono-mes {
-  filter: invert(1); /* vuelve blanca la imagen en modo seleccionado */
+  filter: invert(1);
+  /* vuelve blanca la imagen en modo seleccionado */
   transform: scale(1.1);
 }
 
