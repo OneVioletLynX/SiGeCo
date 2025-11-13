@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<style>
+/* estilo.css — Ctacte grid
+   Colocar en: static/ctacte/css/estilo.css
+   Usa las mismas clases del HTML provisto. */
+
+/* Reset/variables básicas */
+:root{
+  --bg: #f6f6f6;
+  --card-bg: #fff;
+  --muted: #9aa3ad;
+  --line: #e6e9ec;
+  --accent: #2bb673;      /* boton agregar */
+  --accent-contrast: #0f7a4f;
+  --ghost-btn: #ffffff;
+  --shadow: 0 6px 18px rgba(22,28,32,0.06);
+  --soft-shadow: 0 2px 6px rgba(22,28,32,0.04);
+  --pink: #ff2fa7;        /* punto rosa */
+  --text: #24303a;
+  --radius: 8px;
+  --font: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  font-size:14px;
+  line-height:1.35;
+}
+
+/* Contenedor principal: centrado y con ancho fijo */
+.ctacte-container{
+  max-width:980px; /* ajustar según diseño */
+  margin:44px auto;
+  padding:0 20px 80px;
+  position:relative;
+}
+
+/* Header con buscador */
+.ctacte-header{
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+  flex-direction: column;
+  align-content: center;
+  align-items: center;
+}
+
+.ctacte-search{
+  width:520px;
+}
+
+.ctacte-search input[type="search"]{
+  width:100%;
+  padding:10px 14px;
+  border-radius:20px;
+  border:1px solid var(--line);
+  background:#fff;
+  box-shadow: var(--soft-shadow);
+  outline:none;
+  font-size:14px;
+  color:var(--text);
+}
+
+.ctacte-search input[type="search"]::placeholder{
+  color:var(--muted);
+}
+
+/* Main layout: aside (acciones) + wrapper tabla */
+.ctacte-main{
+  display:flex;
+  gap:18px;
+  align-items:flex-start;
+  position:relative;
+}
+
+/* Aside botones verticales */
+.ctacte-actions{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin-left:-20px; /* para que queden pegados al costado como en la imagen */
+  z-index:2;
+}
+
+/* Botones ghost (borde, sombra suave) */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  border:none;
+  cursor:pointer;
+  font-weight:600;
+  font-size:14px;
+}
+
+/* Estilo común para botones "ghost" redondeados */
+.btn-ghost{
+  background:var(--ghost-btn);
+  border-radius:18px;
+  padding:10px 14px;
+  box-shadow: 0 6px 18px rgba(22,28,32,0.06);
+  border:1px solid rgba(36,48,58,0.06);
+  min-width:110px;
+}
+
+/* Icono y label */
+.btn-ghost .icon{
+  display:inline-flex;
+  width:20px;
+  justify-content:center;
+  font-size:14px;
+}
+.btn-ghost .label{color:var(--text)}
+
+/* Bordeado y hover */
+.btn-ghost:hover{
+  transform:translateY(-2px);
+  transition:transform .15s ease;
+}
+
+/* Wrapper de la tabla — centra y crea la tarjeta */
+.ctacte-grid-wrapper{
+  flex:1;
+  display:flex;
+  justify-content:center;
+}
+
+/* Tarjeta que contiene la tabla */
+.ctacte-table-card{
+  width:720px;  /* ajustar para que la tabla quede como en la imagen */
+  background:var(--card-bg);
+  border-radius:6px;
+  padding:6px;
+  box-shadow: var(--shadow);
+  border:1px solid var(--line);
+  overflow:hidden;
+}
+
+/* Tabla */
+.ctacte-table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+  background:transparent;
+  font-size:13px;
+}
+
+/* Head */
+.ctacte-table thead{
+  background:#f2f5f7;
+}
+.ctacte-table thead th{
+  text-align:left;
+  font-weight:700;
+  padding:14px 16px;
+  color:var(--muted);
+  font-size:13px;
+  position:relative;
+}
+
+/* Ajuste ancho columnas según la imagen */
+.col-year{
+  width:80px
+}
+
+.col-cuota{
+  width:220px
+}
+
+.col-importe{
+  text-align:right;
+  width:140px
+}
+
+.col-fecha{text-align:right; width:140px}
+
+/* Sort button pequeño */
+.sort{
+  background:transparent;
+  border:none;
+  font-size:11px;
+  color:var(--muted);
+  margin-left:8px;
+  cursor:pointer;
+}
+
+/* Filas del body */
+.ctacte-table tbody tr{
+  border-top:1px solid var(--line);
+  background:#fff;
+}
+
+.ctacte-table tbody td{
+  padding:12px 16px;
+  vertical-align:middle;
+  color:var(--text);
+  font-weight:500;
+}
+
+/* Alternado sutil (opcional) */
+.ctacte-table tbody tr:nth-child(even){
+  background: #ffffff;
+}
+
+/* Sombras y borde inferior para la tarjeta */
+.ctacte-table-card::after{
+  content:"";
+  display:block;
+  height:10px;
+}
+
+/* Botón flotante "Agregar" estilo FAB */
+.ctacte-fab{
+  position:fixed;
+  left:40px; /* igual que en imagen: abajo a la izquierda */
+  bottom:34px;
+  z-index:100;
+}
+
+.btn-fab{
+  display:inline-flex;
+  align-items:center;
+  gap:12px;
+  border:none;
+  padding:12px 18px;
+  border-radius:14px;
+  background:linear-gradient(180deg, var(--accent), var(--accent-contrast));
+  color:#063523;
+  font-weight:700;
+  box-shadow: 0 8px 22px rgba(43,182,115,0.18);
+  cursor:pointer;
+  transform:translateY(0);
+}
+
+/* Icono plus con fondo más claro */
+.fab-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:34px;
+  height:34px;
+  border-radius:10px;
+  background:rgba(255,255,255,0.9);
+  color:var(--accent-contrast);
+  font-weight:800;
+  box-shadow: 0 2px 6px rgba(2,8,6,0.06);
+}
+
+.btn-fab:hover{ 
+  transform:translateY(-4px); 
+  transition:transform .15s ease; 
+}
+
+.btn-ghost:active, .btn-fab:active{ 
+  transform:translateY(0)
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  margin: 16px;
+  color:#222;
+}
+.ctacte-search { 
+  margin-bottom: 12px; 
+  display:flex; 
+  gap:8px; 
+  align-items:center; 
+}
+
+input[type="search"] {
+  padding:8px 10px;
+  border-radius:6px;
+  border:1px solid #ccc;
+  min-width:260px;
+}
+
+.btn { 
+  padding:6px 10px; 
+  border-radius:6px; 
+  border:1px solid #ccc; 
+  background:#fff; 
+  cursor:pointer; 
+}
+
+table { 
+  width:100%; 
+  border-collapse:collapse; 
+  margin-top:8px; 
+}
+
+th, td { 
+  padding:8px 10px; 
+  border:1px solid #e6e6e6; 
+  text-align:left; 
+  vertical-align:middle; 
+}
+
+thead th { 
+  background:#fafafa; 
+  font-weight:600; 
+}
+
+.col-year { 
+  width:10%; 
+}
+
+.col-cuota { 
+  width:50%; 
+}
+
+.col-importe {
+  width:18%; 
+  text-align:right;
+}
+
+.col-fecha { 
+  width:22%; 
+}
+.empty { 
+  padding:18px 0; 
+  text-align:center; 
+  color:#666; 
+}
+
+.pagination { 
+  margin-top:10px; 
+  display:flex; 
+  gap:8px; 
+  align-items:center; 
+}
+
+.sr-only { 
+  position:absolute; 
+  left:-10000px; 
+  top:auto; 
+  width:1px;
+  height:1px; 
+  overflow:hidden;
+}
+</style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CtaCteForm</title>
+</head>
+<body>
+  <section class="ctacte-container" aria-labelledby="ctacte-title">
+    <header class="ctacte-header">
+      <div class="ctacte-search">
+        <input id="ctacte-search-input" type="search" placeholder="Ingrese el nombre de un Alumno o Nº de pago..." aria-label="Buscar cliente"/>
+        <button id="refresh-btn" class="btn" type="button" title="Refrescar">🔄</button>
+      </div>
+    </header>
+
+    <div class="ctacte-main">
+      <aside class="ctacte-actions" aria-label="Acciones" style="float:left; margin-right:12px;">
+        <button type="button" class="btn btn-ghost btn-delete" title="Eliminar">
+          <span class="icon">✕</span>
+          <span class="label">Eliminar</span>
+        </button>
+
+        <button type="button" class="btn btn-ghost btn-print" title="Imprimir">
+          <span class="icon">🖨️</span>
+          <span class="label">Imprimir</span>
+        </button>
+      </aside>
+
+      <div class="ctacte-grid-wrapper">
+        <div class="ctacte-table-card" role="region" aria-label="Listado de cuotas">
+          <table class="ctacte-table" summary="Listado de cuotas por año, cuota, importe y fecha de pago" aria-live="polite">
+            <thead>
+              <tr>
+                <th scope="col" class="col-year">Año <button class="sort" aria-label="Ordenar por año">▾</button></th>
+                <th scope="col" class="col-cuota">Cuota / Alumno <button class="sort" aria-label="Ordenar por cuota">▾</button></th>
+                <th scope="col" class="col-importe">Importe <button class="sort" aria-label="Ordenar por importe">▾</button></th>
+                <th scope="col" class="col-fecha">Fecha de pago <button class="sort" aria-label="Ordenar por fecha">▾</button></th>
+              </tr>
+            </thead>
+
+            <tbody id="ctacte-body">
+              <!-- Las filas se generan dinámicamente desde JS -->
+            </tbody>
+          </table>
+
+          <div id="empty-msg" class="empty" style="display:none;">No hay resultados.</div>
+
+          <div class="pagination" aria-label="Paginación">
+            <button id="prev-btn" class="btn" disabled>‹ Anterior</button>
+            <div id="page-info">Página 1 / 1</div>
+            <button id="next-btn" class="btn" disabled>Siguiente ›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ctacte-fab" style="position:fixed; right:18px; bottom:18px;">
+      <button type="button" class="btn btn-fab" aria-label="Agregar cuota">
+        <span class="fab-icon">＋</span>
+        <span class="fab-label">Agregar</span>
+      </button>
+    </div>
+  </section>
+
+<script>
+  const API_URL = "{% url 'ctacte:pagos-list' %}";
+
+
+  // Helpers de formato
+  function formatCurrency(num){
+    if(num === null || num === undefined) return '';
+    return Number(num).toLocaleString('es-AR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+  function formatDate(iso){
+    if(!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d)) return iso;
+    return d.toLocaleDateString('es-AR');
+  }
+  function cuotaLabel(row){
+    if(row.alumno_nombre) return `${row.alumno_nombre} • #${row.id_pago}`;
+    if(row.id_pago) return `Cuota #${row.id_pago}`;
+    return '—';
+  }
+
+  // DOM
+  const tbody = document.getElementById('ctacte-body');
+  const searchInput = document.getElementById('ctacte-search-input');
+  const refreshBtn = document.getElementById('refresh-btn');
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const pageInfo = document.getElementById('page-info');
+  const emptyMsg = document.getElementById('empty-msg');
+
+  // Estado
+  let currentPage = 1;
+  let pageSize = 20;
+  let numPages = 1;
+  let lastQuery = '';
+
+  // Llamada a la API con query params
+  async function fetchPagos({ q = '', page = 1, page_size = pageSize } = {}) {
+    const url = new URL(API_URL, window.location.origin);
+    if (q) url.searchParams.set('q', q);
+    url.searchParams.set('page', page);
+    url.searchParams.set('page_size', page_size);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('API error: ' + res.status);
+    return res.json();
+  }
+
+  async function loadPagos(q = '', page = 1) {
+    try {
+      const data = await fetchPagos({ q, page });
+      const rows = data.results ?? data;
+      const count = data.count ?? (Array.isArray(data) ? data.length : 0);
+      currentPage = data.page || page;
+      pageSize = data.page_size || pageSize;
+      numPages = data.num_pages || Math.max(1, Math.ceil((count||rows.length)/pageSize));
+
+      renderRows(rows);
+      updatePagination();
+    } catch (err) {
+      console.error(err);
+      tbody.innerHTML = `<tr><td colspan="4">Error cargando datos. Revisa la consola.</td></tr>`;
+      emptyMsg.style.display = 'none';
+    }
+  }
+
+  function renderRows(rows) {
+    tbody.innerHTML = '';
+    if (!rows || rows.length === 0) {
+      emptyMsg.style.display = 'block';
+      return;
+    } else {
+      emptyMsg.style.display = 'none';
+    }
+
+    rows.forEach(row => {
+      const year = row.fecha_pago_iso ? new Date(row.fecha_pago_iso).getFullYear() : '';
+      const cuota = cuotaLabel(row);
+      const importe = formatCurrency(row.importe_total);
+      const fecha = formatDate(row.fecha_pago_iso);
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="col-year">${year}</td>
+        <td class="col-cuota">${cuota}</td>
+        <td class="col-importe">${importe}</td>
+        <td class="col-fecha">${fecha}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function updatePagination(){
+    pageInfo.textContent = `Página ${currentPage} / ${numPages}`;
+    prevBtn.disabled = currentPage <= 1;
+    nextBtn.disabled = currentPage >= numPages;
+  }
+
+  // Eventos (búsqueda con debounce, paginación, refresco)
+  let debounceTimer;
+  searchInput.addEventListener('input', (e) => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      lastQuery = e.target.value.trim();
+      currentPage = 1;
+      loadPagos(lastQuery, currentPage);
+    }, 300);
+  });
+
+  prevBtn.addEventListener('click', () => {
+    if (currentPage > 1) {
+      currentPage--;
+      loadPagos(lastQuery, currentPage);
+    }
+  });
+
+  nextBtn.addEventListener('click', () => {
+    if (currentPage < numPages) {
+      currentPage++;
+      loadPagos(lastQuery, currentPage);
+    }
+  });
+
+  refreshBtn.addEventListener('click', () => {
+    loadPagos(lastQuery, currentPage);
+  });
+
+  // Carga inicial
+  document.addEventListener('DOMContentLoaded', () => {
+    loadPagos('', 1);
+  });
+</script>
+</body>
+</html>

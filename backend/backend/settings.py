@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'alumnos',
     'carreras',
     'valores',
-    "corsheaders",
+    'corsheaders',
+    'mensajes',
 ]
 
 MIDDLEWARE = [
@@ -55,6 +56,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
+
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -136,3 +139,14 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+# Configuración de correo real
+# Configuración de correo real usando Gmail
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'           # servidor SMTP de Gmail
+EMAIL_PORT = 587                        # puerto TLS
+EMAIL_USE_TLS = True                     # habilitar TLS
+EMAIL_HOST_USER = 'toledoagus421@gmail.com'   # tu correo de Gmail
+EMAIL_HOST_PASSWORD = 'Quebrachocolorado1628'  # contraseña de Gmail o App Password
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
