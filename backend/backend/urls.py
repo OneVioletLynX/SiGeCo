@@ -3,11 +3,15 @@ from django.urls import path, include
 from usuarios.views import UsuarioListCreate, UsuarioDetail, LoginView
 from alumnos.views import AlumnoListCreate, AlumnoDetail
 from carreras.views import CarreraListCreate, CarreraDetail, EstadoListCreate, EstadoDetail, CarreraCursadasListCreate, CarreraCursadasDetail
-from valores.views import ValoresListCreate, ValoresDetail, ConceptoListCreate, ConceptoDetail
+from valores.views import ValoresListCreate, ValoresDetail, ConceptoListCreate, ConceptoDetail, ValorVigenteView
 from ctacte.views import MesPagoListCreate, MesPagoDetail, MetodoPagoListCreate, MetodoPagoDetail, PagoDetail, PagoListCreate, PagoDetalleListCreate, PagoDetalleDetail, MesPagoDetail
 from reportes.views import seccion_contabilidad, seccion_alumnos, seccion_admin
 
 urlpatterns = [ 
+
+    path("api/ctacte/", include("ctacte.urls")),
+
+
     path('admin/', admin.site.urls), 
     # Para listar y crear usuarios 
     path('api/usuarios/', UsuarioListCreate.as_view(), name='usuarios-lista'), 
@@ -33,7 +37,8 @@ urlpatterns = [
 
     path('api/valores/', ValoresListCreate.as_view(), name='valores-lista'), 
     path('api/valores/<int:pk>/', ValoresDetail.as_view(), name='valor-detalle'),    
-    
+    path('api/valores/vigente/', ValorVigenteView.as_view(), name='valor-vigente'),
+
     path('api/concepto/', ConceptoListCreate.as_view(), name='concepto-lista'), 
     path('api/concepto/<int:pk>/', ConceptoDetail.as_view(), name='concepto-detalle'),  
 

@@ -1,39 +1,54 @@
 from pathlib import Path
+import sys
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+SIGECO_ROOT_DIR = BASE_DIR.parent
 
+# Asegura que el backend sea importable desde el frontend
+if str(SIGECO_ROOT_DIR) not in sys.path:
+    sys.path.append(str(SIGECO_ROOT_DIR))
 
 SECRET_KEY = 'django-insecure-(#iu=-*y4nendy35hp(36@4f_%cjtxq7w!bn4%oaomsbnx)zn&'
-
 DEBUG = True
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
-ALLOWED_HOSTS = []
-
-# ==========================
+# =====================================================
 # APLICACIONES INSTALADAS
-# ==========================
+# =====================================================
 INSTALLED_APPS = [
+    # Django apps básicas
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Terceros
     'corsheaders',
-    'alumnos.apps.AlumnosConfig',
-    'usuarios',
-    'carreras',
+
+    # Apps del frontend (HTML, vistas, templates)
+    'cobros_front',
+    'alumnos_front',
+    'carreras_front',
+    'usuarios_front',
+
+    # Apps del backend (lógica, modelos, API)
+    'backend.ctacte',
+    'backend.alumnos',
+    'backend.carreras',
+    'backend.usuarios',
     'reportes',
-    'cobros',
-    'shared'
+    'backend.valores',
 ]
 
-# ==========================
+
+# =====================================================
 # MIDDLEWARE
-# ==========================
+# =====================================================
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware',  # debe ir arriba del common
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -44,15 +59,13 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'frontend.urls'
 
-# ==========================
+# =====================================================
 # TEMPLATES
-# ==========================
+# =====================================================
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            BASE_DIR / 'shared' / 'templates',  # base.html
-        ],
+        'DIRS': [BASE_DIR / 'shared' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -65,38 +78,39 @@ TEMPLATES = [
     },
 ]
 
-# ==========================
-# BASE DE DATOS (solo si lo necesitás aquí)
-# ==========================
-# Si el frontend no maneja datos, no es necesario tener DB.
-# Si querés mantener una (por ejemplo para sesiones o usuarios):
+WSGI_APPLICATION = 'frontend.wsgi.application'
+
+# =====================================================
+# BASE DE DATOS LOCAL (solo para desarrollo)
+# =====================================================
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'SiGeCoDB',
+        'USER': 'backend_user',
+        'PASSWORD': '34745',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
+        'OPTIONS': {'charset': 'utf8mb4'},
     }
 }
 
-# ==========================
+# =====================================================
 # ARCHIVOS ESTÁTICOS
-# ==========================
-WSGI_APPLICATION = 'frontend.wsgi.application'
-
-# Static files (CSS, JavaScript, Images)
+# =====================================================
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    BASE_DIR / 'shared' / 'static',  
-]
+STATICFILES_DIRS = [BASE_DIR / 'shared' / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# ==========================
+# =====================================================
 # CORS
-# ==========================
-CORS_ALLOW_ALL_ORIGINS = True  # solo para desarrollo
+# =====================================================
+CORS_ALLOW_ALL_ORIGINS = True  # Solo desarrollo
+CORS_ALLOW_CREDENTIALS = True
 
-# ==========================
+# =====================================================
 # LOCALIZACIÓN
-# ==========================
+# =====================================================
 LANGUAGE_CODE = 'es-ar'
 TIME_ZONE = 'America/Argentina/Buenos_Aires'
 USE_I18N = True

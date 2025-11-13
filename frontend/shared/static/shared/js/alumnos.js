@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const tr = document.createElement("tr");
       tr.dataset.id = alumno.id_alumno;
       tr.innerHTML = `
+<<<<<<< HEAD
         <td>${alumno.apellido}, ${alumno.nombre}</td>
         <td>${alumno.dni}</td>
         <td>${alumno.ciudad || "-"}</td>
@@ -60,6 +61,19 @@ document.addEventListener("DOMContentLoaded", () => {
         <td>${alumno.telefono || "-"}</td>
         <td>${alumno.email}</td>
       `;
+=======
+        <td>${alumno.legajo}</td>
+        <td>${alumno.apellido}, ${alumno.nombre}</td>
+        <td>${alumno.dni}</td>
+        
+        <td>${alumno.direccion}, ${alumno.numero}</td>
+        <td>${alumno.prefijo} - ${alumno.telefono}</td>
+        <td>${alumno.email}</td>
+
+      `; 
+
+      //        <td>${alumno.ciudad || "-"}</td>      <td>${alumno.fecha_inscripcion}</td>
+>>>>>>> 4dcba221
       tabla.appendChild(tr);
     });
   }
@@ -218,8 +232,13 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+<<<<<<< HEAD
     // Ver
     if (text === "Ver") {
+=======
+    // Consulta
+    if (text === "Consulta") {
+>>>>>>> 4dcba221
       btn.addEventListener("click", async () => {
         if (!alumnoSeleccionado) {
           alert("Seleccioná primero un alumno.");
