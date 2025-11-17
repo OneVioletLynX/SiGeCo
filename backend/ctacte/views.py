@@ -1,46 +1,37 @@
-# backend/ctacte/views.py
-# from django.shortcuts import render, get_object_or_404
-# from alumnos.models import Alumno
-# from .models import Pago
-# from django.db.models import Sum
-# from django.db.models.functions import Coalesce
-
-# def pagos_por_alumno(request, alumno_id):
-#     alumno = get_object_or_404(Alumno, pk=alumno_id)
-#     pagos = Pago.objects.filter(alumno=alumno).order_by('-fecha_pago')
-#     total = pagos.aggregate(total=Coalesce(Sum('importe_total'), 0))['total']
-#     return render(request, 'ctacte/pagos_por_alumno.html', {
-#         'alumno': alumno,
-#         'pagos': pagos,
-#         'total': total,
-#     })
-
-#================================================================================
-from datetime import date
-
+# app_name/views.py
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from alumnos.models import Alumno
 from django.utils import timezone
+from django.urls import reverse
+from django.core.paginator import Paginator, EmptyPage
+from django.db.models import Q
+
 from .models import MesPago, MetodoPago, Pago, PagoDetalle
 from .serializers import (
     MesPagoSerializer, MetodoPagoSerializer, PagoSerializer, PagoDetalleSerializer
 )
 
+
+def home_ctacte(request):
+    return render(request, "ctacte/home.html")
+
+
 @api_view(['GET'])
 def ctacte_api_root(request):
     return Response({
-        'meses': request.build_absolute_uri('meses/'),
-        'metodos-pagos': request.build_absolute_uri('metodos-pagos/'),
-        'pagos': request.build_absolute_uri('pagos/'),
-        'pagos-detalle': request.build_absolute_uri('pagos-detalle/'),
+        'meses': request.build_absolute_uri(reverse('ctacte:meses-list')),
+        'metodos-pagos': request.build_absolute_uri(reverse('ctacte:metodos-list')),
+        'pagos': request.build_absolute_uri(reverse('ctacte:pagos-list')),
+        'pagos-detalle': request.build_absolute_uri(reverse('ctacte:pagos-detalle-list')),
     })
 
-# -------- MesPago --------
+
+# -------- MesPago (sin cambios) --------
 class MesPagoListCreate(APIView):
     def get(self, request):
         objs = MesPago.objects.all().order_by('id_mes')
@@ -74,7 +65,7 @@ class MesPagoDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# -------- MetodoPago --------
+# -------- MetodoPago (sin cambios) --------
 class MetodoPagoListCreate(APIView):
     def get(self, request):
         objs = MetodoPago.objects.all().order_by('id_metodo_pago')
@@ -111,26 +102,57 @@ class MetodoPagoDetail(APIView):
 # -------- Pago --------
 class PagoListCreate(APIView):
     def get(self, request):
-        alumno_id = request.query_params.get('alumno')
-        pagos = Pago.objects.all().order_by('-fecha_pago', '-id_pago')
-        if alumno_id:
-            pagos = pagos.filter(id_alumno_id=alumno_id)
+        """
+        Lista de pagos con:
+         - búsqueda por ?q= (id_alumno.nombre o id_pago)
+         - paginación ?page= & ?page_size=
+         - orden por fecha desc (definido en Meta del modelo)
+        """
+        q = request.GET.get('q', '').strip()
+        page = int(request.GET.get('page', 1))
+        page_size = int(request.GET.get('page_size', 50))
+        qs = Pago.objects.select_related('id_alumno').all().order_by('-fecha_pago', '-id_pago')
 
-        ser = PagoSerializer(pagos, many=True)
-        return Response(ser.data)
+        if q:
+            # Si q es numérico, dejamos que busque por id_pago también
+            filters = Q(id_alumno__nombre__icontains=q) | Q(id_alumno__apellido__icontains=q)  # apellido si existe
+            if q.isdigit():
+                filters |= Q(id_pago=int(q))
+            qs = qs.filter(filters)
+
+        paginator = Paginator(qs, page_size)
+        try:
+            page_obj = paginator.page(page)
+        except EmptyPage:
+            page_obj = paginator.page(paginator.num_pages)
+
+        ser = PagoSerializer(page_obj.object_list, many=True, context={'request': request})
+        # respuesta estilo paginada
+        base_url = request.build_absolute_uri(request.path)
+        def page_url(p):
+            params = request.GET.copy()
+            params['page'] = p
+            return f"{base_url}?{params.urlencode()}"
+
+        result = {
+            'count': paginator.count,
+            'page': page,
+            'page_size': page_size,
+            'num_pages': paginator.num_pages,
+            'next': page_url(page + 1) if page < paginator.num_pages else None,
+            'previous': page_url(page - 1) if page > 1 else None,
+            'results': ser.data,
+        }
+        return Response(result)
 
     def post(self, request):
-        ser = PagoSerializer(data=request.data)
+        ser = PagoSerializer(data=request.data, context={'request': request})
         if ser.is_valid():
             ser.save()
             return Response(ser.data, status=status.HTTP_201_CREATED)
         return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 4dcba221
 class PagoDetail(APIView):
     def get(self, request, pk):
         obj = get_object_or_404(Pago, pk=pk)
@@ -153,9 +175,36 @@ class PagoDetail(APIView):
 # -------- PagoDetalle --------
 class PagoDetalleListCreate(APIView):
     def get(self, request):
-        objs = PagoDetalle.objects.all().order_by('id_detalle')
-        ser = PagoDetalleSerializer(objs, many=True)
-        return Response(ser.data)
+        # base queryset
+        qs = PagoDetalle.objects.select_related('pago', 'mes').all().order_by('pago_id', 'mes_id')
+
+        # filtros por query params
+        pago = request.GET.get('pago')
+        if pago:
+            qs = qs.filter(pago_id=pago)
+
+        mes = request.GET.get('mes')
+        if mes:
+            qs = qs.filter(mes_id=mes)
+
+        # paginación
+        page = int(request.GET.get('page', 1))
+        page_size = int(request.GET.get('page_size', 100))
+        paginator = Paginator(qs, page_size)
+        try:
+            page_obj = paginator.page(page)
+        except EmptyPage:
+            page_obj = paginator.page(paginator.num_pages)
+
+        ser = PagoDetalleSerializer(page_obj.object_list, many=True)
+        result = {
+            'count': paginator.count,
+            'page': page,
+            'page_size': page_size,
+            'num_pages': paginator.num_pages,
+            'results': ser.data,
+        }
+        return Response(result)
 
     def post(self, request):
         ser = PagoDetalleSerializer(data=request.data)
@@ -182,6 +231,7 @@ class PagoDetalleDetail(APIView):
         obj = get_object_or_404(PagoDetalle, pk=pk)
         obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+<<<<<<< HEAD
 
 <<<<<<< HEAD
 =======
@@ -334,3 +384,5 @@ class MesesPendientes(APIView):
             "meses": meses_por_anio
         })
 >>>>>>> 4dcba221
+=======
+>>>>>>> 7ca754b71b238705b269cd13cac9e6eaa7f1e9f1
