@@ -42,16 +42,10 @@
                 </li>
                 <li><a href="{% url 'alumnos_front:alumnos' %}"><img src="{% static 'shared/assets/group.svg' %}"
                             alt="alumnos"><span>Alumnos</span></a></li>
-<<<<<<< HEAD
-                <li><a href=""><img src="{% static 'shared/assets/mail.svg' %}"
-                            alt="notificaciones"><span>Comunicaciones</span></a></li>
-=======
                 <li><a href="#"><img src="{% static 'shared/assets/mail.svg' %}"
                             alt="notificaciones"><span>Mensajeria</span></a></li>
-
-                <li><a href="#"><img src="{% static 'shared/assets/finance.svg' %}"
-                            alt="notificaciones"><span>Estadisticas</span></a></li>
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
+                <li><a href="{% url 'reportes:estadisticas' %}"><img src="{% static 'shared/assets/finance.svg' %}"
+                            alt="estadisticas"><span>Estadísticas</span></a></li>
                 <!-- 🔹 Reportes con submenú -->
                 <li class="has-submenu">
                     <a href="#" class="submenu-toggle">
@@ -72,12 +66,6 @@
                                     alt="cobros"><span>Recaudacion</span></a></li>
                     </ul>
                 </li>
-<<<<<<< HEAD
-                <li><a href="{% url 'reportes:estadisticas' %}"><img src="{% static 'shared/assets/finance.svg' %}"
-                            alt="estadisticas"><span>Estadísticas</span></a></li>
-
-=======
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
             </ul>
         </nav>
     </div>

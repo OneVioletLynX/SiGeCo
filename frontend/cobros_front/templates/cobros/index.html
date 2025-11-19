@@ -4,70 +4,6 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'shared/css/cobros.css' %}">
-<<<<<<< HEAD
-<style>
-  .month.selected {
-    background-color: #c8e6c9;
-    border-radius: 8px;
-  }
-  .suggestions-box {
-    position: absolute;
-    background: #fff;
-    border: 1px solid #ccc;
-    z-index: 10;
-    width: 250px;
-  }
-  .suggestions-box div {
-    padding: 6px 8px;
-    cursor: pointer;
-  }
-  .suggestions-box div:hover {
-    background: #eee;
-  }
-</style>
-{% endblock %}
-
-{% block content %}
-<div style="display: flex; flex-direction: column;">
-
-  <div style="display: flex; gap: 25px;">
-    <div class="toolbar">
-      <div class="action-button">
-        <img src="{% static 'shared/assets/add.svg' %}" alt="">
-        <div class="text">Eliminar</div>
-      </div>
-      <div class="action-button">
-        <img src="{% static 'shared/assets/print.svg' %}" alt="">
-        <div class="text">Imprimir</div>
-      </div>
-      <div class="action-button">
-        <img src="{% static 'shared/assets/edit.svg' %}" alt="">
-        <div class="text">Modificación</div>
-      </div>
-    </div>
-
-    <div style="display: flex; flex-direction: column; gap: 25px;">
-      <div class="search-container" style="position: relative;">
-        <input type="text" id="buscador" placeholder="Nombre o DNI" autocomplete="off" />
-        <div id="sugerencias" class="suggestions-box"></div>
-      </div>
-
-      <table id="sortableTable">
-        <thead>
-          <tr>
-            <th>Año</th>
-            <th>Cuota</th>
-            <th>Importe</th>
-            <th>Fecha de Pago</th>
-            <th>Método</th>
-          </tr>
-        </thead>
-        <tbody id="tabla-cobros"></tbody>
-      </table>
-
-      <button id="btnAgregar" type="button" style="width: fit-content;">Agregar</button>
-    </div>
-=======
 {% endblock %}
 
 {% block content %}
@@ -117,17 +53,12 @@
     </div>
 
 
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
   </div>
 </div>
 
 <!-- 🔹 MODAL DE ALTA DE COBRO -->
 <div id="altaModal" class="modal">
   <div class="modal-content" style="display: flex; flex-direction: row;">
-<<<<<<< HEAD
-    <span class="close">&times;</span>
-=======
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
 
     <!-- 🔹 Lado Izquierdo: Selección de Meses -->
     <div class="meses-container">
@@ -152,17 +83,6 @@
     <!-- 🔹 Lado Derecho: Detalle del Cobro -->
     <form id="cobroForm">
       {% csrf_token %}
-<<<<<<< HEAD
-      <div class="detalle-container"
-        style="display: flex; justify-content: space-between; flex-direction: column; height: 50%;">
-
-        <div>
-          <h3>Detalle</h3>
-
-          <!-- Método de Pago -->
-          <div class="form-group">
-            <label for="metodo_pago">Método de pago</label>
-=======
       <div class="detalle-container">
 
         <div>
@@ -171,7 +91,6 @@
           <!-- Método de Pago -->
           <div class="form-group">
             <h3>Método de pago</h3>
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
             <select id="metodo_pago" name="metodo_pago" required>
               <option value="">Seleccionar...</option>
               {% for metodo in metodos %}
@@ -182,21 +101,13 @@
 
           <!-- Campo de comprobante (solo transferencia) -->
           <div class="form-group hidden" id="campo-comprobante">
-<<<<<<< HEAD
-            <label for="nro_comprobante">N° de comprobante</label>
-=======
             <h3>N° de comprobante</h3>
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
             <input type="text" id="nro_comprobante" name="nro_comprobante" placeholder="Ej: 12345678" />
           </div>
 
           <!-- Campo de tarjeta (solo tarjeta) -->
           <div class="form-group hidden" id="campo-tarjeta">
-<<<<<<< HEAD
-            <label for="tarjeta">Seleccionar tarjeta</label>
-=======
             <h3>Seleccionar tarjeta</h3>
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
             <select id="tarjeta" name="tarjeta">
               <option value="">Seleccionar...</option>
               <option value="marcos_juarez">Marcos Juárez</option>
@@ -208,27 +119,13 @@
         <!-- Importe -->
         <div>
           <div class="form-group">
-<<<<<<< HEAD
-            <label for="importe">Importe</label>
-=======
             <h3 for="importe">Importe</h3>
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
             <input type="number" id="importe" name="importe" placeholder="$0.00" required />
           </div>
 
           <div class="form-group recargo">
             <label for="recargo">
               <input type="checkbox" id="recargo" name="recargo" />
-<<<<<<< HEAD
-              Aplicar recargo
-            </label>
-          </div>
-        </div>
-      </div>
-      <input type="hidden" id="mesesSeleccionados" name="mesesSeleccionados" />
-
-      <button type="submit">Guardar</button>
-=======
               Recargo
             </label>
           </div>
@@ -242,7 +139,6 @@
       <input type="hidden" id="mesesSeleccionados" name="mesesSeleccionados" />
 
 
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
     </form>
   </div>
 </div>
@@ -250,9 +146,4 @@
 
 {% block extra_js %}
 <script src="{% static 'shared/js/cobros.js' %}"></script>
-<<<<<<< HEAD
 {% endblock %}
-
-=======
-{% endblock %}
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53

@@ -1,16 +1,12 @@
-# app_name/views.py
+from datetime import date
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from alumnos.models import Alumno
 from django.utils import timezone
-from django.urls import reverse
-from django.core.paginator import Paginator, EmptyPage
-from django.db.models import Q
-
 from .models import MesPago, MetodoPago, Pago, PagoDetalle
 from .serializers import (
     MesPagoSerializer, MetodoPagoSerializer, PagoSerializer, PagoDetalleSerializer
@@ -59,7 +55,7 @@ class MesPagoDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# -------- MetodoPago (sin cambios) --------
+# -------- MetodoPago --------
 class MetodoPagoListCreate(APIView):
     def get(self, request):
         objs = MetodoPago.objects.all().order_by('id_metodo_pago')
@@ -163,7 +159,6 @@ class PagoDetalleDetail(APIView):
         obj = get_object_or_404(PagoDetalle, pk=pk)
         obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
 class RegistrarPago(APIView):
     def post(self, request):
         try:

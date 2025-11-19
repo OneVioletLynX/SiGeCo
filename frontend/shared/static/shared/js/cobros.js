@@ -44,8 +44,6 @@
 
     let timeout = null;
 
-<<<<<<< HEAD
-=======
     metodoSelect.addEventListener("change", function () {
       const metodo = metodoSelect.value;
 
@@ -63,7 +61,6 @@
     });
 
 
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
     // =====================================
     // BUSCADOR DE ALUMNOS
     // =====================================
@@ -74,14 +71,9 @@
         sugerencias.style.display = "none";
         return;
       }
-<<<<<<< HEAD
-      clearTimeout(timeout);
-      timeout = setTimeout(() => buscarAlumnos(q), 300);
-=======
 
       buscarAlumnos(q);
 
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
     });
 
     async function buscarAlumnos(q) {
@@ -93,23 +85,11 @@
 
         sugerencias.innerHTML = "";
         if (!alumnos.length) {
-<<<<<<< HEAD
-          sugerencias.innerHTML = "<li class='p-2 text-muted'>Sin resultados</li>";
-=======
           sugerencias.innerHTML = "<div class='no-results'>Sin resultados</div>";
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
           sugerencias.style.display = "block";
           return;
         }
 
-<<<<<<< HEAD
-        alumnos.forEach((al) => {
-          const li = document.createElement("li");
-          li.classList.add("list-group-item", "list-group-item-action");
-          li.textContent = `${al.apellido}, ${al.nombre} (${al.dni})`;
-          li.addEventListener("click", () => seleccionarAlumno(al));
-          sugerencias.appendChild(li);
-=======
 
         alumnos.forEach((al) => {
         const item = document.createElement("div");
@@ -117,17 +97,12 @@
         item.textContent = `${al.apellido}, ${al.nombre}`;
         item.addEventListener("click", () => seleccionarAlumno(al));
         sugerencias.appendChild(item);
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
         });
 
         sugerencias.style.display = "block";
       } catch (err) {
-<<<<<<< HEAD
-        console.error("Error buscando alumnos:", err);
-=======
         sugerencias.innerHTML = "<div class='no-results'>Sin resultados</div>";
 
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
       }
     }
 
@@ -139,22 +114,16 @@
       alumnoSeleccionado = alumno;
       carreraSeleccionadaId = alumno.carrera_actual;
 
-<<<<<<< HEAD
-      cargarPagos(alumno.id_alumno);
-    }
-
-=======
       // === MOSTRAR BOTÓN AGREGAR ===
       const btnAgregar = document.getElementById("btnAgregar");
       if (btnAgregar) {
-        btnAgregar.style.display = "block";
+        btnAgregar.style.display = "flex";
       }
 
       cargarPagos(alumno.id_alumno);
     }
 
 
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
     // =====================================
     // CARGAR PAGOS EXISTENTES
     // =====================================
@@ -206,9 +175,6 @@
       modal.style.display = "block";
     });
 
-<<<<<<< HEAD
-    btnCerrar.addEventListener("click", () => (modal.style.display = "none"));
-=======
     // BOTÓN CANCELAR
     document.getElementById("btnCancelar").addEventListener("click", () => {
         modal.style.display = "none";
@@ -223,7 +189,6 @@
         }
     });
 
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
 
     // =====================================
     // CARGAR MESES DINÁMICOS
@@ -236,23 +201,6 @@
 
         contenedorMeses.innerHTML = `<h2>Meses</h2>`;
 
-<<<<<<< HEAD
-        // INSCRIPCIÓN
-        if (data.inscripcion_pendiente) {
-          contenedorMeses.innerHTML += `
-            <div class="year-group">
-              <h3>Inscripción</h3>
-              <div class="months-grid">
-                <div class="month" data-id_mes="INSCRIPCION" data-anio="${data.anio_ingreso}">
-                  <span>Inscripción</span>
-                </div>
-              </div>
-            </div>
-          `;
-        }
-
-=======
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
         // MESES POR AÑO
         for (const anio in data.meses) {
           const meses = data.meses[anio];
@@ -264,8 +212,6 @@
           `;
 
           meses.forEach((m) => {
-<<<<<<< HEAD
-=======
 
             const esInscripcion =
               m.descripcion.toLowerCase() === "inscripcion" ||
@@ -276,7 +222,6 @@
               return;
             }
 
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
             html += `
               <div class="month" data-id_mes="${m.id_mes}" data-anio="${anio}">
                 <span>${m.descripcion}</span>
@@ -284,12 +229,9 @@
             `;
           });
 
-<<<<<<< HEAD
-=======
 
 
 
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
           html += `</div></div>`;
           contenedorMeses.innerHTML += html;
         }

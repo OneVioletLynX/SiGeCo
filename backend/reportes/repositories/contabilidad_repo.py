@@ -39,7 +39,7 @@ def get_kpis_cont():
     tasa_morosidad = (cuotas_estimadas_anio / total_de_cuotas_en_el_anio * 100) if total_de_cuotas_en_el_anio else 0
 
     # ===========================
-    #     ALUMNOS AL DÍA (CORREGIDO)
+    #     ALUMNOS AL DÍA
     # ===========================
     # Desde marzo hasta el mes actual
     meses_actuales = list(range(3, mes_actual + 1))

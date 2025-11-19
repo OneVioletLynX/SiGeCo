@@ -7,6 +7,9 @@ from carreras.views import CarreraListCreate, CarreraDetail, EstadoListCreate, E
 from valores.views import ValoresListCreate, ValoresDetail, ConceptoListCreate, ConceptoDetail
 from ctacte.views import MesPagoListCreate, MesPagoDetail, MetodoPagoListCreate, MetodoPagoDetail, PagoDetail, PagoListCreate, PagoDetalleListCreate, PagoDetalleDetail, MesPagoDetail
 from valores.views import ValorVigenteView
+from mensajes.views import MensajeListCreate, MensajeDetail
+from mensajes.views import MensajeListCreate 
+from reportes.views import seccion_contabilidad, seccion_alumnos, seccion_admin
 
 urlpatterns = [ 
 

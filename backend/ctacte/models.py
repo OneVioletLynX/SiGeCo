@@ -91,14 +91,14 @@ class Pago(models.Model):
     id_alumno = models.ForeignKey(
         Alumno,
         on_delete=models.CASCADE,
-        related_name='pagos'
+        related_name='pago'
     )
     fecha_pago = models.DateTimeField(null=True, blank=True)
     importe_total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     id_metodo_pago = models.ForeignKey(
         MetodoPago,
         on_delete=models.PROTECT,
-        related_name='pagos'
+        related_name='pago'
     )
     # id_usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True)
 
@@ -117,7 +117,8 @@ class PagoDetalle(models.Model):
     pago = models.ForeignKey(
         Pago,
         on_delete=models.CASCADE,
-        related_name='detalles'
+        related_name='detalles',
+        primary_key=True
     )
     mes = models.ForeignKey(
         MesPago,

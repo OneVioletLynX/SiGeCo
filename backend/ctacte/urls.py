@@ -1,6 +1,5 @@
 from django.urls import path
 from .views import (
-    home_ctacte,
     ctacte_api_root,
     MesPagoListCreate, MesPagoDetail,
     MetodoPagoListCreate, MetodoPagoDetail,
