@@ -44,6 +44,23 @@
 
     let timeout = null;
 
+    metodoSelect.addEventListener("change", function () {
+      const metodo = metodoSelect.value;
+
+      // Ocultar todo por defecto
+      campoComprobante.classList.add("hidden");
+      campoTarjeta.classList.add("hidden");
+
+      if (metodo === "2") {  // ejemplo: 2 = TRANSFERENCIA
+        campoComprobante.classList.remove("hidden");
+      }
+
+      if (metodo === "3") {  // ejemplo: 3 = TARJETA
+        campoTarjeta.classList.remove("hidden");
+      }
+    });
+
+
     // =====================================
     // BUSCADOR DE ALUMNOS
     // =====================================
@@ -54,8 +71,9 @@
         sugerencias.style.display = "none";
         return;
       }
-      clearTimeout(timeout);
-      timeout = setTimeout(() => buscarAlumnos(q), 300);
+
+      buscarAlumnos(q);
+
     });
 
     async function buscarAlumnos(q) {
@@ -67,22 +85,24 @@
 
         sugerencias.innerHTML = "";
         if (!alumnos.length) {
-          sugerencias.innerHTML = "<li class='p-2 text-muted'>Sin resultados</li>";
+          sugerencias.innerHTML = "<div class='no-results'>Sin resultados</div>";
           sugerencias.style.display = "block";
           return;
         }
 
+
         alumnos.forEach((al) => {
-          const li = document.createElement("li");
-          li.classList.add("list-group-item", "list-group-item-action");
-          li.textContent = `${al.apellido}, ${al.nombre} (${al.dni})`;
-          li.addEventListener("click", () => seleccionarAlumno(al));
-          sugerencias.appendChild(li);
+        const item = document.createElement("div");
+        item.classList.add("suggestion-item");
+        item.textContent = `${al.apellido}, ${al.nombre}`;
+        item.addEventListener("click", () => seleccionarAlumno(al));
+        sugerencias.appendChild(item);
         });
 
         sugerencias.style.display = "block";
       } catch (err) {
-        console.error("Error buscando alumnos:", err);
+        sugerencias.innerHTML = "<div class='no-results'>Sin resultados</div>";
+
       }
     }
 
@@ -94,8 +114,15 @@
       alumnoSeleccionado = alumno;
       carreraSeleccionadaId = alumno.carrera_actual;
 
+      // === MOSTRAR BOTÓN AGREGAR ===
+      const btnAgregar = document.getElementById("btnAgregar");
+      if (btnAgregar) {
+        btnAgregar.style.display = "block";
+      }
+
       cargarPagos(alumno.id_alumno);
     }
+
 
     // =====================================
     // CARGAR PAGOS EXISTENTES
@@ -148,7 +175,20 @@
       modal.style.display = "block";
     });
 
-    btnCerrar.addEventListener("click", () => (modal.style.display = "none"));
+    // BOTÓN CANCELAR
+    document.getElementById("btnCancelar").addEventListener("click", () => {
+        modal.style.display = "none";
+        form.reset();
+    });
+
+    // Cerrar modal al hacer clic afuera
+    window.addEventListener("click", function(e) {
+        if (e.target === modal) {
+            modal.style.display = "none";
+            form.reset();
+        }
+    });
+
 
     // =====================================
     // CARGAR MESES DINÁMICOS
@@ -161,20 +201,6 @@
 
         contenedorMeses.innerHTML = `<h2>Meses</h2>`;
 
-        // INSCRIPCIÓN
-        if (data.inscripcion_pendiente) {
-          contenedorMeses.innerHTML += `
-            <div class="year-group">
-              <h3>Inscripción</h3>
-              <div class="months-grid">
-                <div class="month" data-id_mes="INSCRIPCION" data-anio="${data.anio_ingreso}">
-                  <span>Inscripción</span>
-                </div>
-              </div>
-            </div>
-          `;
-        }
-
         // MESES POR AÑO
         for (const anio in data.meses) {
           const meses = data.meses[anio];
@@ -186,12 +212,25 @@
           `;
 
           meses.forEach((m) => {
+
+            const esInscripcion =
+              m.descripcion.toLowerCase() === "inscripcion" ||
+              m.id_mes == 1;
+
+            // ❌ Si es inscripción pero NO es el año de ingreso → NO mostrar
+            if (esInscripcion && parseInt(anio) !== data.anio_ingreso) {
+              return;
+            }
+
             html += `
               <div class="month" data-id_mes="${m.id_mes}" data-anio="${anio}">
                 <span>${m.descripcion}</span>
               </div>
             `;
           });
+
+
+
 
           html += `</div></div>`;
           contenedorMeses.innerHTML += html;

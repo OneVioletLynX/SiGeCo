@@ -272,14 +272,14 @@ class MesesPendientes(APIView):
         if ult_pago:
             anio_final = max(anio_ingreso, ult_pago + 1)
         else:
-            # Si nunca pagó nada → mostrar ingreso + 1
-            anio_final = anio_ingreso + 1
+            anio_final = anio_ingreso + 1  # Nunca pagó nada
 
         # -------------------------
-        # 3) MESES CATALOGO (1–12)
+        # 3) MESES CATALOGO (Sin inscripción)
         # -------------------------
         meses_catalogo = list(
-            MesPago.objects.all()
+            MesPago.objects
+            .exclude(descripcion__icontains="insc")  # ⛔ evitar inscripción aquí
             .order_by("id_mes")
             .values("id_mes", "descripcion")
         )
@@ -294,13 +294,29 @@ class MesesPendientes(APIView):
         )
 
         # -------------------------
-        # 5) ARMAR RESPUESTA POR AÑO
+        # 5) INSCRIPCIÓN PAGADA O NO
+        # -------------------------
+        inscripcion_pendiente = not PagoDetalle.objects.filter(
+            pago__id_alumno_id=alumno.id_alumno,
+            id_concepto_id=2   # concepto = INSCRIPCIÓN
+        ).exists()
+
+        # -------------------------
+        # 6) ARMAR RESPUESTA FINAL
         # -------------------------
         meses_por_anio = {}
 
         for anio in range(anio_ingreso, anio_final + 1):
             disponibles = []
 
+            # Agregar inscripción SOLO en el año de ingreso
+            if anio == anio_ingreso and inscripcion_pendiente:
+                disponibles.append({
+                    "id_mes": 1,  # ID real de Inscripción
+                    "descripcion": "Inscripción"
+                })
+
+            # Agregar meses comunes (enero–diciembre)
             for mes in meses_catalogo:
                 if (anio, mes["id_mes"]) not in pagados:
                     disponibles.append({
@@ -311,15 +327,7 @@ class MesesPendientes(APIView):
             meses_por_anio[str(anio)] = disponibles
 
         # -------------------------
-        # 6) INSCRIPCIÓN PENDIENTE
-        # -------------------------
-        inscripcion_pendiente = not PagoDetalle.objects.filter(
-            pago__id_alumno_id=alumno.id_alumno,
-            id_concepto_id=2   # concepto = INSCRIPCIÓN
-        ).exists()
-
-        # -------------------------
-        # 7) RESPUESTA FINAL
+        # 7) RESPUESTA
         # -------------------------
         return Response({
             "alumno": alumno.id_alumno,

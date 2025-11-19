@@ -327,7 +327,7 @@ th.asc img {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin-top: 72px;
+    margin-right: 10px;
 }
 
 .toolbar .action-button {
@@ -369,10 +369,11 @@ th.asc img {
 
 /* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ TOOLBAR ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 
+
 tr.selected {
   background-color: #cce5ff;
 }
-/* --- Modal general --- */
+
 .modal {
   display: none;
   position: fixed;
@@ -391,7 +392,7 @@ tr.selected {
   margin: 5% auto;
   padding: 30px;
   border-radius: 15px;
-  width: 50%;
+  width: fit-content;
   max-width: 900px;
   display: flex;
   flex-direction: column;
@@ -400,9 +401,17 @@ tr.selected {
 
 /* --- Encabezado del modal --- */
 .modal-content h2 {
-  text-align: center;
-  margin-bottom: 20px;
+  text-align: left;
+  font-weight: 900;
+  margin-bottom: 10px;
 }
+
+
+/* =====================================
+MODAL
+===================================== */
+
+
 
 /* --- Formulario con dos columnas --- */
 #alumnoForm {
@@ -435,8 +444,7 @@ tr.selected {
     width: 142px;
     padding: 5px;
     background: white;
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1px solid #ccc;
     justify-content: space-between;
     align-items: center;
@@ -448,16 +456,10 @@ tr.selected {
     height: 40px;
 }
 
-.form-control {
-    width: 30%;
+.filtro{
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-    padding: 10px 12px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 14px;
-    transition: all 0.2s 
-    ease;
 }
+
 
 /* --- Botón --- */
 #alumnoForm button {
@@ -532,51 +534,56 @@ tr.selected {
 
 .search-container {
   position: relative;
-  width: 100%;
   max-width: 500px;
   margin-bottom: 15px;
+    margin-left: 152px;
 }
 
-#buscador {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 14px;
-  transition: all 0.2s ease;
+.form-control {
+    width: 100%;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 14px;
+   outline: none;
 }
 
-#buscador:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
-  outline: none;
-}
 
 .suggestions-box {
   position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  background: white;
-  border: 1px solid #ddd;
-  border-top: none;
-  border-radius: 0 0 8px 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  background: #fff;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   z-index: 10;
-  max-height: 200px;
+  width: 100%;
+  max-height: 250px;
   overflow-y: auto;
-  display: none; /* se muestra dinámicamente con JS */
 }
 
-.suggestions-box div {
-  padding: 8px 12px;
+.suggestions-box .suggestion-item {
+  padding: 10px 14px;
   cursor: pointer;
-  transition: background 0.15s ease-in-out;
+  border-bottom: 1px solid #f1f1f1;
+  transition: background 0.2s ease;
+  font-size: 15px;
 }
 
-.suggestions-box div:hover {
-  background: #007bff;
-  color: white;
+.suggestions-box .suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestions-box .suggestion-item:hover {
+  background-color: var(--background-hover);
+}
+
+.suggestions-box .no-results {
+  padding: 10px 14px;
+  color: #777;
+  font-style: italic;
+  background: #fafafa;
+  border-radius: 6px;
 }
 
 
@@ -589,7 +596,7 @@ tr.selected {
   display: flex;
   align-items: flex-end;
   gap: 8px;
-  margin-bottom: 10px;
+  padding-left: 152px;
   
 }
 .filter-container label {
@@ -642,4 +649,21 @@ tr.selected {
 .table-wrapper {
   width: 100%;
   overflow-x: auto; /* permite desplazamiento horizontal si hay muchas columnas */
+}
+
+
+button {
+  width: 142px;
+  padding: 10px;
+  background: white;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 12px;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-content: center;
+  cursor: pointer;
+  outline: none;
 }
