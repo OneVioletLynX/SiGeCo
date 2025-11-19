@@ -4,6 +4,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'shared/css/cobros.css' %}">
+<<<<<<< HEAD
 <style>
   .month.selected {
     background-color: #c8e6c9;
@@ -66,13 +67,67 @@
 
       <button id="btnAgregar" type="button" style="width: fit-content;">Agregar</button>
     </div>
+=======
+{% endblock %}
+
+{% block content %}
+<div>
+
+  <div style="display: flex; flex-direction: column;">
+
+
+    <div class="search-container" style="position: relative;">
+      <input type="text" id="buscador" placeholder="Nombre o DNI" autocomplete="off" class="form-control" />
+      <div id="sugerencias" class="suggestions-box"></div>
+    </div>
+
+    <div style="display: flex">
+
+      <div class="toolbar">
+        <div class="action-button">
+          <img src="{% static 'shared/assets/add.svg' %}" alt="">
+          <div class="text">Eliminar</div>
+        </div>
+        <div class="action-button">
+          <img src="{% static 'shared/assets/print.svg' %}" alt="">
+          <div class="text">Imprimir</div>
+        </div>
+        <!-- <div class="action-button">
+          <img src="{% static 'shared/assets/edit.svg' %}" alt="">
+          <div class="text">Modificación</div>
+        </div> -->
+      </div>
+      <div>
+        <table id="sortableTable">
+          <thead>
+            <tr>
+              <th>Año</th>
+              <th>Cuota</th>
+              <th>Importe</th>
+              <th>Fecha de Pago</th>
+              <th>Método</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-cobros"></tbody>
+        </table>
+        <button id="btnAgregar" type="button" style="display:none;"><img src="{% static 'shared/assets/add.svg' %}"
+            alt="">Agregar</button>
+      </div>
+
+    </div>
+
+
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
   </div>
 </div>
 
 <!-- 🔹 MODAL DE ALTA DE COBRO -->
 <div id="altaModal" class="modal">
   <div class="modal-content" style="display: flex; flex-direction: row;">
+<<<<<<< HEAD
     <span class="close">&times;</span>
+=======
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
 
     <!-- 🔹 Lado Izquierdo: Selección de Meses -->
     <div class="meses-container">
@@ -97,6 +152,7 @@
     <!-- 🔹 Lado Derecho: Detalle del Cobro -->
     <form id="cobroForm">
       {% csrf_token %}
+<<<<<<< HEAD
       <div class="detalle-container"
         style="display: flex; justify-content: space-between; flex-direction: column; height: 50%;">
 
@@ -106,6 +162,16 @@
           <!-- Método de Pago -->
           <div class="form-group">
             <label for="metodo_pago">Método de pago</label>
+=======
+      <div class="detalle-container">
+
+        <div>
+          <h2>Detalle</h2>
+
+          <!-- Método de Pago -->
+          <div class="form-group">
+            <h3>Método de pago</h3>
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
             <select id="metodo_pago" name="metodo_pago" required>
               <option value="">Seleccionar...</option>
               {% for metodo in metodos %}
@@ -116,13 +182,21 @@
 
           <!-- Campo de comprobante (solo transferencia) -->
           <div class="form-group hidden" id="campo-comprobante">
+<<<<<<< HEAD
             <label for="nro_comprobante">N° de comprobante</label>
+=======
+            <h3>N° de comprobante</h3>
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
             <input type="text" id="nro_comprobante" name="nro_comprobante" placeholder="Ej: 12345678" />
           </div>
 
           <!-- Campo de tarjeta (solo tarjeta) -->
           <div class="form-group hidden" id="campo-tarjeta">
+<<<<<<< HEAD
             <label for="tarjeta">Seleccionar tarjeta</label>
+=======
+            <h3>Seleccionar tarjeta</h3>
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
             <select id="tarjeta" name="tarjeta">
               <option value="">Seleccionar...</option>
               <option value="marcos_juarez">Marcos Juárez</option>
@@ -134,13 +208,18 @@
         <!-- Importe -->
         <div>
           <div class="form-group">
+<<<<<<< HEAD
             <label for="importe">Importe</label>
+=======
+            <h3 for="importe">Importe</h3>
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
             <input type="number" id="importe" name="importe" placeholder="$0.00" required />
           </div>
 
           <div class="form-group recargo">
             <label for="recargo">
               <input type="checkbox" id="recargo" name="recargo" />
+<<<<<<< HEAD
               Aplicar recargo
             </label>
           </div>
@@ -149,6 +228,21 @@
       <input type="hidden" id="mesesSeleccionados" name="mesesSeleccionados" />
 
       <button type="submit">Guardar</button>
+=======
+              Recargo
+            </label>
+          </div>
+        </div>
+        <div class="modal-buttons">
+            <button type="submit" class="btn-guardar">Guardar</button>
+            <button type="button" id="btnCancelar" class="btn-cancelar">Cancelar</button>
+        </div>
+      </div>
+      
+      <input type="hidden" id="mesesSeleccionados" name="mesesSeleccionados" />
+
+
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
     </form>
   </div>
 </div>
@@ -156,5 +250,9 @@
 
 {% block extra_js %}
 <script src="{% static 'shared/js/cobros.js' %}"></script>
+<<<<<<< HEAD
 {% endblock %}
 
+=======
+{% endblock %}
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53

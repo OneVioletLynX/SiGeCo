@@ -16,22 +16,16 @@ from .serializers import (
     MesPagoSerializer, MetodoPagoSerializer, PagoSerializer, PagoDetalleSerializer
 )
 
-
-def home_ctacte(request):
-    return render(request, "ctacte/home.html")
-
-
 @api_view(['GET'])
 def ctacte_api_root(request):
     return Response({
-        'meses': request.build_absolute_uri(reverse('ctacte:meses-list')),
-        'metodos-pagos': request.build_absolute_uri(reverse('ctacte:metodos-list')),
-        'pagos': request.build_absolute_uri(reverse('ctacte:pagos-list')),
-        'pagos-detalle': request.build_absolute_uri(reverse('ctacte:pagos-detalle-list')),
+        'meses': request.build_absolute_uri('meses/'),
+        'metodos-pagos': request.build_absolute_uri('metodos-pagos/'),
+        'pagos': request.build_absolute_uri('pagos/'),
+        'pagos-detalle': request.build_absolute_uri('pagos-detalle/'),
     })
 
-
-# -------- MesPago (sin cambios) --------
+# -------- MesPago --------
 class MesPagoListCreate(APIView):
     def get(self, request):
         objs = MesPago.objects.all().order_by('id_mes')
@@ -102,51 +96,16 @@ class MetodoPagoDetail(APIView):
 # -------- Pago --------
 class PagoListCreate(APIView):
     def get(self, request):
-        """
-        Lista de pagos con:
-            - búsqueda por ?q= (id_alumno.nombre o id_pago)
-            - paginación ?page= & ?page_size=
-            - orden por fecha desc (definido en Meta del modelo)
-        """
-        q = request.GET.get('q', '').strip()
-        page = int(request.GET.get('page', 1))
-        page_size = int(request.GET.get('page_size', 50))
-        qs = Pago.objects.select_related('id_alumno').all().order_by('-fecha_pago', '-id_pago')
+        alumno_id = request.query_params.get('alumno')
+        pagos = Pago.objects.all().order_by('-fecha_pago', '-id_pago')
+        if alumno_id:
+            pagos = pagos.filter(id_alumno_id=alumno_id)
 
-        if q:
-            # Si q es numérico, dejamos que busque por id_pago también
-            filters = Q(id_alumno__nombre__icontains=q) | Q(id_alumno__apellido__icontains=q)  # apellido si existe
-            if q.isdigit():
-                filters |= Q(id_pago=int(q))
-            qs = qs.filter(filters)
-
-        paginator = Paginator(qs, page_size)
-        try:
-            page_obj = paginator.page(page)
-        except EmptyPage:
-            page_obj = paginator.page(paginator.num_pages)
-
-        ser = PagoSerializer(page_obj.object_list, many=True, context={'request': request})
-        # respuesta estilo paginada
-        base_url = request.build_absolute_uri(request.path)
-        def page_url(p):
-            params = request.GET.copy()
-            params['page'] = p
-            return f"{base_url}?{params.urlencode()}"
-
-        result = {
-            'count': paginator.count,
-            'page': page,
-            'page_size': page_size,
-            'num_pages': paginator.num_pages,
-            'next': page_url(page + 1) if page < paginator.num_pages else None,
-            'previous': page_url(page - 1) if page > 1 else None,
-            'results': ser.data,
-        }
-        return Response(result)
+        ser = PagoSerializer(pagos, many=True)
+        return Response(ser.data)
 
     def post(self, request):
-        ser = PagoSerializer(data=request.data, context={'request': request})
+        ser = PagoSerializer(data=request.data)
         if ser.is_valid():
             ser.save()
             return Response(ser.data, status=status.HTTP_201_CREATED)
@@ -175,36 +134,9 @@ class PagoDetail(APIView):
 # -------- PagoDetalle --------
 class PagoDetalleListCreate(APIView):
     def get(self, request):
-        # base queryset
-        qs = PagoDetalle.objects.select_related('pago', 'mes').all().order_by('pago_id', 'mes_id')
-
-        # filtros por query params
-        pago = request.GET.get('pago')
-        if pago:
-            qs = qs.filter(pago_id=pago)
-
-        mes = request.GET.get('mes')
-        if mes:
-            qs = qs.filter(mes_id=mes)
-
-        # paginación
-        page = int(request.GET.get('page', 1))
-        page_size = int(request.GET.get('page_size', 100))
-        paginator = Paginator(qs, page_size)
-        try:
-            page_obj = paginator.page(page)
-        except EmptyPage:
-            page_obj = paginator.page(paginator.num_pages)
-
-        ser = PagoDetalleSerializer(page_obj.object_list, many=True)
-        result = {
-            'count': paginator.count,
-            'page': page,
-            'page_size': page_size,
-            'num_pages': paginator.num_pages,
-            'results': ser.data,
-        }
-        return Response(result)
+        objs = PagoDetalle.objects.all().order_by('id_detalle')
+        ser = PagoDetalleSerializer(objs, many=True)
+        return Response(ser.data)
 
     def post(self, request):
         ser = PagoDetalleSerializer(data=request.data)
@@ -324,14 +256,14 @@ class MesesPendientes(APIView):
         if ult_pago:
             anio_final = max(anio_ingreso, ult_pago + 1)
         else:
-            # Si nunca pagó nada → mostrar ingreso + 1
-            anio_final = anio_ingreso + 1
+            anio_final = anio_ingreso + 1  # Nunca pagó nada
 
         # -------------------------
-        # 3) MESES CATALOGO (1–12)
+        # 3) MESES CATALOGO (Sin inscripción)
         # -------------------------
         meses_catalogo = list(
-            MesPago.objects.all()
+            MesPago.objects
+            .exclude(descripcion__icontains="insc")  # ⛔ evitar inscripción aquí
             .order_by("id_mes")
             .values("id_mes", "descripcion")
         )
@@ -346,13 +278,29 @@ class MesesPendientes(APIView):
         )
 
         # -------------------------
-        # 5) ARMAR RESPUESTA POR AÑO
+        # 5) INSCRIPCIÓN PAGADA O NO
+        # -------------------------
+        inscripcion_pendiente = not PagoDetalle.objects.filter(
+            pago__id_alumno_id=alumno.id_alumno,
+            id_concepto_id=2   # concepto = INSCRIPCIÓN
+        ).exists()
+
+        # -------------------------
+        # 6) ARMAR RESPUESTA FINAL
         # -------------------------
         meses_por_anio = {}
 
         for anio in range(anio_ingreso, anio_final + 1):
             disponibles = []
 
+            # Agregar inscripción SOLO en el año de ingreso
+            if anio == anio_ingreso and inscripcion_pendiente:
+                disponibles.append({
+                    "id_mes": 1,  # ID real de Inscripción
+                    "descripcion": "Inscripción"
+                })
+
+            # Agregar meses comunes (enero–diciembre)
             for mes in meses_catalogo:
                 if (anio, mes["id_mes"]) not in pagados:
                     disponibles.append({
@@ -363,15 +311,7 @@ class MesesPendientes(APIView):
             meses_por_anio[str(anio)] = disponibles
 
         # -------------------------
-        # 6) INSCRIPCIÓN PENDIENTE
-        # -------------------------
-        inscripcion_pendiente = not PagoDetalle.objects.filter(
-            pago__id_alumno_id=alumno.id_alumno,
-            id_concepto_id=2   # concepto = INSCRIPCIÓN
-        ).exists()
-
-        # -------------------------
-        # 7) RESPUESTA FINAL
+        # 7) RESPUESTA
         # -------------------------
         return Response({
             "alumno": alumno.id_alumno,

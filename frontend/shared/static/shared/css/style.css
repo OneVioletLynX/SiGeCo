@@ -327,7 +327,11 @@ th.asc img {
     display: flex;
     flex-direction: column;
     gap: 10px;
+<<<<<<< HEAD
     margin-top: 72px;
+=======
+    margin-right: 10px;
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
 }
 
 .toolbar .action-button {
@@ -369,10 +373,18 @@ th.asc img {
 
 /* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ TOOLBAR ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 
+<<<<<<< HEAD
 tr.selected {
   background-color: #cce5ff;
 }
 /* --- Modal general --- */
+=======
+
+tr.selected {
+  background-color: #cce5ff;
+}
+
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
 .modal {
   display: none;
   position: fixed;
@@ -391,7 +403,11 @@ tr.selected {
   margin: 5% auto;
   padding: 30px;
   border-radius: 15px;
+<<<<<<< HEAD
   width: 50%;
+=======
+  width: fit-content;
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
   max-width: 900px;
   display: flex;
   flex-direction: column;
@@ -400,10 +416,25 @@ tr.selected {
 
 /* --- Encabezado del modal --- */
 .modal-content h2 {
+<<<<<<< HEAD
   text-align: center;
   margin-bottom: 20px;
 }
 
+=======
+  text-align: left;
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+
+/* =====================================
+MODAL
+===================================== */
+
+
+
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
 /* --- Formulario con dos columnas --- */
 #alumnoForm {
   display: grid;
@@ -435,8 +466,12 @@ tr.selected {
     width: 142px;
     padding: 5px;
     background: white;
+<<<<<<< HEAD
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
     border-radius: 12px;
+=======
+    border-radius: 10px;
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
     border: 1px solid #ccc;
     justify-content: space-between;
     align-items: center;
@@ -448,6 +483,7 @@ tr.selected {
     height: 40px;
 }
 
+<<<<<<< HEAD
 .form-control {
     width: 30%;
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
@@ -459,6 +495,13 @@ tr.selected {
     ease;
 }
 
+=======
+.filtro{
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
 /* --- Botón --- */
 #alumnoForm button {
   grid-column: span 2;
@@ -532,6 +575,7 @@ tr.selected {
 
 .search-container {
   position: relative;
+<<<<<<< HEAD
   width: 100%;
   max-width: 500px;
   margin-bottom: 15px;
@@ -577,6 +621,58 @@ tr.selected {
 .suggestions-box div:hover {
   background: #007bff;
   color: white;
+=======
+  max-width: 500px;
+  margin-bottom: 15px;
+    margin-left: 152px;
+}
+
+.form-control {
+    width: 100%;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 14px;
+   outline: none;
+}
+
+
+.suggestions-box {
+  position: absolute;
+  background: #fff;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  z-index: 10;
+  width: 100%;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.suggestions-box .suggestion-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f1f1;
+  transition: background 0.2s ease;
+  font-size: 15px;
+}
+
+.suggestions-box .suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestions-box .suggestion-item:hover {
+  background-color: var(--background-hover);
+}
+
+.suggestions-box .no-results {
+  padding: 10px 14px;
+  color: #777;
+  font-style: italic;
+  background: #fafafa;
+  border-radius: 6px;
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
 }
 
 
@@ -589,7 +685,11 @@ tr.selected {
   display: flex;
   align-items: flex-end;
   gap: 8px;
+<<<<<<< HEAD
   margin-bottom: 10px;
+=======
+  padding-left: 152px;
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
   
 }
 .filter-container label {
@@ -643,3 +743,23 @@ tr.selected {
   width: 100%;
   overflow-x: auto; /* permite desplazamiento horizontal si hay muchas columnas */
 }
+<<<<<<< HEAD
+=======
+
+
+button {
+  width: 142px;
+  padding: 10px;
+  background: white;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 12px;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-content: center;
+  cursor: pointer;
+  outline: none;
+}
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53

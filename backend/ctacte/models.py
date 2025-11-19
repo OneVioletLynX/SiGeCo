@@ -1,3 +1,49 @@
+# from django.db import models
+# from django.conf import settings
+# from alumnos.models import Alumno
+
+# class MesPago(models.Model):
+#     id_mes = models.AutoField(primary_key=True)
+#     descripcion = models.CharField(max_length=20, unique=True)
+
+#     def __str__(self):
+#         return self.descripcion
+
+
+# class MetodoPago(models.Model):
+#     id_metodo_pago = models.AutoField(primary_key=True)
+#     descripcion = models.CharField(max_length=20, unique=True)
+
+#     def __str__(self):
+#         return self.descripcion
+
+
+# class Pago(models.Model):
+#     id_pago = models.AutoField(primary_key=True)
+#     id_alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE)
+#     fecha_pago = models.DateTimeField()
+#     importe_total = models.DecimalField(max_digits=12, decimal_places=2)
+#     id_metodo_pago = models.ForeignKey(MetodoPago, on_delete=models.PROTECT)
+#     #id_usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+
+#     def __str__(self):
+#         return f'Pago {self.pago} - {self.alumno} - {self.importe_total}'
+
+
+
+# class PagoDetalle(models.Model):
+#     pago = models.ForeignKey(Pago, on_delete=models.CASCADE)
+#     mes = models.ForeignKey(MesPago, on_delete=models.CASCADE)
+#     importe = models.DecimalField(max_digits=12, decimal_places=2)
+
+#     pk = models.CompositePrimaryKey("pago", "mes")
+
+#     class Meta:
+#         db_table = 'pago_detalle'
+
+
+#NUEVO:
+
 from django.db import models
 from django.conf import settings
 # DESPUÉS (Correcto, ruta absoluta al backend)
@@ -52,8 +98,9 @@ class Pago(models.Model):
     id_metodo_pago = models.ForeignKey(
         MetodoPago,
         on_delete=models.PROTECT,
-        related_name='pago'
+        related_name='pagos'
     )
+    # id_usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True)
 
     class Meta:
         db_table = 'ctacte_pago' 
@@ -70,8 +117,7 @@ class PagoDetalle(models.Model):
     pago = models.ForeignKey(
         Pago,
         on_delete=models.CASCADE,
-        related_name='detalles',
-        primary_key=True
+        related_name='detalles'
     )
     mes = models.ForeignKey(
         MesPago,
@@ -81,7 +127,7 @@ class PagoDetalle(models.Model):
     importe = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     class Meta:
-        db_table = 'pago_detalle'
+        db_table = 'pago_detalle'   # ya tenías este nombre; ok si coincide con la BD
         unique_together = (('pago', 'mes'),)   # simula la PK compuesta
         verbose_name = "Detalle de Pago"
         verbose_name_plural = "Detalles de Pago"

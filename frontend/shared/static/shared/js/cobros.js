@@ -44,6 +44,26 @@
 
     let timeout = null;
 
+<<<<<<< HEAD
+=======
+    metodoSelect.addEventListener("change", function () {
+      const metodo = metodoSelect.value;
+
+      // Ocultar todo por defecto
+      campoComprobante.classList.add("hidden");
+      campoTarjeta.classList.add("hidden");
+
+      if (metodo === "2") {  // ejemplo: 2 = TRANSFERENCIA
+        campoComprobante.classList.remove("hidden");
+      }
+
+      if (metodo === "3") {  // ejemplo: 3 = TARJETA
+        campoTarjeta.classList.remove("hidden");
+      }
+    });
+
+
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
     // =====================================
     // BUSCADOR DE ALUMNOS
     // =====================================
@@ -54,8 +74,14 @@
         sugerencias.style.display = "none";
         return;
       }
+<<<<<<< HEAD
       clearTimeout(timeout);
       timeout = setTimeout(() => buscarAlumnos(q), 300);
+=======
+
+      buscarAlumnos(q);
+
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
     });
 
     async function buscarAlumnos(q) {
@@ -67,22 +93,41 @@
 
         sugerencias.innerHTML = "";
         if (!alumnos.length) {
+<<<<<<< HEAD
           sugerencias.innerHTML = "<li class='p-2 text-muted'>Sin resultados</li>";
+=======
+          sugerencias.innerHTML = "<div class='no-results'>Sin resultados</div>";
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
           sugerencias.style.display = "block";
           return;
         }
 
+<<<<<<< HEAD
         alumnos.forEach((al) => {
           const li = document.createElement("li");
           li.classList.add("list-group-item", "list-group-item-action");
           li.textContent = `${al.apellido}, ${al.nombre} (${al.dni})`;
           li.addEventListener("click", () => seleccionarAlumno(al));
           sugerencias.appendChild(li);
+=======
+
+        alumnos.forEach((al) => {
+        const item = document.createElement("div");
+        item.classList.add("suggestion-item");
+        item.textContent = `${al.apellido}, ${al.nombre}`;
+        item.addEventListener("click", () => seleccionarAlumno(al));
+        sugerencias.appendChild(item);
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
         });
 
         sugerencias.style.display = "block";
       } catch (err) {
+<<<<<<< HEAD
         console.error("Error buscando alumnos:", err);
+=======
+        sugerencias.innerHTML = "<div class='no-results'>Sin resultados</div>";
+
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
       }
     }
 
@@ -94,9 +139,22 @@
       alumnoSeleccionado = alumno;
       carreraSeleccionadaId = alumno.carrera_actual;
 
+<<<<<<< HEAD
       cargarPagos(alumno.id_alumno);
     }
 
+=======
+      // === MOSTRAR BOTÓN AGREGAR ===
+      const btnAgregar = document.getElementById("btnAgregar");
+      if (btnAgregar) {
+        btnAgregar.style.display = "block";
+      }
+
+      cargarPagos(alumno.id_alumno);
+    }
+
+
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
     // =====================================
     // CARGAR PAGOS EXISTENTES
     // =====================================
@@ -148,7 +206,24 @@
       modal.style.display = "block";
     });
 
+<<<<<<< HEAD
     btnCerrar.addEventListener("click", () => (modal.style.display = "none"));
+=======
+    // BOTÓN CANCELAR
+    document.getElementById("btnCancelar").addEventListener("click", () => {
+        modal.style.display = "none";
+        form.reset();
+    });
+
+    // Cerrar modal al hacer clic afuera
+    window.addEventListener("click", function(e) {
+        if (e.target === modal) {
+            modal.style.display = "none";
+            form.reset();
+        }
+    });
+
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
 
     // =====================================
     // CARGAR MESES DINÁMICOS
@@ -161,6 +236,7 @@
 
         contenedorMeses.innerHTML = `<h2>Meses</h2>`;
 
+<<<<<<< HEAD
         // INSCRIPCIÓN
         if (data.inscripcion_pendiente) {
           contenedorMeses.innerHTML += `
@@ -175,6 +251,8 @@
           `;
         }
 
+=======
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
         // MESES POR AÑO
         for (const anio in data.meses) {
           const meses = data.meses[anio];
@@ -186,6 +264,19 @@
           `;
 
           meses.forEach((m) => {
+<<<<<<< HEAD
+=======
+
+            const esInscripcion =
+              m.descripcion.toLowerCase() === "inscripcion" ||
+              m.id_mes == 1;
+
+            // ❌ Si es inscripción pero NO es el año de ingreso → NO mostrar
+            if (esInscripcion && parseInt(anio) !== data.anio_ingreso) {
+              return;
+            }
+
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
             html += `
               <div class="month" data-id_mes="${m.id_mes}" data-anio="${anio}">
                 <span>${m.descripcion}</span>
@@ -193,6 +284,12 @@
             `;
           });
 
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
           html += `</div></div>`;
           contenedorMeses.innerHTML += html;
         }
