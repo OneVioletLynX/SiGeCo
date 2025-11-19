@@ -8,9 +8,9 @@ from ctacte.views import MesPagoListCreate, MesPagoDetail, MetodoPagoListCreate,
 from django.urls import path, include
 from mensajes.views import MensajeListCreate, MensajeDetail
 from mensajes.views import MensajeListCreate 
+from reportes.views import seccion_contabilidad, seccion_alumnos, seccion_admin
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("api/ctacte/", include("ctacte.urls")),
 
     # Usuarios
     path('api/usuarios/', UsuarioListCreate.as_view(), name='usuarios-lista'),

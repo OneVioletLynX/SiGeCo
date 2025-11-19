@@ -1,7 +1,3 @@
-"""
-Django settings for backend project.
-"""
-
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +22,7 @@ INSTALLED_APPS = [
     'carreras',
     'valores',
     "corsheaders",
-    "alumnos.apps.AlumnosConfig"
+    "alumnos",
     'mensajes',
 ]
 
@@ -154,4 +150,3 @@ EMAIL_USE_TLS = True                     # habilitar TLS
 EMAIL_HOST_USER = 'toledoagus421@gmail.com'   # tu correo de Gmail
 EMAIL_HOST_PASSWORD = 'Quebrachocolorado1628'  # contraseña de Gmail o App Password
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-

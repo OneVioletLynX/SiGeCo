@@ -116,7 +116,7 @@ def get_charts_cont():
 
     for carrera in Carrera.objects.all():
         nombres_carreras.append(carrera.descripcion)
-        valor_cuota_obj = Valor.objects.filter(id_carrera=carrera).order_by("-modificacion").first()
+        valor_cuota_obj = Valor.objects.filter(id_carrera=carrera).order_by("-fecha_inicio").first()
         valor_cuota = valor_cuota_obj.importe if valor_cuota_obj else 0
         
         alumnos_en_carrera = CarreraCursada.objects.filter(carrera=carrera, id_estado__pk=1).select_related('alumno')
@@ -155,7 +155,7 @@ def get_charts_cont():
         total_dias = 0
         total_pagos = 0
         pagos_en_el_mes = PagoDetalle.objects.filter(pago__fecha_pago__year=anio_actual, pago__fecha_pago__month=mes_num)
- 
+
         for pago_detalle in pagos_en_el_mes:
             fecha_pago_real = pago_detalle.pago.fecha_pago.date() if isinstance(pago_detalle.pago.fecha_pago, datetime) else pago_detalle.pago.fecha_pago
             

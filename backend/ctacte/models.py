@@ -52,9 +52,8 @@ class Pago(models.Model):
     id_metodo_pago = models.ForeignKey(
         MetodoPago,
         on_delete=models.PROTECT,
-        related_name='pagos'
+        related_name='pago'
     )
-    # id_usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True)
 
     class Meta:
         db_table = 'ctacte_pago' 
@@ -71,7 +70,8 @@ class PagoDetalle(models.Model):
     pago = models.ForeignKey(
         Pago,
         on_delete=models.CASCADE,
-        related_name='detalles'
+        related_name='detalles',
+        primary_key=True
     )
     mes = models.ForeignKey(
         MesPago,
@@ -81,7 +81,7 @@ class PagoDetalle(models.Model):
     importe = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     class Meta:
-        db_table = 'pago_detalle'   # ya tenías este nombre; ok si coincide con la BD
+        db_table = 'pago_detalle'
         unique_together = (('pago', 'mes'),)   # simula la PK compuesta
         verbose_name = "Detalle de Pago"
         verbose_name_plural = "Detalles de Pago"

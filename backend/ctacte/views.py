@@ -104,9 +104,9 @@ class PagoListCreate(APIView):
     def get(self, request):
         """
         Lista de pagos con:
-         - búsqueda por ?q= (id_alumno.nombre o id_pago)
-         - paginación ?page= & ?page_size=
-         - orden por fecha desc (definido en Meta del modelo)
+            - búsqueda por ?q= (id_alumno.nombre o id_pago)
+            - paginación ?page= & ?page_size=
+            - orden por fecha desc (definido en Meta del modelo)
         """
         q = request.GET.get('q', '').strip()
         page = int(request.GET.get('page', 1))
@@ -231,10 +231,7 @@ class PagoDetalleDetail(APIView):
         obj = get_object_or_404(PagoDetalle, pk=pk)
         obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-<<<<<<< HEAD
-
-<<<<<<< HEAD
-=======
+    
 class RegistrarPago(APIView):
     def post(self, request):
         try:
@@ -383,6 +380,3 @@ class MesesPendientes(APIView):
             "inscripcion_pendiente": inscripcion_pendiente,
             "meses": meses_por_anio
         })
->>>>>>> 4dcba221
-=======
->>>>>>> 7ca754b71b238705b269cd13cac9e6eaa7f1e9f1
