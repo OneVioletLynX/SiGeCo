@@ -4,13 +4,16 @@ from django.shortcuts import get_object_or_404, render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.http import JsonResponse
+# from django.http import JsonResponse
 from django.utils import timezone
-from datetime import datetime
+# from datetime import datetime
 
 from .models import Mensaje
 from .serializers import MensajeSerializer
 from .mensajes_instantaneos import enviar_mensaje_instantaneo
+
+from alumnos.models import Alumno 
+from .enviar_whatsapp import enviar_whatsapp
 
 # -------------------------------
 # Vistas principales de la API
@@ -121,6 +124,73 @@ class MensajeListCreate(APIView):
         print("SERIALIZER NO ES VÁLIDO.")
         print("Errores:", serializer.errors)
         # --- FIN DEBUG ---
+        return Response(serializer.errors, status=400)
+    
+    def post(self, request):
+        print("\n--- INICIANDO POST /api/mensajes/ ---")
+        
+        serializer = MensajeSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            # 1. Guardamos el mensaje primero
+            fecha_envio_aware = serializer.validated_data.get('fecha_envio')
+            fecha_final = fecha_envio_aware if fecha_envio_aware else timezone.now()
+
+            mensaje = serializer.save(
+                fecha_envio=fecha_final,
+                estado_envio='pendiente'
+            )
+            
+            # 2. Lógica de envío INSTANTÁNEO (si no es programado)
+            if not mensaje.en_programado:
+                
+                # Obtenemos los IDs de los destinatarios (viene del JSON)
+                ids_alumnos = request.data.get('destino_deudores', [])
+                
+                # --- CASO CORREO ---
+                if mensaje.tipo_envio == 'correo':
+                    carreras_destino = request.data.get('destino_carrera', [])
+                    enviar_mensaje_instantaneo(
+                        mensaje,
+                        alumnos_destino=ids_alumnos,
+                        carreras_destino=carreras_destino
+                    )
+                    mensaje.estado_envio = 'enviado'
+                    mensaje.save()
+
+                # --- CASO WHATSAPP (NUEVO) ---
+                elif mensaje.tipo_envio == 'whatsapp':
+                    print(f"🚀 Iniciando envío masivo de WhatsApp a {len(ids_alumnos)} alumnos...")
+                    
+                    # Buscamos los objetos Alumno en la base de datos
+                    alumnos = Alumno.objects.filter(pk__in=ids_alumnos)
+                    
+                    enviados_ok = 0
+                    
+                    for alumno in alumnos:
+                        # IMPORTANTE: Revisa si tu campo se llama 'telefono', 'celular' o 'movil'
+                        # Aquí asumo que se llama 'telefono'.
+                        telefono = getattr(alumno, 'telefono', None) 
+                        
+                        if telefono:
+                            # Llamamos a nuestra función de utilidad
+                            exito = enviar_whatsapp(telefono, mensaje.descripcion)
+                            if exito:
+                                enviados_ok += 1
+                        else:
+                            print(f"⚠️ El alumno {alumno.id} no tiene teléfono registrado.")
+
+                    # Actualizamos el estado del mensaje
+                    if enviados_ok > 0:
+                        mensaje.estado_envio = 'enviado'
+                    else:
+                        mensaje.estado_envio = 'fallido' # Opcional, si ninguno salió
+                        
+                    mensaje.save()
+                    print(f"🏁 Fin envío WhatsApp. Total enviados: {enviados_ok}")
+
+            return Response(MensajeSerializer(mensaje).data, status=201)
+        
         return Response(serializer.errors, status=400)
 
 
