@@ -1,0 +1,115 @@
+{% extends "shared/base.html" %}
+{% load static %}
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+<div style="display: flex; gap: 25px;">
+    <div class="toolbar">
+        <div class="action-button">
+            <img src="{% static 'shared/assets/add.svg' %}" alt="">
+            <div class="text">Alta</div>
+        </div>
+        <div class="action-button">
+            <img src="{% static 'shared/assets/remove.svg' %}" alt="">
+            <div class="text">Baja</div>
+        </div>
+        <div class="action-button">
+            <img src="{% static 'shared/assets/edit.svg' %}" alt="">
+            <div class="text">Modificacion</div>
+        </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 25px;">
+        <table id="sortableTable">
+            <thead>
+                <tr>
+                    <th>
+                        Nombre
+                        <img src="{% static 'shared/assets/arrow_downward.svg' %}" alt="↓" />
+                    </th>
+                    <th>
+                        Alumnos
+                        <img src="{% static 'shared/assets/arrow_downward.svg' %}" alt="↓" />
+                    </th>
+                    <th>
+                        Activos
+                        <img src="{% static 'shared/assets/arrow_downward.svg' %}" alt="↓" />
+                    </th>
+                    <th>
+                        Finalizados
+                        <img src="{% static 'shared/assets/arrow_downward.svg' %}" alt="↓" />
+                    </th>
+                    <th>
+                        Inactivos
+                        <img src="{% static 'shared/assets/arrow_downward.svg' %}" alt="↓" />
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Contador Publico</td>
+                    <td>45</td>
+                    <td>14</td>
+                    <td>23</td>
+                    <td>23</td>
+                </tr>
+                <tr>
+                    <td>Agronomia</td>
+                    <td>12</td>
+                    <td>15</td>
+                    <td>45</td>
+                    <td>45</td>
+                </tr>
+                <tr>
+                    <td>Psicologia</td>
+                    <td>65</td>
+                    <td>47</td>
+                    <td>56</td>
+                    <td>56</td>
+                </tr>
+                <tr>
+                    <td>Kinesiologia y Fisiatria</td>
+                    <td>88</td>
+                    <td>36</td>
+                    <td>23</td>
+                    <td>23</td>
+                </tr>
+                <tr>
+                    <td>Tecnicatura Programación</td>
+                    <td>63</td>
+                    <td>58</td>
+                    <td>23</td>
+                    <td>23</td>
+                </tr>
+            </tbody>
+        </table>
+        <table>
+            <thead>
+                <tr>
+                    <th>
+                        Descripcion
+                    </th>
+                    <th>
+                        Valor
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Importe Cuota</td>
+                    <td>$140.000</td>
+                </tr>
+                <tr>
+                    <td>Inscripcion</td>
+                    <td>$100.000</td>
+                </tr>
+                <tr>
+                    <td>Estado</td>
+                    <td>Activa</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

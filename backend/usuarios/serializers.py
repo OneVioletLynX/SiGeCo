@@ -1,6 +1,8 @@
 from rest_framework import serializers # Importa los serializers de DRF
-from django.contrib.auth.hashers import make_password # Importa función para hashear contraseñas
+from django.contrib.auth.hashers import make_password, check_password # Importa función para hashear contraseñas
 from .models import Usuario # Importa tu modelo Usuario
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 
 class UsuarioSerializer(serializers.ModelSerializer): # Creamos un serializer para el modelo Usuario
     password = serializers.CharField(write_only=True, required=True)
@@ -32,3 +34,31 @@ class UsuarioSerializer(serializers.ModelSerializer): # Creamos un serializer pa
             setattr(instance, attr, value)
         instance.save()
         return instance
+
+class UsuarioTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """
+    Serializer personalizado para JWT.
+    Permite iniciar sesión usando el email en lugar de username.
+    """
+    username_field = "email" # Le decimos que el "username" en nuestro modelo es el email
+    def validate(self, attrs):
+        email = attrs.get("email")
+        password = attrs.get("password")
+        try:
+            usuario = Usuario.objects.get(email=email)
+        except Usuario.DoesNotExist:
+            raise serializers.ValidationError("Credenciales inválidas")
+        # Verificamos la contraseña hasheada
+        if not check_password(password, usuario.password_hash):
+            raise serializers.ValidationError("Credenciales inválidas")
+        # Generamos tokens JWT
+        refresh = RefreshToken.for_user(usuario)
+        return {
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+            "usuario": {
+                "id": usuario.id,
+                "nombre": usuario.nombre,
+                "correo": usuario.email,
+                }
+            }
