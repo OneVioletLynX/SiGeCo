@@ -117,7 +117,7 @@
       // === MOSTRAR BOTÓN AGREGAR ===
       const btnAgregar = document.getElementById("btnAgregar");
       if (btnAgregar) {
-        btnAgregar.style.display = "block";
+        btnAgregar.style.display = "flex";
       }
 
       cargarPagos(alumno.id_alumno);

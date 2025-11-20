@@ -133,7 +133,6 @@
 /* Checkbox de recargo */
 .recargo {
   display: flex;
-  align-items: center;
   gap: 6px;
   font-size: 14px;
 }

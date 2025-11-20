@@ -666,4 +666,15 @@ button {
   align-content: center;
   cursor: pointer;
   outline: none;
+  border: none;
+  transition: background-color 0.2s ease;
+}
+
+.verde {
+  box-shadow: inset 0 0 0 4px #A5E3C6; 
+
+}
+
+.verde:hover {
+  background-color: #A5E3C6;
 }
