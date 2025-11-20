@@ -9,6 +9,8 @@ from carreras.views import (
     EstadoListCreate, EstadoDetail, 
     CarreraCursadasListCreate, CarreraCursadasDetail
 )
+
+from carreras.views import CarreraListCreate, CarreraDetail, EstadoListCreate, EstadoDetail, CarreraCursadasListCreate, CarreraCursadasDetail
 from valores.views import ValoresListCreate, ValoresDetail, ConceptoListCreate, ConceptoDetail
 from ctacte.views import (
     MesPagoListCreate, MesPagoDetail, 

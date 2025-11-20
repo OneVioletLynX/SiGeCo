@@ -1,4 +1,3 @@
-# alumnos/apps.py
 from django.apps import AppConfig
 
 class AlumnosConfig(AppConfig):
@@ -6,4 +5,4 @@ class AlumnosConfig(AppConfig):
     name = 'alumnos'
 
     def ready(self):
-        import alumnos.signals  # carga la señal
+        import alumnos.signals

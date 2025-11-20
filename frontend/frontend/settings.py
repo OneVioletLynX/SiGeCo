@@ -20,9 +20,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
-    'alumnos',
+    'alumnos.apps.AlumnosConfig',
     'usuarios',
     'carreras',
+    'cobros',
     'shared'
 ]
 
