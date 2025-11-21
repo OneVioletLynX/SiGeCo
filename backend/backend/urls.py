@@ -1,24 +1,30 @@
 from django.contrib import admin 
 from django.urls import path, include
 
-# Importaciones de Vistas (Organizadas por app)
+# --- IMPORTACIONES ORGANIZADAS ---
+# Usuarios
 from usuarios.views import UsuarioListCreate, UsuarioDetail, LoginView
+# Alumnos
 from alumnos.views import AlumnoListCreate, AlumnoDetail
+# Carreras
 from carreras.views import (
     CarreraListCreate, CarreraDetail, 
     EstadoListCreate, EstadoDetail, 
     CarreraCursadasListCreate, CarreraCursadasDetail
 )
-
-from carreras.views import CarreraListCreate, CarreraDetail, EstadoListCreate, EstadoDetail, CarreraCursadasListCreate, CarreraCursadasDetail
+# Valores
 from valores.views import ValoresListCreate, ValoresDetail, ConceptoListCreate, ConceptoDetail
+# Cta Cte (Pagos)
 from ctacte.views import (
     MesPagoListCreate, MesPagoDetail, 
     MetodoPagoListCreate, MetodoPagoDetail, 
     PagoListCreate, PagoDetail, 
     PagoDetalleListCreate, PagoDetalleDetail
 )
+# Mensajes
 from mensajes.views import MensajeListCreate, MensajeDetail
+# Reportes (Vistas de función)
+from reportes.views import seccion_contabilidad, seccion_alumnos, seccion_admin
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -71,4 +77,11 @@ urlpatterns = [
 
     # Frontend / Template URL include para CtaCte
     path('ctacte/', include('ctacte.urls', namespace='ctacte')),
+
+    # --- REPORTES / SECCIONES ---
+    # Estas líneas estaban fuera de la lista (después del corchete), lo que causaba error.
+    path('api/seccion/contabilidad/', seccion_contabilidad, name='seccion_contabilidad'), 
+    path('api/seccion/alumnos/', seccion_alumnos, name='seccion_alumnos'), 
+    path('api/seccion/administrativo/', seccion_admin, name='seccion_admin'), 
+
 ]
