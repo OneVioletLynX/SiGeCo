@@ -30,7 +30,11 @@ class Alumno(models.Model):
     inscripcion = models.DateField(auto_now_add=True) #Año Ingreso, tiene que ser INT
     fecha_inscripcion = models.DateTimeField(blank=True, null=True)
     
-    anio_ingreso = models.PositiveIntegerField(blank=True, null=True, validators=[MinValueValidator(1900), MaxValueValidator(2100)])
+    anio_ingreso = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2100)],
+    )
 
     class Meta:
         ordering = ['apellido', 'nombre']

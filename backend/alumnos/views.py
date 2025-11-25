@@ -22,8 +22,6 @@ class AlumnoListCreate(APIView):
         # 🔹 Filtro por estado
         if estado and estado != "all":
             alumnos = alumnos.filter(carreras_cursadas__id_estado_id=estado)
-        else:
-            alumnos = alumnos.filter(carreras_cursadas__id_estado_id=1)  # Activos por defecto
 
         # 🔹 Filtro por carrera
         if carrera and carrera != "all":

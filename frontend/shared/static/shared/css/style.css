@@ -1,16 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap');
 
 :root {
-    --background-color: #fff;
+    --background-color-body: #ebf3fd;
+    --background-color: #ffffff;
     --text-title-color: #053D4E;
     --text-color: #323638;
     --menu-color: #707780;
     --text-selected-color: #355CC0;
     --background-selected: #EBF0FF;
-    --background-hover: #AFD3FF;
+    --background-hover: #e1e9fd;
     --border-color: #E6E9ED;
+    --verde:#aeeca8;
 }
-
 /* ==== Reset ==== */
 * {
     margin: 0;
@@ -21,8 +22,7 @@
 
 body {
     width: 100%;
-    height: 100vh;
-    background-color: var(--background-color);
+    background-color: var(--background-color-body);
     overflow-x: hidden;
 }
 
@@ -285,7 +285,6 @@ th {
     font-weight: 600;
     font-size: 14px;
     color: #667085;
-    border-bottom: 1px solid #e5e7eb;
     cursor: pointer;
     user-select: none;
 }
@@ -294,8 +293,12 @@ td {
     padding: 12px 16px;
     font-size: 14px;
     color: #667085;
-    border-bottom: 3px solid #f3f4f6;
 }
+
+table td, table th {
+  border: none;  
+}
+
 
 tr:last-child td {
     border-bottom: none;
@@ -596,7 +599,6 @@ MODAL
   display: flex;
   align-items: flex-end;
   gap: 8px;
-  padding-left: 152px;
   
 }
 .filter-container label {
@@ -605,41 +607,41 @@ MODAL
 
 /* --- Tabla de alumnos --- */
 
-#tabla-alumnos {
+#tablaAlumnos {
   width: 100%;
   border-collapse: collapse;
   font-size: 15px;
   text-align: left;
 }
 
-#tabla-alumnos th, #tabla-alumnos td {
-  border: 1px solid #ddd;
+#tablaAlumnos th, #tablaAlumnos td {
   padding: 8px 10px;
   white-space: nowrap; /* evita que corte palabras */
 }
 
-#tabla-alumnos thead {
+#tablaAlumnos thead {
   background-color: #f4f4f4;
   position: sticky;
   top: 0; /* fija el encabezado si hay scroll */
   z-index: 2;
 }
 
-#tabla-alumnos tbody tr:nth-child(even) {
+#tablaAlumnos tbody tr:nth-child(even) {
   background-color: #fafafa;
 }
 
-#tabla-alumnos tbody tr:hover {
-  background-color: #f1f1f1;
+#tablaAlumnos tbody tr:hover {
+  background-color: #dceafc;
 }
 
-#tabla-alumnos tbody {
-  display: block;
-  max-height: 500px; /* 👈 ajustá esta altura a tu gusto */
-  overflow-y: auto;  /* hace scroll solo dentro del cuerpo */
+#tablaAlumnos tbody {
+  display: table-row-group;
+  max-height: none;
+  overflow-y: visible;
 }
 
-#tabla-alumnos thead, #tabla-alumnos tbody tr {
+
+#tablaAlumnos thead, #tablaAlumnos tbody tr {
   display: table;
   width: 100%;
   table-layout: fixed;
@@ -647,12 +649,14 @@ MODAL
 
 /* --- contenedor general de la tabla --- */
 .table-wrapper {
-  width: 100%;
-  overflow-x: auto; /* permite desplazamiento horizontal si hay muchas columnas */
+  display: flex;
+  flex-direction: column;
+  width: 70%;
+  gap: 15px;
 }
 
 
-button {
+.button-predeterminado {
   width: 142px;
   padding: 10px;
   background: white;
@@ -677,4 +681,84 @@ button {
 
 .verde:hover {
   background-color: #A5E3C6;
+}
+
+.ulpgcds-pager ul {
+  list-style: none;
+  display: flex;
+  gap: 12px;
+  padding: 0;
+  justify-content: center;
+  align-items: center;
+}
+
+.ulpgcds-pager__item a {
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  color: #333;
+  font-size: 14px;
+}
+
+.ulpgcds-pager__item--is-active a {
+  background: #006bb6;
+  color: white !important;
+}
+
+
+/* Deshabilitados */
+.pagination__link.disabled {
+  color: #bbb;
+  pointer-events: none;
+}
+
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  width: max-content;
+}
+
+.chip .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.acciones {
+  display: flex;
+  gap: 8px;
+}
+
+.acciones button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+
+#btnAltaAlumno {
+  background-color: var(--verde);
+}
+
+.pager-icon {
+  width: 18px;
+  height: 18px;
+  opacity: 0.7;
+}
+
+.pagination__link:hover .pager-icon {
+  opacity: 1;
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end; /* 🔥 empuja los botones a la derecha */
+  gap: 8px;
 }
