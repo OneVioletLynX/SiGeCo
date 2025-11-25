@@ -13,6 +13,222 @@ document.addEventListener("DOMContentLoaded", () => {
   let filtroCarrera = "all";
   let filtroBusqueda = "";
 
+  // -------------------------------------------------------------------
+  //  VALIDACIONES DEL FORMULARIO DE ALUMNOS (errores debajo de cada input)
+  // -------------------------------------------------------------------
+
+  function limpiarErroresAlumno() {
+    document.querySelectorAll(".error-msg").forEach(e => (e.innerText = ""));
+  }
+
+  function validarFormularioAlumno() {
+    limpiarErroresAlumno();
+    let valido = true;
+
+    const form = document.getElementById("alumnoForm");
+
+    const nombre = form.nombre;
+    const apellido = form.apellido;
+    const dni = form.dni;
+    const email = form.email;
+    const telefono = form.telefono;
+    const fechaNac = form.fecha_nacimiento;
+
+    // Helper para mostrar errores debajo del input
+    const setError = (name, msg) => {
+      const span = document.getElementById("error-" + name);
+      if (span) span.innerText = msg;
+      valido = false;
+    };
+
+    // --- Validaciones ---
+    if (!nombre.value.trim()) {
+      setError("nombre", "El nombre es obligatorio.");
+    }
+
+    if (!apellido.value.trim()) {
+      setError("apellido", "El apellido es obligatorio.");
+    }
+
+    if (!/^[0-9]{7,8}$/.test(dni.value.trim())) {
+      setError("dni", "Debe tener 7 u 8 números.");
+    }
+
+    if (email.value && !/^\S+@\S+\.\S+$/.test(email.value)) {
+      setError("email", "Correo electrónico inválido.");
+    }
+
+    if (!/^[0-9]{6,}$/.test(telefono.value.trim())) {
+      setError("telefono", "El teléfono debe tener al menos 6 números.");
+    }
+
+    if (!fechaNac.value) {
+      setError("fecha_nacimiento", "La fecha es obligatoria.");
+    } else {
+      const hoy = new Date();
+      const f = new Date(fechaNac.value);
+
+      if (f > hoy) {
+        setError("fecha_nacimiento", "No puede ser futura.");
+      }
+
+      const edad = hoy.getFullYear() - f.getFullYear();
+      if (edad < 10) {
+        setError("fecha_nacimiento", "Debe tener más de 10 años.");
+      }
+    }
+
+    return valido;
+  }
+
+  // ======================================================================
+  // MULTI-STEP PRO + VALIDACIÓN POR PASO
+  // ======================================================================
+
+  let currentStep = 0;
+  const steps = document.querySelectorAll(".form-step");
+  const stepIndicators = document.querySelectorAll(".step");
+  const nextBtn = document.getElementById("nextBtn");
+  const prevBtn = document.getElementById("prevBtn");
+  const submitBtn = document.getElementById("submitBtn");
+  const previewContainer = document.getElementById("previewDatos");
+
+  function showStep(index) {
+      steps.forEach((s, i) => {
+          s.classList.toggle("active", i === index);
+      });
+
+      stepIndicators.forEach((step, i) => {
+          step.classList.toggle("active", i <= index);
+      });
+
+      prevBtn.style.display = index === 0 ? "none" : "inline-block";
+      nextBtn.style.display = index === steps.length - 1 ? "none" : "inline-block";
+      submitBtn.style.display = index === steps.length - 1 ? "inline-block" : "none";
+
+      currentStep = index;
+
+      if (currentStep === steps.length - 1) {
+          cargarVistaPrevia();
+      }
+  }
+
+  prevBtn.addEventListener("click", () => {
+      if (currentStep > 0) showStep(currentStep - 1);
+  });
+
+  nextBtn.addEventListener("click", () => {
+      if (validarPasoActual()) {
+          showStep(currentStep + 1);
+      }
+  });
+
+  // =====================================================
+  //  VALIDAR POR PASO
+  // =====================================================
+  function validarPasoActual() {
+      limpiarErroresAlumno();
+
+      const form = document.getElementById("alumnoForm");
+      let valido = true;
+
+      // Helper interno
+      const setError = (name, msg) => {
+          const span = document.getElementById("error-" + name);
+          if (span) span.innerText = msg;
+          valido = false;
+      };
+
+      // --------------------- PASO 1 ---------------------
+      if (currentStep === 0) {
+          if (!form.nombre.value.trim()) setError("nombre", "Ingrese un nombre.");
+          if (!form.apellido.value.trim()) setError("apellido", "Ingrese un apellido.");
+
+          if (!/^[0-9]{7,8}$/.test(form.dni.value.trim()))
+              setError("dni", "Debe tener 7 u 8 números.");
+
+          if (!form.fecha_nacimiento.value)
+              setError("fecha_nacimiento", "Ingrese una fecha.");
+      }
+
+      // --------------------- PASO 2 ---------------------
+      if (currentStep === 1) {
+          if (!/^[0-9]{6,}$/.test(form.telefono.value.trim()))
+              setError("telefono", "Teléfono inválido.");
+
+          if (form.email.value && !/^\S+@\S+\.\S+$/.test(form.email.value))
+              setError("email", "Correo inválido.");
+      }
+
+      // --------------------- PASO 3 ---------------------
+      if (currentStep === 2) {
+          if (!form.id_carrera.value)
+              setError("id_carrera", "Seleccione una carrera.");
+
+          if (!form.id_estado.value)
+              setError("id_estado", "Seleccione un estado.");
+      }
+
+      return valido;
+  }
+
+  // =====================================================
+  //  VISTA PREVIA FINAL (PASO 4)
+  // =====================================================
+  function cargarVistaPrevia() {
+      const data = Object.fromEntries(new FormData(document.getElementById("alumnoForm")));
+
+      let html = `
+          <strong>Nombre:</strong> ${data.nombre}<br>
+          <strong>Apellido:</strong> ${data.apellido}<br>
+          <strong>DNI:</strong> ${data.dni}<br>
+          <strong>Fecha nacimiento:</strong> ${data.fecha_nacimiento}<br><br>
+
+          <strong>Dirección:</strong> ${data.direccion} ${data.numero}<br>
+          <strong>Teléfono:</strong> (${data.prefijo}) ${data.telefono}<br>
+          <strong>Email:</strong> ${data.email}<br><br>
+
+          <strong>Carrera:</strong> ${document.querySelector("#id_carrera option:checked")?.textContent}<br>
+          <strong>Estado:</strong> ${document.querySelector("#id_estado option:checked")?.textContent}<br>
+          <strong>Año Ingreso:</strong> ${data.anio_ingreso}<br>
+          <strong>Legajo:</strong> ${data.legajo}<br>
+      `;
+
+      previewContainer.innerHTML = html;
+  }
+
+  // =====================================================
+  //  INICIALIZAR MULTISTEP AL ABRIR MODAL
+  // =====================================================
+  function resetMultiStep() {
+      currentStep = 0;
+      showStep(0);
+  }
+
+  // Integramos con abrir modal
+  const originalBtnAlta = document.getElementById("btnAltaAlumno");
+  originalBtnAlta.addEventListener("click", async () => {
+      form.reset();
+      delete form.dataset.editingId;
+
+      await Promise.all([cargarCarrerasForm(), cargarEstadosForm()]);
+
+      setReadOnlyMode(false);
+
+      modal.style.display = "block";
+
+      // 👇 ESTE ES EL FIX
+      setTimeout(resetMultiStep, 0);
+  });
+
+  // Integramos con editar
+  async function abrirModalEditar(id) {
+      // tu función original sigue intacta
+      // pero agregamos esto al final:
+      resetMultiStep();
+  }
+
+
   // ==========================================================
   //  MODO LECTURA / EDICIÓN
   // ==========================================================
@@ -117,8 +333,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function darDeBajaAlumno(id) {
-
-    if (!confirm("¿Deseás dar de baja al alumno seleccionado?")) return;
+    if (!id) return;
 
     try {
       const response = await fetch(`http://localhost:8000/api/alumnos/${id}/`, {
@@ -128,15 +343,15 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (response.ok) {
-        alert("Alumno dado de baja correctamente ✅");
+        console.log("Alumno dado de baja correctamente");
         await cargarAlumnos();
       } else {
-        alert("Error al dar de baja el alumno.");
+        const errTxt = await response.text();
+        console.error("Error al dar de baja el alumno:", errTxt);
       }
 
     } catch (error) {
-      console.error(error);
-      alert("Error de conexión con el backend.");
+      console.error("Error de conexión con el backend al dar de baja:", error);
     }
   }
 
@@ -215,7 +430,6 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.href = "#";
       btn.classList.add("pagination__link");
 
-      // 🔥 ICONOS SVG
       if (label === "prev") {
         btn.innerHTML = `<img src="/static/shared/assets/arrow_left.svg" class="pager-icon">`;
       } 
@@ -249,9 +463,8 @@ document.addEventListener("DOMContentLoaded", () => {
     addBtn("next", paginaActual + 1, paginaActual === total);
   }
 
-
   // ==========================================================
-  //  BOTONES DE CADA FILA (VER / EDITAR / BAJA)
+  //  BOTONES DE CADA FILA (EDITAR / BAJA)
   // ==========================================================
   document.addEventListener("click", async e => {
 
@@ -278,16 +491,12 @@ document.addEventListener("DOMContentLoaded", () => {
     form.reset();
     delete form.dataset.editingId;
 
-    // habilitamos edición
     setReadOnlyMode(false);
 
-    // cargar selects
     await Promise.all([cargarCarrerasForm(), cargarEstadosForm()]);
 
-    // título
     document.getElementById("modalTitle").innerText = "Nuevo Alumno";
 
-    // abrir modal
     modal.style.display = "block";
   });
 
@@ -314,7 +523,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ==========================================================
-  //  CARGAR SELECTS (FORMULARIO)
+  //  CARGAR SELECTS (FORMULARIO Y FILTROS)
   // ==========================================================
   async function cargarCarreras() {
     const sel = document.getElementById("filtroCarrera");
@@ -337,7 +546,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function cargarCarrerasForm() {
     const sel = document.getElementById("id_carrera");
-    sel.innerHTML = `<option value="" disabled selected>Seleccione</option>`;
+    sel.innerHTML = `<option value="" disabled selected>Seleccione una carrera</option>`;
     const res = await fetch("http://localhost:8000/api/carreras/");
     const carreras = await res.json();
     carreras.forEach(c => {
@@ -347,7 +556,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function cargarEstadosForm() {
     const sel = document.getElementById("id_estado");
-    sel.innerHTML = `<option value="" disabled selected>Seleccione</option>`;
+    sel.innerHTML = `<option value="" disabled selected>Seleccione un estado</option>`;
     const res = await fetch("http://localhost:8000/api/estados/");
     const estados = await res.json();
     estados.forEach(e => {
@@ -363,10 +572,25 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isSubmitting) return;
     isSubmitting = true;
 
+    // Validaciones front
+    const esValido = validarFormularioAlumno();
+
+    // Validar selects Carrera / Estado sin alerts
     const data = Object.fromEntries(new FormData(form));
+    let selectsValidos = true;
 
     if (!data.id_carrera) {
-      alert("Debes seleccionar una carrera antes de guardar.");
+      const spanCarrera = document.getElementById("error-id_carrera");
+      if (spanCarrera) spanCarrera.innerText = "Seleccione una carrera.";
+      selectsValidos = false;
+    }
+    if (!data.id_estado) {
+      const spanEstado = document.getElementById("error-id_estado");
+      if (spanEstado) spanEstado.innerText = "Seleccione un estado.";
+      selectsValidos = false;
+    }
+
+    if (!esValido || !selectsValidos) {
       isSubmitting = false;
       return;
     }
@@ -378,6 +602,8 @@ document.addEventListener("DOMContentLoaded", () => {
       : `http://localhost:8000/api/alumnos/`;
 
     try {
+      console.log("Datos enviados:", data);
+
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -385,28 +611,28 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (response.ok) {
-        alert(id ? "Alumno actualizado" : "Alumno creado");
         form.reset();
         delete form.dataset.editingId;
         modal.style.display = "none";
         await cargarAlumnos();
+        console.log(id ? "Alumno actualizado" : "Alumno creado");
       } else {
-        const err = await response.json();
-        alert("Error al guardar: " + JSON.stringify(err));
+        const err = await response.json().catch(() => null);
+        console.error("Error al guardar:", err || "(sin detalle JSON)");
+        // Si quisieras, acá podrías mapear errores del backend a los spans
       }
 
     } catch (error) {
-      console.error(error);
-      alert("Error de conexión");
+      console.error("Error de conexión con el backend:", error);
+    } finally {
+      isSubmitting = false;
     }
-
-    isSubmitting = false;
   });
 
   // ==========================================================
   //  MODAL
   // ==========================================================
-  closeBtn.onclick = () => modal.style.display = "none";
+  closeBtn.onclick = () => (modal.style.display = "none");
   window.onclick = e => {
     if (e.target === modal) modal.style.display = "none";
   };

@@ -77,32 +77,32 @@
         <span class="close">&times;</span>
         <h2 id="modalCarreraTitle">Nueva Carrera</h2>
 
-        <form id="formCarrera">
+        <form id="formCarrera" class="form-grid">
             {% csrf_token %}
             <input type="hidden" id="carreraId" />
 
-            <div class="mb-3">
-                <label class="form-label fw-bold">Nombre de la carrera</label>
-                <input type="text" name="descripcion" id="descripcion" class="form-control" required />
-            </div>
-            <div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Valor de inscripción</label>
-                    <input type="number" name="inscripcion" id="inscripcion" class="form-control" step="0.01"
-                        required />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Valor de cuota</label>
-                    <input type="number" name="cuota" id="cuota" class="form-control" step="0.01" required />
-                </div>
+            <div class="form-group">
+                <label class="form-label">Nombre de la carrera</label>
+                <input type="text" name="descripcion" id="descripcion" class="form-input" required />
             </div>
 
+            <div class="form-group">
+                <label class="form-label">Valor de inscripción</label>
+                <input type="number" name="inscripcion" id="inscripcion" class="form-input" step="0.01" required />
+            </div>
 
-            <button type="submit" id="btnGuardarCarrera" class="btn btn-success">
-                Guardar
-            </button>
+            <div class="form-group">
+                <label class="form-label">Valor de cuota</label>
+                <input type="number" name="cuota" id="cuota" class="form-input" step="0.01" required />
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" id="btnGuardarCarrera" class="btn-save">
+                    Guardar
+                </button>
+            </div>
         </form>
+
     </div>
 </div>
 {% endblock %}

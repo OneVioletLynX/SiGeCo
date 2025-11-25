@@ -1,8 +1,27 @@
+/* GRID DEL FORM */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px 28px;
+  margin-top: 20px;
+}
 
-.mb-3 {
-    display: flex;
-<<<<<<< HEAD
+/* FORM GROUP */
+.form-group {
+  display: flex;
+  flex-direction: column;
 }
-=======
+
+/* LABELS */
+.form-label {
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #333;
+  font-size: 14px;
 }
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
+
+/* FILA ENTERA PARA EL NOMBRE DE LA CARRERA */
+#descripcion {
+  grid-column: span 2;
+}
+
