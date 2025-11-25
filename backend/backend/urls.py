@@ -1,7 +1,7 @@
-from django.contrib import admin 
+from django.contrib import admin
 from django.urls import path, include
 
-# --- IMPORTACIONES ORGANIZADAS ---
+# --- IMPORTACIONES ---
 # Usuarios
 from usuarios.views import UsuarioListCreate, UsuarioDetail, LoginView
 # Alumnos
@@ -13,7 +13,11 @@ from carreras.views import (
     CarreraCursadasListCreate, CarreraCursadasDetail
 )
 # Valores
-from valores.views import ValoresListCreate, ValoresDetail, ConceptoListCreate, ConceptoDetail
+from valores.views import (
+    ValoresListCreate, ValoresDetail, 
+    ConceptoListCreate, ConceptoDetail, 
+    ValorVigenteView
+)
 # Cta Cte (Pagos)
 from ctacte.views import (
     MesPagoListCreate, MesPagoDetail, 
@@ -23,8 +27,9 @@ from ctacte.views import (
 )
 # Mensajes
 from mensajes.views import MensajeListCreate, MensajeDetail
-# Reportes (Vistas de función)
+# Reportes
 from reportes.views import seccion_contabilidad, seccion_alumnos, seccion_admin
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -51,6 +56,7 @@ urlpatterns = [
     # --- VALORES Y CONCEPTOS ---
     path('api/valores/', ValoresListCreate.as_view(), name='valores-lista'),
     path('api/valores/<int:pk>/', ValoresDetail.as_view(), name='valor-detalle'),
+    path('api/valores/vigente/', ValorVigenteView.as_view(), name='valor-vigente'),
     
     path('api/concepto/', ConceptoListCreate.as_view(), name='concepto-lista'),
     path('api/concepto/<int:pk>/', ConceptoDetail.as_view(), name='concepto-detalle'),
@@ -63,6 +69,7 @@ urlpatterns = [
     path('mensajes/', include('mensajes.urls', namespace='mensajes')),
 
     # --- CTA CTE (PAGOS) ---
+    # API Endpoints explícitos
     path('api/mes-pago/', MesPagoListCreate.as_view(), name='mes-pago-lista'),
     path('api/mes-pago/<int:pk>/', MesPagoDetail.as_view(), name='mes-pago-detalle'),
 
@@ -75,13 +82,15 @@ urlpatterns = [
     path('api/pago-detalle/', PagoDetalleListCreate.as_view(), name='pago-detalle-lista'),
     path('api/pago-detalle/<int:pago_id>/<int:mes_id>/', PagoDetalleDetail.as_view(), name='pago-detalle-detalle'),
 
+    # OJO: He comentado esta línea de abajo porque ya estás definiendo las rutas API una por una arriba.
+    # Si 'ctacte.urls' también define rutas API, tendrías rutas duplicadas o confusas.
+    # path("api/ctacte/", include("ctacte.urls")), 
+
     # Frontend / Template URL include para CtaCte
     path('ctacte/', include('ctacte.urls', namespace='ctacte')),
 
     # --- REPORTES / SECCIONES ---
-    # Estas líneas estaban fuera de la lista (después del corchete), lo que causaba error.
     path('api/seccion/contabilidad/', seccion_contabilidad, name='seccion_contabilidad'), 
     path('api/seccion/alumnos/', seccion_alumnos, name='seccion_alumnos'), 
     path('api/seccion/administrativo/', seccion_admin, name='seccion_admin'), 
-
 ]

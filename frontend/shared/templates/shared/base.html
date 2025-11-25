@@ -36,12 +36,11 @@
     <div class="sidebar" id="sidebar">
         <nav>
             <ul>
-                <li><a href="{% url 'carreras:carreras' %}" class="selected"><img
+                <li><a href="{% url 'carreras_front:carreras' %}" class="selected"><img
                             src="{% static 'shared/assets/school.svg' %}" alt="carrera"><span>Carreras</span></a></li>
-                <li><a href="{% url 'cobros:cobros' %}"><img src="{% static 'shared/assets/payments.svg' %}"
-                            alt="cobros"><span>Cobros</span></a>
+                <li><a href="{% url 'cobros_front:cobros' %}"><img src="{% static 'shared/assets/payments.svg' %}" alt="cobros"><span>Cobros</span></a>
                 </li>
-                <li><a href="{% url 'alumnos:alumnos' %}"><img src="{% static 'shared/assets/group.svg' %}"
+                <li><a href="{% url 'alumnos_front:alumnos' %}"><img src="{% static 'shared/assets/group.svg' %}"
                             alt="alumnos"><span>Alumnos</span></a></li>
                 <li><a href=""><img src="{% static 'shared/assets/mail.svg' %}"
                             alt="notificaciones"><span>Comunicaciones</span></a></li>

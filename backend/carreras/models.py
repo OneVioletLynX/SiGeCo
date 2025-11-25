@@ -1,5 +1,10 @@
 from django.db import models
-from alumnos.models import Alumno
+try:
+    # Cuando corre el backend (8000) y las apps están registradas como 'alumnos'
+    from alumnos.models import Alumno
+except ImportError:
+    # Cuando corre el frontend (8001) y se importan como 'backend.alumnos'
+    from backend.alumnos.models import Alumno
 
 
 class Estado(models.Model):
