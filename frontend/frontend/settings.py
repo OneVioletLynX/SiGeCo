@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'alumnos.apps.AlumnosConfig',
     'usuarios',
     'carreras',
+    'reportes',
     'cobros',
     'shared'
 ]

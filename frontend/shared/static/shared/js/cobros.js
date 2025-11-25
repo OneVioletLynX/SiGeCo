@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ==============================
-  // 🎨 Selección de meses
+  //    Selección de meses
   // ==============================
   const meses = document.querySelectorAll(".month");
 
