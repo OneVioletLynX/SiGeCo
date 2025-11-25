@@ -75,9 +75,6 @@ class MetodoPago(models.Model):
     descripcion = models.CharField(max_length=30, unique=True)
 
     class Meta:
-        db_table = 'metodo_pago'
-
-    class Meta:
         db_table = 'ctacte_metodopago'  # cambiar si tu tabla tiene otro nombre
         verbose_name = "Método de Pago"
         verbose_name_plural = "Métodos de Pago"
@@ -114,11 +111,12 @@ class Pago(models.Model):
 
 
 class PagoDetalle(models.Model):
+    id = models.AutoField(primary_key=True)   # ✔ PK limpia, sin problemas
+
     pago = models.ForeignKey(
         Pago,
         on_delete=models.CASCADE,
-        related_name='detalles',
-        primary_key=True
+        related_name='detalles'
     )
     mes = models.ForeignKey(
         MesPago,
@@ -128,13 +126,14 @@ class PagoDetalle(models.Model):
     importe = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     class Meta:
-        db_table = 'pago_detalle'   # ya tenías este nombre; ok si coincide con la BD
-        unique_together = (('pago', 'mes'),)   # simula la PK compuesta
+        db_table = 'pago_detalle'
+        unique_together = (('pago', 'mes'),)   # ✔ simula PK compuesta
         verbose_name = "Detalle de Pago"
         verbose_name_plural = "Detalles de Pago"
 
     def __str__(self):
         mes_desc = self.mes.descripcion if self.mes else ''
         return f'Pago #{self.pago_id} - {mes_desc} - {self.importe}'
+
 
 
