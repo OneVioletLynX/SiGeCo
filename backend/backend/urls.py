@@ -13,9 +13,6 @@ from reportes.views import seccion_contabilidad, seccion_alumnos, seccion_admin
 
 urlpatterns = [ 
 
-    path("api/ctacte/", include("ctacte.urls")),
-
-
     path('admin/', admin.site.urls), 
     # Para listar y crear usuarios 
     path('api/usuarios/', UsuarioListCreate.as_view(), name='usuarios-lista'), 

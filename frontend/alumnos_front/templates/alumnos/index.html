@@ -63,85 +63,154 @@
         <span class="close">&times;</span>
         <h2 id="modalTitle">Nuevo Alumno</h2>
 
+        <div class="step-indicator">
+            <div class="step active">1</div>
+            <div class="line"></div>
+            <div class="step">2</div>
+            <div class="line"></div>
+            <div class="step">3</div>
+            <div class="line"></div>
+            <div class="step">4</div>
+        </div>
+
         <form id="alumnoForm">
             {% csrf_token %}
-            <div class="gc-2">
-                <label for="legajo">Legajo</label>
-                <input type="text" name="legajo" placeholder="C-43927814">
+
+            <!-- ====================================================== -->
+            <!-- STEP 1: DATOS PERSONALES -->
+            <!-- ====================================================== -->
+            <div class="form-step active">
+                <h3 class="step-title">Datos personales</h3>
+
+                <div class="gc-2">
+                    <label>Nombre</label>
+                    <input type="text" name="nombre" placeholder="Carlos" value="Carlos">
+                    <span class="error-msg" id="error-nombre"></span>
+                </div>
+
+                <div class="gc-2">
+                    <label>Apellido</label>
+                    <input type="text" name="apellido" placeholder="Cáceres" value="Cáceres">
+                    <span class="error-msg" id="error-apellido"></span>
+                </div>
+
+                <div class="gc-2">
+                    <label>DNI</label>
+                    <input type="number" name="dni" placeholder="43927814" value=43927814>
+                    <span class="error-msg" id="error-dni"></span>
+                </div>
+
+                <div class="gc-2">
+                    <label>Fecha de Nacimiento</label>
+                    <input type="date" name="fecha_nacimiento">
+                    <span class="error-msg" id="error-fecha_nacimiento"></span>
+                </div>
             </div>
 
-            <div class="gc-2">
-                <label for="id_estado">Estado</label>
-                <select name="id_estado" id="id_estado" class="form-select">
-                    <option value="" disabled selected>Seleccione un estado</option>
-                </select>
+            <!-- ====================================================== -->
+            <!-- STEP 2: CONTACTO -->
+            <!-- ====================================================== -->
+            <div class="form-step step-2">
+                <h3 class="step-title">Datos de contacto</h3>
+
+                <div class="gc-2">
+                    <label>Localidad</label>
+                    <select name="ciudad">
+                        <option value="1">Marcos Juarez</option>
+                        <option value="2">Leones</option>
+                        <option value="3">Inriville</option>
+                    </select>
+                </div>
+
+                <div class="gc-2"></div>
+                
+                <div class="gc-2">
+                    <label>Dirección</label>
+                    <input type="text" name="direccion" placeholder="Sargento Cabral">
+                </div>
+
+                <div class="gc-1">
+                    <label>Altura</label>
+                    <input type="number" name="numero" placeholder="720">
+                </div>
+
+                <div class="gc-1"></div>
+
+                <div class="gc-1">
+                    <label>Prefijo</label>
+                    <input type="number" name="prefijo" placeholder="3472">
+                </div>
+
+                <div class="gc-1">
+                    <label>Celular</label>
+                    <input type="number" name="telefono" placeholder="638644">
+                    <span class="error-msg" id="error-telefono"></span>
+                </div>
+
+                <div class="gc-3">
+                    <label>Correo</label>
+                    <input type="email" name="email" placeholder="ejemplo@gmail.com">
+                    <span class="error-msg" id="error-email"></span>
+                </div>
             </div>
 
-            <div class="gc-2">
-                <label for="">Carrera</label>
-                <select name="id_carrera" id="id_carrera" class="form-select">
-                    <option value="" disabled selected>Seleccione una carrera</option>
-                </select>
+            <!-- ====================================================== -->
+            <!-- STEP 3: ACADÉMICO -->
+            <!-- ====================================================== -->
+            <div class="form-step">
+                <h3 class="step-title">Datos Académicos</h3>
+
+                <div class="gc-2">
+                    <label>Legajo</label>
+                    <input type="text" name="legajo" placeholder="C-43927814">
+                </div>
+
+                <div class="gc-2">
+                    <label>Estado</label>
+                    <select name="id_estado" id="id_estado" class="form-select">
+                        <option value="" disabled selected>Seleccione un estado</option>
+                    </select>
+                    <span class="error-msg" id="error-id_estado"></span>
+                </div>
+
+                <div class="gc-2">
+                    <label>Carrera</label>
+                    <select name="id_carrera" id="id_carrera" class="form-select">
+                        <option value="" disabled selected>Seleccione una carrera</option>
+                    </select>
+                    <span class="error-msg" id="error-id_carrera"></span>
+                </div>
+
+                <div class="gc-2">
+                    <label>Año de Ingreso</label>
+                    <select name="anio_ingreso">
+                        <option value="2025">2025</option>
+                        <option value="2026">2026</option>
+                    </select>
+                </div>
             </div>
 
+            <!-- ====================================================== -->
+            <!-- STEP 4: CONFIRMACIÓN -->
+            <!-- ====================================================== -->
+            <div class="form-step">
+                <h3 class="step-title">Confirmación</h3>
+                <p>Revisá los datos antes de guardar.</p>
 
-            <div class="gc-2">
-                <label for="">Año de Ingreso</label>
-                <select name="anio_ingreso">
-                    <option value=2025>2025</option>
-                    <option value=2025>2026</option>
-                </select>
-            </div>
-
-            <div class="gc-2">
-                <label for="">Nombre</label>
-                <input type="text" name="nombre" placeholder="Carlos">
-            </div>
-            <div class="gc-2">
-                <label for="">Apellido</label>
-                <input type="text" name="apellido" placeholder="Cáceres">
-            </div>
-            <div class="gc-2">
-                <label for="">Nro de Documento</label>
-                <input type="number" name="dni" placeholder="43927814">
-            </div>
-            <div class="gc-2">
-                <label for="">Fecha de Nacimiento</label>
-                <input type="date" name="fecha_nacimiento">
-
-            </div>
-            <div class="gc-2">
-                <label for="">Localidad</label>
-                <select name="ciudad">
-                    <option value="1">Marcos Juarez</option>
-                    <option value="2">Leones</option>
-                    <option value="3">Inriville</option>
-                </select>
-            </div>
-            <div>
-                <label for="">Direccion</label>
-                <input type="text" name="direccion" placeholder="Sargento Cabral">
-            </div>
-            <div>
-                <label for="">Numero</label>
-                <input type="number" name="numero" placeholder="720">
-            </div>
-            <div>
-                <label for="">Prefijo</label>
-                <input type="number" name="prefijo" placeholder="3472">
-            </div>
-            <div>
-                <label for="">Celular</label>
-                <input type="number" name="telefono" placeholder="638644">
-            </div>
-            <div class="gc-2">
-                <label for="">Correo</label>
-                <input type="email" name="email" placeholder="kalicaceres1@gmail.com">
+                <div id="previewDatos" class="preview-box"></div>
             </div>
 
+            <!-- ====================================================== -->
+            <!-- BOTONES navegación -->
+            <!-- ====================================================== -->
+            <div class="form-navigation">
+                <button type="button" id="prevBtn" class="nav-btn">Volver</button>
+                <button type="button" id="nextBtn" class="nav-btn">Siguiente</button>
+                <button type="submit" id="submitBtn" class="submit-btn">Guardar</button>
+            </div>
 
-            <button id="submitBtn" type="submit">Guardar</button>
         </form>
+
     </div>
 </div>
 {% endblock %}
