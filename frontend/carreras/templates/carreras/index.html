@@ -1,0 +1,108 @@
+{% extends "shared/base.html" %} 
+{% load static %} 
+{% block title %}Inicio{%endblock %} 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'shared/css/carreras.css' %}" />
+{% endblock %} 
+{% block content %}
+<div style="display: flex; gap: 25px">
+    <div class="toolbar">
+        <div class="action-button">
+            <img src="{% static 'shared/assets/add.svg' %}" alt="" />
+            <div class="text">Alta</div>
+        </div>
+        <div class="action-button">
+            <img src="{% static 'shared/assets/remove.svg' %}" alt="" />
+            <div class="text">Baja</div>
+        </div>
+        <div class="action-button">
+            <img src="{% static 'shared/assets/edit.svg' %}" alt="" />
+            <div class="text">Modificacion</div>
+        </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 25px">
+        <table id="sortableTable">
+            <thead>
+                <tr>
+                    <th>
+                        Nombre
+                        <img src="{% static 'shared/assets/arrow_downward.svg' %}" alt="↓" />
+                    </th>
+                    <th>
+                        Alumnos
+                        <img src="{% static 'shared/assets/arrow_downward.svg' %}" alt="↓" />
+                    </th>
+                    <th>
+                        Activos
+                        <img src="{% static 'shared/assets/arrow_downward.svg' %}" alt="↓" />
+                    </th>
+                    <th>
+                        Finalizados
+                        <img src="{% static 'shared/assets/arrow_downward.svg' %}" alt="↓" />
+                    </th>
+                    <th>
+                        Inactivos
+                        <img src="{% static 'shared/assets/arrow_downward.svg' %}" alt="↓" />
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="tabla-carreras"></tbody>
+        </table>
+        <table>
+            <thead>
+                <tr>
+                    <th>Descripcion</th>
+                    <th>Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Importe Cuota</td>
+                    <td id="valorCuota">$140.000</td>
+                </tr>
+                <tr>
+                    <td>Inscripcion</td>
+                    <td id="valorInscripcion">$100.000</td>
+                </tr>
+                <tr>
+                    <td>Estado</td>
+                    <td id="estadoCarrera">Activa</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div id="modalCarrera" class="modal" style="display: none">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 id="modalCarreraTitle">Nueva Carrera</h2>
+
+        <form id="formCarrera">
+            {% csrf_token %}
+            <input type="hidden" id="carreraId" />
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Nombre de la carrera</label>
+                <input type="text" name="descripcion" id="descripcion" class="form-control" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Valor de inscripción</label>
+                <input type="number" name="inscripcion" id="inscripcion" class="form-control" step="0.01" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Valor de cuota</label>
+                <input type="number" name="cuota" id="cuota" class="form-control" step="0.01" required />
+            </div>
+
+            <button type="submit" id="btnGuardarCarrera" class="btn btn-success">
+                Guardar
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %} 
+{% block extra_js %}
+<script src="{% static 'shared/js/carreras.js' %}"></script>
+{% endblock %}

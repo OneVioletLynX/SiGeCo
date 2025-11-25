@@ -1,23 +1,4 @@
-# backend/ctacte/views.py
-# from django.shortcuts import render, get_object_or_404
-# from alumnos.models import Alumno
-# from .models import Pago
-# from django.db.models import Sum
-# from django.db.models.functions import Coalesce
-
-# def pagos_por_alumno(request, alumno_id):
-#     alumno = get_object_or_404(Alumno, pk=alumno_id)
-#     pagos = Pago.objects.filter(alumno=alumno).order_by('-fecha_pago')
-#     total = pagos.aggregate(total=Coalesce(Sum('importe_total'), 0))['total']
-#     return render(request, 'ctacte/pagos_por_alumno.html', {
-#         'alumno': alumno,
-#         'pagos': pagos,
-#         'total': total,
-#     })
-
-#================================================================================
 from datetime import date
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -127,7 +108,6 @@ class PagoListCreate(APIView):
         return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class PagoDetail(APIView):
     def get(self, request, pk):
         obj = get_object_or_404(Pago, pk=pk)
@@ -179,7 +159,6 @@ class PagoDetalleDetail(APIView):
         obj = get_object_or_404(PagoDetalle, pk=pk)
         obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
 class RegistrarPago(APIView):
     def post(self, request):
         try:

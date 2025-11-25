@@ -7,6 +7,9 @@ from carreras.views import CarreraListCreate, CarreraDetail, EstadoListCreate, E
 from valores.views import ValoresListCreate, ValoresDetail, ConceptoListCreate, ConceptoDetail
 from ctacte.views import MesPagoListCreate, MesPagoDetail, MetodoPagoListCreate, MetodoPagoDetail, PagoDetail, PagoListCreate, PagoDetalleListCreate, PagoDetalleDetail, MesPagoDetail
 from valores.views import ValorVigenteView
+from mensajes.views import MensajeListCreate, MensajeDetail
+from mensajes.views import MensajeListCreate 
+from reportes.views import seccion_contabilidad, seccion_alumnos, seccion_admin
 
 urlpatterns = [ 
 
@@ -40,7 +43,6 @@ urlpatterns = [
     path('api/valores/<int:pk>/', ValoresDetail.as_view(), name='valor-detalle'),    
     path('api/valores/vigente/', ValorVigenteView.as_view(), name='valor-vigente'),
 
-
     path('api/concepto/', ConceptoListCreate.as_view(), name='concepto-lista'), 
     path('api/concepto/<int:pk>/', ConceptoDetail.as_view(), name='concepto-detalle'),  
 
@@ -59,4 +61,15 @@ urlpatterns = [
     path('api/pago-detalle/', PagoDetalleListCreate.as_view(), name='pago-detalle-lista'), 
     # Para operaciones sobre carreras-cursadas
     path('api/pago-detalle/<int:pago_id>/<int:mes_id>/', PagoDetalleDetail.as_view(), name='pago-detalle-detalle'),
+    #Estadisticas
+    path('api/seccion/contabilidad/', seccion_contabilidad, name='seccion_contabilidad'), 
+    path('api/seccion/alumnos/', seccion_alumnos, name='seccion_alumnos'), 
+    path('api/seccion/administrativo/', seccion_admin, name='seccion_admin'), 
+    # Mensajes
+    path('api/mensajes/', MensajeListCreate.as_view(), name='api-mensajes'),
+    path('api/mensajes/<int:pk>/', MensajeDetail.as_view(), name='api-mensajes-detail'),
+    path('mensajes/', include('mensajes.urls', namespace='mensajes')),
+
+    # CTActe: frontend + API
+    path('ctacte/', include('ctacte.urls', namespace='ctacte')),
 ]

@@ -1,0 +1,125 @@
+{% extends "shared/base.html" %}
+{% load static %}
+{% block title %}Inicio{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'shared/css/alumnos.css' %}">
+{% endblock %}
+{% block content %}
+<div style="display: flex; gap: 25px;">
+
+    <div style="display: flex; flex-direction: column; gap: 25px;">
+        <div class="filter-container">
+            <input type="text" id="buscadorAlumno" class="form-control" placeholder="Buscar alumno...">
+
+            <label for="filtroEstado" class="form-label fw-bold">Estados</label>
+            <select id="filtroEstado" class="form-select">
+                <option value="all" selected>Todos</option>
+            </select>
+            <label for="filtroCarrera" class="form-label fw-bold">Carreras</label>
+            <select id="filtroCarrera" class="form-select">
+                <option value="all">Todas</option>
+            </select>
+        </div>
+        <div style="display: flex; gap: 20px;">
+            <div class="toolbar">
+                <div class="action-button">
+                    <img src="{% static 'shared/assets/add.svg' %}" alt="">
+                    <div class="text">Alta</div>
+                </div>
+                <div class="action-button">
+                    <img src="{% static 'shared/assets/remove.svg' %}" alt="">
+                    <div class="text">Baja</div>
+                </div>
+                <div class="action-button">
+                    <img src="{% static 'shared/assets/edit.svg' %}" alt="">
+                    <div class="text">Modificacion</div>
+                </div>
+                <div class="action-button">
+                    <img src="{% static 'shared/assets/docs.svg' %}" alt="">
+                    <div class="text">Ver</div>
+                </div>
+                <!-- <div class="action-button">
+                        <img src="{% static 'shared/assets/edit.svg' %}" alt="">
+                        <div class="text">Modificacion</div>
+                    </div> -->
+            </div>
+            <div class="table-wrapper">
+                <table id="tabla-alumnos">
+                    <thead>
+                        <tr>
+                            <th>
+                                Nombre
+                                <img src="{% static 'shared/assets/arrow_downward.svg' %}" alt="↓" />
+                            </th>
+                            <th>
+                                Documento
+                                <img src="{% static 'shared/assets/arrow_downward.svg' %}" alt="↓" />
+                            </th>
+                            <th>
+                                Ciudad
+                                <img src="{% static 'shared/assets/arrow_downward.svg' %}" alt="↓" />
+                            </th>
+                            <th>
+                                Direccion
+                                <img src="{% static 'shared/assets/arrow_downward.svg' %}" alt="↓" />
+                            </th>
+                            <th>
+                                Telefono
+                                <img src="{% static 'shared/assets/arrow_downward.svg' %}" alt="↓" />
+                            </th>
+                            <th>
+                                Mail
+                                <img src="{% static 'shared/assets/arrow_downward.svg' %}" alt="↓" />
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+<div id="altaModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 id="modalTitle">Nuevo Alumno</h2>
+
+        <form id="alumnoForm">
+            {% csrf_token %}
+            <input type="text" name="legajo" placeholder="C-43927814">
+            <select name="id_estado" id="id_estado" class="form-select">
+                <option value="" disabled selected>Seleccione un estado</option>
+            </select>
+            <input type="text" name="nombre" placeholder="Carlos">
+            <input type="text" name="apellido" placeholder="Cáceres">
+            <input type="number" name="dni" placeholder="43927814" value="43927814">
+            <input type="date" name="fecha_nacimiento">
+            <select name="ciudad">
+                <option value="1">Marcos Juarez</option>
+                <option value="2">Leones</option>
+                <option value="3">Inriville</option>
+            </select>
+            <input type="text" name="direccion" placeholder="Sargento Cabral" value="Sargento Cabral">
+            <input type="number" name="numero" placeholder="720" value="720">
+            <input type="number" name="prefijo" placeholder="3472" value="3472">
+            <input type="number" name="telefono" placeholder="638644" value="638644">
+            <input type="email" name="email" placeholder="kalicaceres1@gmail.com" value="kalicaceres1@gmail.com">
+            <select name="id_carrera" id="id_carrera" class="form-select">
+                <option value="" disabled selected>Seleccione una carrera</option>
+            </select>
+            <select name="anio_ingreso">
+                <option value=2025>2025</option>
+                <option value=2025>2026</option>
+            </select>
+            <button id="submitBtn" type="submit">Guardar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'shared/js/alumnos.js' %}"></script>
+{% endblock %}

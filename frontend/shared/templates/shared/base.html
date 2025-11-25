@@ -44,9 +44,8 @@
                             alt="alumnos"><span>Alumnos</span></a></li>
                 <li><a href="#"><img src="{% static 'shared/assets/mail.svg' %}"
                             alt="notificaciones"><span>Mensajeria</span></a></li>
-
-                <li><a href="#"><img src="{% static 'shared/assets/finance.svg' %}"
-                            alt="notificaciones"><span>Estadisticas</span></a></li>
+                <li><a href="{% url 'reportes:estadisticas' %}"><img src="{% static 'shared/assets/finance.svg' %}"
+                            alt="estadisticas"><span>Estadísticas</span></a></li>
                 <!-- 🔹 Reportes con submenú -->
                 <li class="has-submenu">
                     <a href="#" class="submenu-toggle">

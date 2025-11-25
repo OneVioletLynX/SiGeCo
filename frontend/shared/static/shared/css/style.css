@@ -330,6 +330,7 @@ th.asc img {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    margin-top: 72px;
     margin-right: 10px;
 }
 
@@ -372,11 +373,10 @@ th.asc img {
 
 /* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ TOOLBAR ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 
-
 tr.selected {
   background-color: #cce5ff;
 }
-
+/* --- Modal general --- */
 .modal {
   display: none;
   position: fixed;
@@ -404,17 +404,9 @@ tr.selected {
 
 /* --- Encabezado del modal --- */
 .modal-content h2 {
-  text-align: left;
-  font-weight: 900;
-  margin-bottom: 10px;
+  text-align: center;
+  margin-bottom: 20px;
 }
-
-
-/* =====================================
-MODAL
-===================================== */
-
-
 
 /* --- Formulario con dos columnas --- */
 #alumnoForm {
@@ -599,7 +591,9 @@ MODAL
   display: flex;
   align-items: flex-end;
   gap: 8px;
-  
+  margin-bottom: 10px;
+  padding-left: 152px;
+
 }
 .filter-container label {
   font-weight: 600;
@@ -654,6 +648,7 @@ MODAL
   width: 70%;
   gap: 15px;
 }
+
 
 
 .button-predeterminado {

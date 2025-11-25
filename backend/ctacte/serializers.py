@@ -55,4 +55,3 @@ class PagoSerializer(serializers.ModelSerializer):
         for detalle_data in detalles_data:
             PagoDetalle.objects.create(pago=pago, **detalle_data)
         return pago
-

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'backend.alumnos',
     'backend.carreras',
     'backend.usuarios',
+    'backend.reportes',
     'backend.valores',
 ]
 

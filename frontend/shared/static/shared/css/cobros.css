@@ -19,6 +19,7 @@
   color: #444;
 }
 
+
 .months-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
@@ -74,6 +75,70 @@
 }
 
 
+/* ===============================
+   📅 Grilla de meses
+   =============================== */
+
+
+.months-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+}
+
+/* ================
+   📅 Grilla de meses
+   ================ */
+.months-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  /* 3 columnas */
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.month {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.month:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.month.selected {
+  background-color: #007bff;
+  color: white;
+}
+
+.month.selected span {
+  color: white;
+}
+
+.month img.icono-mes {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.2s ease;
+}
+
+.month.selected img.icono-mes {
+  filter: invert(1); /* vuelve blanca la imagen en modo seleccionado */
+  transform: scale(1.1);
+}
+
+
+/* ===============================
+   🔲 Tarjetas de mes individual
+   =============================== */
+
 .month {
   display: flex;
   justify-content: space-between;
@@ -81,7 +146,11 @@
   background: white;
   padding: 8px 12px;
   border-radius: 10px;
+
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   cursor: pointer;
 }
@@ -96,6 +165,30 @@
   color: #333;
   
 }
+
+/* Icono dentro del mes */
+.month img.icono-mes {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.2s ease;
+}
+
+/* Estado seleccionado */
+.month.selected {
+  background-color: #007bff;
+  color: white;
+}
+
+.month.selected span {
+  color: white;
+}
+
+.month.selected img.icono-mes {
+  filter: invert(1);
+  transform: scale(1.1);
+}
+
+/* Botón (si lo usás dentro del mes) */
 
 .month button {
   background: none;
@@ -115,11 +208,13 @@
    💳 Detalle de pago
    =============================== */
 .detalle-container {
+
   margin-top: 25px;
   padding: 20px;
   border-radius: 12px;
   background-color: #f8f9fa;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
 }
 
 .detalle-container h3 {
@@ -128,6 +223,20 @@
   color: #333;
 }
 
+
+.detalle-container h3 {
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+  /* display: flex; 
+  justify-content: space-between; 
+  flex-direction: column; 
+  height: 100%;
+} */
+
+
 .form-group {
   display: flex;
   flex-direction: column;
@@ -135,7 +244,12 @@
 }
 
 .form-group label {
+
   font-size: 14px;
+
+  font-size: 14px;
+
+
   color: #444;
   margin-bottom: 5px;
 }
@@ -147,10 +261,18 @@
   border-radius: 8px;
   font-size: 14px;
   outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
 }
 
 
 /* Ocultos */
+
 .hidden {
   display: none;
 }
