@@ -10,14 +10,28 @@ class Alumno(models.Model):
     dni = models.IntegerField()
     ciudad = models.CharField(max_length=100)
     direccion = models.CharField(max_length=100)
-    numero = models.IntegerField()
-    prefijo = models.IntegerField()
+    
+    # Campo principal de contacto
     telefono = models.PositiveIntegerField(default=0)
+    
+    # --- CAMPO TELEFONO RESPALDO (REQUERIDO POR LA DB Y SERIALIZER) ---
+    # telefono_respaldo = models.PositiveIntegerField(
+    #     default=0,
+    #     verbose_name="Teléfono Respaldo"
+    # )
+    # -----------------------------------------------------------------
+    
     email = models.EmailField(unique=True)
-    inscripcion = models.DateField(auto_now_add=True) #Año Ingreso, tiene que ser INT
+    
+    # Nota: Tu DB parece usar 'inscripcion' como fecha, no como auto_now_add
+    inscripcion = models.DateField() 
     fecha_inscripcion = models.DateTimeField(blank=True, null=True)
     
-    anio_ingreso = models.PositiveIntegerField(blank=True, null=True, validators=[MinValueValidator(1900), MaxValueValidator(2100)])
+    anio_ingreso = models.PositiveIntegerField(
+        blank=True, 
+        null=True, 
+        validators=[MinValueValidator(1900), MaxValueValidator(2100)]
+    )
 
     class Meta:
         ordering = ['apellido', 'nombre']

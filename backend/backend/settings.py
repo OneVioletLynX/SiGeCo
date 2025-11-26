@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'carreras',
     'valores',
     "corsheaders",
+    "mensajes",
     "alumnos.apps.AlumnosConfig"
 ]
 

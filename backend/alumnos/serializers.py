@@ -1,42 +1,60 @@
 # backend/alumnos/serializers.py
+
+from django.db import transaction
 from rest_framework import serializers
 from .models import Alumno
 from carreras.models import CarreraCursada
+# Si tienes un Serializer para Carrera y Estado, impórtalo aquí.
+# from carreras.serializers import CarreraSerializer, EstadoSerializer 
 
 class AlumnoSerializer(serializers.ModelSerializer):
-    # Para ALTA / EDICIÓN
+    # ------------------------------------------------------------------
+    # 🔹 Campos de ALTA/EDICIÓN (Write Only)
+    # ------------------------------------------------------------------
     id_carrera = serializers.IntegerField(write_only=True, required=False)
     id_estado = serializers.IntegerField(write_only=True, required=False)
 
-    # Para DETALLE (solo lectura)
+    # ------------------------------------------------------------------
+    # 🔹 Campos de DETALLE (Read Only - Lo que usa el front)
+    # ------------------------------------------------------------------
     carrera_actual = serializers.SerializerMethodField(read_only=True)
     estado_actual = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Alumno
-        fields = '__all__'
+        # LISTA EXPLÍCITA: Es vital incluir los campos de teléfono que el frontend necesita.
+        fields = [
+            'id_alumno', 'legajo', 'nombre', 'apellido', 'dni', 
+            'fecha_nacimiento', 'ciudad', 'direccion', 'email',
+            'telefono',            # <--- AÑADIDO: Campo para el WhatsApp
+            'inscripcion', 'fecha_inscripcion', 'anio_ingreso',
+            'carrera_actual', 'estado_actual',
+            'id_carrera', 'id_estado', # Write-only fields
+        ]
 
     # ------------------------------------------------------------------
-    # 🔹 Campos auxiliares de solo lectura
+    # 🔹 Implementaciones de SerializerMethodField
     # ------------------------------------------------------------------
     def get_carrera_actual(self, obj):
         cc = obj.carreras_cursadas.first()
-        return cc.carrera.id_carrera if cc else None
+        return cc.carrera.id_carrera if cc and cc.carrera else None
 
     def get_estado_actual(self, obj):
         cc = obj.carreras_cursadas.first()
-        return cc.id_estado.id_estado if cc else None
+        return cc.id_estado.id_estado if cc and cc.id_estado else None
 
     # ------------------------------------------------------------------
-    # 🔹 Crear alumno + carrera cursada
+    # 🔹 Operaciones: Create y Update (Con lógica transaccional CarreraCursada)
     # ------------------------------------------------------------------
+    @transaction.atomic
     def create(self, validated_data):
         carrera_id = validated_data.pop('id_carrera', None)
-        estado_id = validated_data.pop('id_estado', 1)  # Activo por defecto
-
+        estado_id = validated_data.pop('id_estado', 1) 
+        
         alumno = super().create(validated_data)
 
         if carrera_id:
+            # Sincronización de CarreraCursada (asegurando atomicidad)
             CarreraCursada.objects.create(
                 alumno=alumno,
                 carrera_id=carrera_id,
@@ -44,130 +62,41 @@ class AlumnoSerializer(serializers.ModelSerializer):
             )
         return alumno
 
-    # ------------------------------------------------------------------
-    # 🔹 Actualizar alumno + carrera cursada
-    # ------------------------------------------------------------------
-# backend/alumnos/serializers.py
-from django.db import transaction
-from rest_framework import serializers
-from .models import Alumno
-from carreras.models import CarreraCursada
-
-class AlumnoSerializer(serializers.ModelSerializer):
-    # Para ALTA / EDICIÓN (lo envía el form)
-    id_carrera = serializers.IntegerField(write_only=True, required=False)
-    id_estado = serializers.IntegerField(write_only=True, required=False)
-
-    # Solo lectura (detalle)
-    carrera_actual = serializers.SerializerMethodField(read_only=True)
-    estado_actual = serializers.SerializerMethodField(read_only=True)
-
-    class Meta:
-        model = Alumno
-        fields = '__all__'
-
-    # ---- helpers read-only
-    def get_carrera_actual(self, obj):
-        cc = obj.carreras_cursadas.first()
-        return cc.carrera.id_carrera if cc else None
-
-    def get_estado_actual(self, obj):
-        cc = obj.carreras_cursadas.first()
-        return cc.id_estado.id_estado if cc else None
-
-    # ---- create
-    @transaction.atomic
-    def create(self, validated_data):
-        carrera_id = validated_data.pop('id_carrera', None)
-        estado_id = validated_data.pop('id_estado', 1)  # 1 = Activo por defecto
-        alumno = super().create(validated_data)
-
-        if carrera_id:
-            # Evitar duplicado si ya existiera por datos “sucios”
-            existente = CarreraCursada.objects.filter(
-                alumno_id=alumno.id_alumno,
-                carrera_id=carrera_id
-            ).first()
-            if existente:
-                if existente.id_estado_id != estado_id:
-                    existente.id_estado_id = estado_id
-                    existente.save()
-            else:
-                CarreraCursada.objects.create(
-                    alumno_id=alumno.id_alumno,
-                    carrera_id=carrera_id,
-                    id_estado_id=estado_id
-                )
-        return alumno
-
-    # ---- update
     @transaction.atomic
     def update(self, instance, validated_data):
         nueva_carrera_id = validated_data.pop('id_carrera', None)
         nuevo_estado_id  = validated_data.pop('id_estado', None)
 
-        # 1) actualizar campos del Alumno
+        # 1) Actualizar campos directos del Alumno
         instance = super().update(instance, validated_data)
 
-        # 2) sincronizar CarreraCursada evitando duplicados
-        actual = instance.carreras_cursadas.first()  # fila actual (si existe)
+        # 2) Lógica compleja de sincronización de CarreraCursada
+        actual = instance.carreras_cursadas.first()
 
-        # Si no hay fila, crear (pero sin duplicar)
-        if not actual:
-            if nueva_carrera_id:
-                existente = CarreraCursada.objects.filter(
-                    alumno_id=instance.id_alumno,
-                    carrera_id=nueva_carrera_id
-                ).first()
-                if existente:
-                    # Solo actualizar estado si vino
-                    if nuevo_estado_id is not None and existente.id_estado_id != nuevo_estado_id:
-                        existente.id_estado_id = nuevo_estado_id
-                        existente.save()
-                else:
-                    CarreraCursada.objects.create(
-                        alumno_id=instance.id_alumno,
-                        carrera_id=nueva_carrera_id,
-                        id_estado_id=nuevo_estado_id or 1
-                    )
-            # Si tampoco vino carrera, no tocamos nada
-            return instance
-
-        # Hay fila actual
-        carrera_actual_id = actual.carrera_id
-        estado_actual_id  = actual.id_estado_id
-
-        # Caso A: solo cambia estado (misma carrera)
-        if (nueva_carrera_id is None) or (nueva_carrera_id == carrera_actual_id):
-            if (nuevo_estado_id is not None) and (nuevo_estado_id != estado_actual_id):
-                actual.id_estado_id = nuevo_estado_id
-                actual.save()
-            return instance
-
-        # Caso B: cambió la carrera (¡no modifiques PK!):
-        #  - Si ya existe la fila con (alumno, nueva carrera) => actualizá estado allí
-        #  - Si no existe => creala
-        destino = CarreraCursada.objects.filter(
-            alumno_id=instance.id_alumno,
-            carrera_id=nueva_carrera_id
-        ).first()
-
-        if destino:
-            # actualizar estado en destino si vino
-            if nuevo_estado_id is not None and destino.id_estado_id != nuevo_estado_id:
-                destino.id_estado_id = nuevo_estado_id
-                destino.save()
-            # borrar la fila vieja para no quedar con dos
-            if actual.pk != destino.pk:
-                actual.delete()
-        else:
-            # crear nueva y eliminar la vieja
-            CarreraCursada.objects.create(
+        if nueva_carrera_id is not None:
+            # Si vino un ID de carrera, buscamos o creamos la CarreraCursada para ese par (alumno, carrera)
+            destino, creado = CarreraCursada.objects.get_or_create(
                 alumno_id=instance.id_alumno,
                 carrera_id=nueva_carrera_id,
-                id_estado_id=(nuevo_estado_id if nuevo_estado_id is not None else estado_actual_id or 1)
+                defaults={'id_estado_id': nuevo_estado_id or 1}
             )
-            actual.delete()
+
+            if not creado and nuevo_estado_id is not None:
+                # Si existía, solo actualizamos el estado si es necesario
+                if destino.id_estado_id != nuevo_estado_id:
+                    destino.id_estado_id = nuevo_estado_id
+                    destino.save()
+            
+            # Borrar la fila vieja si existía y es diferente a la que actualizamos/creamos
+            if actual and actual.pk != destino.pk:
+                actual.delete()
+
+        # Si solo vino el estado (sin cambiar carrera), lo actualizamos en la fila actual
+        elif actual and nuevo_estado_id is not None and nuevo_estado_id != actual.id_estado_id:
+            actual.id_estado_id = nuevo_estado_id
+            actual.save()
+
+        # Si no había fila y no vino carrera, no hacemos nada (el alumno no cursa nada)
+        # Si no había fila y vino carrera, ya lo maneja get_or_create/create.
 
         return instance
-

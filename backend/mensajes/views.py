@@ -28,34 +28,40 @@ class MensajeListCreate(APIView):
     # MÉTODO GET CORREGIDO (REEMPLAZA TU MÉTODO 'get' ACTUAL)
     # ----------------------------------------------------
     def get(self, request):
-        
-        # 1. Obtener parámetros de la URL
-        tipo_envio = request.GET.get('tipo_envio', '') # El nuevo filtro
+        # 1. Obtener parámetros
+        tipo_envio = request.GET.get('tipo_envio', '')
+        search = request.GET.get('search', '').strip()  # <--- NUEVO: Capturar búsqueda
         page = int(request.GET.get('page', 1))
-        page_size = int(request.GET.get('page_size', 10)) # Default a 10 como en tu JS
+        page_size = int(request.GET.get('page_size', 10))
 
         # 2. Queryset base
         qs = Mensaje.objects.all().order_by('-fecha_creacion')
 
-        # 3. Aplicar filtro (si existe)
+        # 3. Aplicar filtros
         if tipo_envio:
             qs = qs.filter(tipo_envio=tipo_envio)
+        
+        if search:  # <--- NUEVO: Lógica de búsqueda
+            from django.db.models import Q  # Importar Q al inicio del archivo si no está
+            qs = qs.filter(
+                Q(titulo__icontains=search) | 
+                Q(descripcion__icontains=search)
+            )
 
-        # 4. Paginación manual (la misma lógica que tenías en 'mensajes_list')
+        # 4. Paginación manual
         total = qs.count()
         start = (page - 1) * page_size
         end = start + page_size
         
-        # 5. Serializar los resultados de la página
         serializer = MensajeSerializer(qs[start:end], many=True)
 
-        # 6. Devolver respuesta en el formato que el JS espera
         return Response({
             'count': total,
             'num_pages': (total + page_size - 1) // page_size,
             'page': page,
             'page_size': page_size,
-            'results': serializer.data, # El JS espera la clave 'results'
+            'next': end < total, # <--- NUEVO: Flag para saber si hay sig. página
+            'results': serializer.data,
         })
     # ----------------------------------------------------
     # FIN DE LA CORRECCIÓN
