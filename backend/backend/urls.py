@@ -29,6 +29,10 @@ from ctacte.views import (
 from mensajes.views import MensajeListCreate, MensajeDetail
 from mensajes.views import MensajeListCreate 
 from reportes.views import seccion_contabilidad, seccion_alumnos, seccion_admin, generar_pdf_alumnos, generar_pdf_bonos_por_carrera
+from django.shortcuts import render
+
+def home(request):
+    return render(request, "shared/base.html")
 
 
 urlpatterns = [
@@ -94,4 +98,8 @@ urlpatterns = [
     path('mensajes/', include('mensajes.urls', namespace='mensajes')),
     # CTActe: frontend + API
     path('ctacte/', include('ctacte.urls', namespace='ctacte')),
+
+
+    path('', home, name='home'),
+
 ]

@@ -93,3 +93,15 @@
     border-radius: 8px;
     font-size: 14px;
 }
+
+
+/* Centrar encabezado y contenido de la columna Acciones */
+th.acciones-col,
+td.acciones-col {
+    text-align: center !important;
+}
+
+/* Si los botones están en un contenedor flex, también centrarlos */
+td.acciones-col .acciones {
+    justify-content: center !important;
+}

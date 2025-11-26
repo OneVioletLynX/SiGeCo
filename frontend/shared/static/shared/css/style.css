@@ -30,6 +30,7 @@ body {
 header {
     z-index: 200;
     width: 100%;
+    height: 4rem;
     display: flex;
     justify-content: space-between;
     padding: 0.45rem 2rem 0.45rem 1.27rem;
@@ -749,3 +750,9 @@ tr.selected {
   display: block;
   min-height: 18px;
 }
+
+.brand {
+    cursor: pointer;
+}
+
+

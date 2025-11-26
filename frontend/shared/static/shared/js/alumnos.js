@@ -397,7 +397,8 @@ document.addEventListener("DOMContentLoaded", () => {
         <td>${alumno.apellido}, ${alumno.nombre}</td>
         <td>${formatearChipCarrera(alumno.carrera_nombre)}</td>
         <td>${formatearChipEstado(alumno.estado_nombre)}</td>
-        <td>
+        <td class="acciones-col">
+
           <div class="acciones">
             <button class="btn-editar" data-id="${alumno.id_alumno}">
               <img src="/static/shared/assets/edit.svg">

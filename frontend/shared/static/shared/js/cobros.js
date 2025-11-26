@@ -106,12 +106,23 @@
         const tbody = document.getElementById("tabla-cobros");
         tbody.innerHTML = "";
 
+        // ================================
+        // 🔥 Determinar si realmente tiene pagos
+        // ================================
+        const totalDetalles = pagos.reduce((acc, pago) => acc + pago.detalles.length, 0);
+        const tienePagos = totalDetalles > 0;
+
+        document.getElementById("btnEliminarPago").style.display = tienePagos ? "flex" : "none";
+        document.getElementById("btnImprimir").style.display = tienePagos ? "flex" : "none";
+
+        // ================================
+        // 🔥 Dibujar tabla de pagos (si hay)
+        // ================================
         pagos.forEach((pago) => {
-          const detalles = pago.detalles || [];
-          detalles.forEach((det) => {
+          pago.detalles.forEach((det) => {
             const tr = document.createElement("tr");
 
-            // 🔥 clave para seleccionar pago completo
+            // clave para seleccionar pago completo
             tr.dataset.pago = pago.id_pago;
 
             tr.innerHTML = `
@@ -126,17 +137,16 @@
           });
         });
 
-        // AGREGAR EVENTOS DE SELECCIÓN
+        // ================================
+        // 🔥 Eventos de selección
+        // ================================
         document.querySelectorAll("#tabla-cobros tr").forEach((row) => {
           row.addEventListener("click", () => {
             const pagoId = row.dataset.pago;
 
-            // limpiar selección previa
-            document.querySelectorAll("#tabla-cobros tr").forEach(r => {
-              r.classList.remove("selected-pago");
-            });
+            document.querySelectorAll("#tabla-cobros tr")
+              .forEach(r => r.classList.remove("selected-pago"));
 
-            // seleccionar todas las filas del pago
             document.querySelectorAll(`#tabla-cobros tr[data-pago='${pagoId}']`)
               .forEach(r => r.classList.add("selected-pago"));
 
@@ -148,6 +158,8 @@
         console.error("Error cargando pagos:", err);
       }
     }
+
+
 
     // ===========================
     // ELIMINAR PAGO COMPLETO
