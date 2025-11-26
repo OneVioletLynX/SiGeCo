@@ -19,48 +19,28 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',    
+    'django.contrib.humanize',
     'rest_framework',
     'usuarios', 
+    'reportes',
     'ctacte',
     'carreras',
     'valores',
     "corsheaders",
-    "alumnos",
+    'alumnos',
     'mensajes',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.staticfiles',
-
-    'corsheaders',
-    'rest_framework',
-    'rest_framework_simplejwt',
-
-    # Apps del proyecto
-    'alumnos',
-    'carreras',
-    'ctacte',
-    'usuarios',
-    'valores',
-]
-
-
-# =====================================================
-# MIDDLEWARE
-# =====================================================
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware',  # Importante que vaya antes del common
+    'corsheaders.middleware.CorsMiddleware',  
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
 ROOT_URLCONF = 'backend.urls'
 
 # =====================================================

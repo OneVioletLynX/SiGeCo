@@ -1,90 +1,123 @@
-const tryFetch = async (url) => {
-    try {
-        const response = await fetch(url);
-        return await response.json();
-    } catch (ex) {
-        alert(ex);
-    }
-};
-const iniciarDashboardContabilidad = async () => {
-    const data = await tryFetch("http://127.0.0.1:8000/api/seccion/contabilidad/");
-    if (!data) {
-        console.error("No se recibieron datos del servidor.");
-        return;
-    }
-    // ==============================
-    //          KPIS
-    // ==============================
-    const kpis = data.kpis;
-    document.getElementById("ingresosMes").textContent = kpis.ingresos_mes;
-    document.getElementById("ingresosAnio").textContent = kpis.ingresos_anio;
-    document.getElementById("cuotasCoPen").textContent =
-        `${kpis.cuotas_cobradas} / ${kpis.cuotas_estimadas_anio}`;
-    document.getElementById("tasaMorosidad").textContent = kpis.tasa_morosidad;
-    document.getElementById("alumnosAlDia").textContent = kpis.alumnos_al_dia;
+document.addEventListener("DOMContentLoaded", () => {
+    const tabla = document.querySelector("#tabla-alumnos tbody");
+    const downloadButton = document.getElementById('generar-pdf-btn');
+    const filtroCarreraSelect = document.getElementById("filtroCarrera");
+    const filtroEstadoSelect = document.getElementById("filtroEstado");
 
-    // ==============================
-    //          CHARTS
-    // ==============================
-    const chartIngresos = echarts.init(document.getElementById("chartIngresos"));
-    chartIngresos.setOption(data.charts.chartIngresos);
-    chartIngresos.resize();
-    const chartMediosPago = echarts.init(document.getElementById("chartMediosPago"))
-    chartMediosPago.setOption(data.charts.chartMediosPago);
-    chartMediosPago.resize();
-    const chartDeudaPromedio = echarts.init(document.getElementById("chartDeudaPromedio"))
-    chartDeudaPromedio.setOption(data.charts.chartDeudaPromedio);
-    chartDeudaPromedio.resize();
-    const chartDemoraPagos = echarts.init(document.getElementById("chartDemoraPagos"))
-    chartDemoraPagos.setOption(data.charts.chartDemoraPagos);
-    chartDemoraPagos.resize();
-};
+    let mapaEstados = {};
+    let mapaCarreras = {};
+    let filtroCarrera = "all";
+    let filtroEstado = "all";
 
-const iniciarDashboardAlumnos = async () => {
-    const data = await tryFetch("http://127.0.0.1:8000/api/seccion/alumnos/");
-    if (!data) {
-        console.error("No se recibieron datos del servidor.");
-        return;
-    }
-    // ==============================
-    //          KPIS
-    // ==============================
-    const kpis = data.kpis;
-    document.getElementById("alumnos_activos").textContent = kpis.alumnos_activos.value;
-    console.log(document.getElementById("alumnos_activos"));
-    document.getElementById("alumnos_egresados").textContent = kpis.alumnos_egresados.value;
-    document.getElementById("alumnos_ingresantes").textContent = kpis.alumnos_ingresantes.value;
-    document.getElementById("label_ingresantes").textContent = kpis.alumnos_ingresantes.label;
-    if (kpis.tasa_retencion) {document.getElementById("tasaRetencion").textContent = kpis.tasa_retencion.value}
-    if (kpis.prom_permanencia) {document.getElementById("promPermanencia").textContent = kpis.prom_permanencia.value}
-    
-    // ==============================
-    //          CHARTS
-    // ==============================
-    const chartEgreIngre = echarts.init(document.getElementById("chartEgreIngre"))
-    chartEgreIngre.setOption(data.charts.chartEgreIngre);
-    chartEgreIngre.resize();
-    const chartPorCarrera = echarts.init(document.getElementById("chartPorCarrera"))
-    chartPorCarrera.setOption(data.charts.chartPorCarrera);
-    chartPorCarrera.resize();
-    const chartGenero = echarts.init(document.getElementById("chartGenero"))
-    chartGenero.setOption(data.charts.chartGenero);
-    chartGenero.resize();
-    const chartEdad = echarts.init(document.getElementById("chartEdad"))
-    chartEdad.setOption(data.charts.chartEdad);
-    chartEdad.resize();
-    const chartGeografia = echarts.init(document.getElementById("chartGeografia"))
-    chartGeografia.setOption(data.charts.chartGeografia);
-    chartGeografia.resize();
-};
+    // ----------------------------------------------------------
+    // 🔹 Cargar carreras
+    // ----------------------------------------------------------
+    async function cargarCarreras() {
+        const response = await fetch("http://localhost:8000/api/carreras/");
+        const carreras = await response.json();
 
-const iniciarDashboardAdmin = async () => {
-    const data = await tryFetch("http://127.0.0.1:8000/api/seccion/administrativo/");
-    if (!data) {
-        console.error("No se recibieron datos del servidor.");
-        return;
+        carreras.forEach(c => {
+            const id = String(c.id_carrera);
+            mapaCarreras[id] = c.descripcion;
+
+            const opt = document.createElement("option");
+            opt.value = id;
+            opt.textContent = c.descripcion;
+            filtroCarreraSelect.appendChild(opt);
+        });
     }
-    const chartAltasMensuales = echarts.init(document.getElementById("chartAltasMensuales"))
-    chartAltasMensuales.setOption(data.charts.chartAltasMensuales);
-    chartAltasMensuales.resize();
-};
+
+    // ----------------------------------------------------------
+    // 🔹 Cargar estados (SELECT ÚNICO)
+    // ----------------------------------------------------------
+    async function cargarEstados() {
+        const response = await fetch("http://localhost:8000/api/estados/");
+        const estados = await response.json();
+
+        estados.forEach(e => {
+            const id = String(e.id_estado);
+            mapaEstados[id] = e.descripcion;
+
+            const opt = document.createElement("option");
+            opt.value = id;
+            opt.textContent = e.descripcion;
+            filtroEstadoSelect.appendChild(opt);
+        });
+    }
+
+    // ----------------------------------------------------------
+    // 🔹 Cargar alumnos (con filtros actualizados)
+    // ----------------------------------------------------------
+    async function cargarAlumnos() {
+        let url = new URL("http://localhost:8000/api/alumnos/");
+
+        if (filtroEstado !== "all") {
+            url.searchParams.append('estado', filtroEstado); 
+        }
+
+        if (filtroCarrera !== "all") {
+            url.searchParams.append('carrera', filtroCarrera); 
+        }
+
+        const response = await fetch(url.toString());
+        const alumnos = await response.json();
+
+        tabla.innerHTML = "";
+
+        alumnos.forEach(alumno => {
+            const tr = document.createElement("tr");
+            const estadoDesc = mapaEstados[String(alumno.estado_actual)] ?? "-";
+            const carreraDesc = mapaCarreras[String(alumno.carrera_actual)] ?? "-";
+
+            tr.innerHTML = `
+                <td>${alumno.legajo ?? '-'}</td>
+                <td>${alumno.apellido ?? '-'}, ${alumno.nombre ?? '-'}</td>
+                <td>${alumno.dni ?? '-'}</td>
+                <td>${estadoDesc}</td>
+                <td>${carreraDesc}</td>
+            `;
+            tabla.appendChild(tr);
+        });
+    }
+
+    // ----------------------------------------------------------
+    // 🔹 Eventos
+    // ----------------------------------------------------------
+    filtroEstadoSelect.addEventListener("change", async e => {
+        filtroEstado = e.target.value;
+        await cargarAlumnos();
+    });
+
+    filtroCarreraSelect.addEventListener("change", async e => {
+        filtroCarrera = e.target.value;
+        await cargarAlumnos();
+    });
+
+    // ----------------------------------------------------------
+    // 🔹 Generación de PDF
+    // ----------------------------------------------------------
+    if (downloadButton) {
+        // Descarga
+        downloadButton.addEventListener('click', function () {
+            let pdfUrl = new URL('http://127.0.0.1:8000/api/generar_pdf_alumnos');
+
+            // Filtros en la URL
+            if (filtroEstado !== "all") {
+                pdfUrl.searchParams.append('estado', filtroEstado); 
+            }
+
+            if (filtroCarrera !== "all") {
+                pdfUrl.searchParams.append('carrera', filtroCarrera);
+            }
+            window.open(pdfUrl.toString(), '_self'); 
+        });
+    }
+
+    // ----------------------------------------------------------
+    // 🔹 Inicialización
+    // ----------------------------------------------------------
+    (async () => {
+        await Promise.all([cargarCarreras(), cargarEstados()]);
+        await cargarAlumnos();
+    })();
+});

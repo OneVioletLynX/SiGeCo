@@ -394,9 +394,8 @@ tr.selected {
   margin: 5% auto;
   padding: 30px;
   border-radius: 15px;
-  width: 100%;
-  max-width: 500px;   /* ajustable */
-  overflow-x: hidden;
+  width: fit-content;
+  max-width: 900px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -404,11 +403,32 @@ tr.selected {
 
 /* --- Encabezado del modal --- */
 .modal-content h2 {
-  text-align: center;
-  margin-bottom: 20px;
+  text-align: left;
+  font-weight: 900;
+  margin-bottom: 10px;
 }
 
 
+/* =====================================
+MODAL
+===================================== */
+
+
+
+/* --- Formulario con dos columnas --- */
+#alumnoForm {
+  display: grid;
+  grid-template-columns: 0.75fr 1.25fr 1.25fr 0.75fr;
+  gap: 15px 20px;
+}
+
+.gc-2 {
+  grid-column: span 2;
+}
+
+.gc-1 {
+  grid-column: span 1;
+}
 
 
 
@@ -576,7 +596,6 @@ tr.selected {
   display: flex;
   align-items: flex-end;
   gap: 8px;
-
 }
 .filter-container label {
   font-weight: 600;

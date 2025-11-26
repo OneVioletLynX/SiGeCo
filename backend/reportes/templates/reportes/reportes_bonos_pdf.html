@@ -1,0 +1,119 @@
+{% load static %}
+{% load humanize %} 
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>{{ titulo_reporte }}</title>
+
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 1.5cm;
+        }
+        body {
+            margin-bottom: 100px;
+            margin-top: 80px;
+            font-family: sans-serif;
+        }
+        /* ... (otros estilos CSS) ... */
+
+        .data-table {
+            width: 400px;
+            border-collapse: collapse;
+            font-size: 10pt;
+        }
+
+        .data-table tr {
+            line-height: 1.5;
+        }
+
+        .data-table td:first-child {
+            width: 150px;
+            text-align: left;
+            padding-left: 0;
+        }
+
+        .data-table td:nth-child(2) {
+            text-align: right;
+        }
+        .data-table td:nth-child(3) {
+            width: 150px;
+            text-align: right;
+        }
+        
+        .total-row {
+            border-top: 2px solid #000;
+            font-weight: bold;
+        }
+        
+        .gran-total {
+            /* ... */
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header-img" style="width: 100%; text-align: center;">
+        <img src="{{ header_url }}" style="width: 100%; max-height: 120px;">
+    </div>
+
+    <h1>Bonos cooperadores cobrados por carrera</h1>
+
+    <div class="date-info">
+        Desde: <span>{{ fecha_desde }}</span> al <span>{{ fecha_hasta }}</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Fecha de Informe: <span>{{ fecha_informe }}</span>
+    </div>
+
+    {% for data in data_reporte %}
+        <div class="carrera-section">
+            <div class="carrera-title">{{ data.carrera|upper }}</div>
+
+            <table class="data-table">
+                <tbody>
+                    <tr>
+                        <td>Bonos cobrados:</td>
+                        <td>{{ data.bonos_cobrados }}</td>
+                        <td>${{ data.monto_bonos_total|default:0.00|floatformat:2|intcomma }}</td> 
+                    </tr>
+                    
+                    <tr>
+                        <td>Vencidos:</td>
+                        <td>0</td> 
+                        <td>${{ data.vencidos|default:0.00|floatformat:2|intcomma }}</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>Inscripciones:</td>
+                        <td>{% if data.inscripciones > 0 %}1{% else %}0{% endif %}</td>
+                        <td>${{ data.inscripciones|default:0.00|floatformat:2|intcomma }}</td>
+                    </tr>
+                    
+                    <tr class="total-row">
+                        <td colspan="2">TOTAL COBRADO:</td>
+                        <td>${{ data.total_cobrado|default:0.00|floatformat:2|intcomma }}</td> 
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    {% empty %}
+        <p>No se encontraron registros de cuotas o inscripciones para los filtros seleccionados.</p>
+    {% endfor %}
+
+    <div class="gran-total">
+        <span class="gran-total-label">TOTAL GENERAL DE BONOS CONTADOS:</span> 
+        <span>{{ total_general_bonos }}</span>
+    </div>
+    <div class="gran-total">
+        <span class="gran-total-label">RECAUDACIÓN TOTAL DEL PERIODO (Bonos + Inscripciones):</span> 
+        <span>${{ total_general_cobrado|default:0.00|floatformat:2|intcomma }}</span>
+    </div>
+
+    <div class="footer-fixed footer-img">
+        <img src="{{ footer_url }}" style="width: 100%; max-height: 80px;">
+    </div>
+
+</body>
+
+</html>
