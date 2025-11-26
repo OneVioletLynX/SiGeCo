@@ -46,40 +46,48 @@ class ValoresDetail(APIView):
 # --- NUEVO ENDPOINT: Valor vigente ---
 class ValorVigenteView(APIView):
     """
-    Devuelve el valor vigente para una carrera y concepto en una fecha dada.
-    Ejemplo: /api/valores/vigente/?carrera=3&concepto=1&fecha=2025-11-12
+    Devuelve el valor vigente para una carrera, un concepto y una fecha.
+    Si la fecha es mayor al último valor, devuelve el último.
+    Si la fecha es anterior al primero, devuelve el primero.
     """
     def get(self, request):
         carrera = request.query_params.get("carrera")
         concepto = request.query_params.get("concepto")
         fecha_str = request.query_params.get("fecha")
-        fecha = date.fromisoformat(fecha_str) if fecha_str else date.today()
-
+        
         if not carrera or not concepto:
-            return Response(
-                {"error": "Debe indicar carrera y concepto"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response({"error": "Debe indicar carrera y concepto"}, status=400)
 
+        try:
+            fecha = date.fromisoformat(fecha_str) if fecha_str else date.today()
+        except:
+            return Response({"error": "Fecha inválida"}, status=400)
+
+        # 1) Primer intento: valor vigente exacto
         valor = (
-            Valor.objects.filter(
-                id_carrera=carrera,
-                id_concepto=concepto,
-                fecha_inicio__lte=fecha,
-            )
-            .filter(Q(fecha_fin__isnull=True) | Q(fecha_fin__gte=fecha))
+            Valor.objects
+            .filter(id_carrera=carrera, id_concepto=concepto, fecha_inicio__lte=fecha)
             .order_by("-fecha_inicio")
             .first()
         )
 
-        if not valor:
-            return Response(
-                {"mensaje": "No hay valor vigente para la fecha indicada"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        if valor:
+            # Se encontró uno válido → devolverlo
+            return Response(ValorSerializer(valor).data)
 
-        serializer = ValorSerializer(valor)
-        return Response(serializer.data)
+        # 2) Si NO se encontró (la fecha es anterior a todos)
+        # devolver el PRIMERO cargado (el más antiguo)
+        valor = (
+            Valor.objects
+            .filter(id_carrera=carrera, id_concepto=concepto)
+            .order_by("fecha_inicio")
+            .first()
+        )
+
+        if not valor:
+            return Response({"error": "No hay valores disponibles"}, status=404)
+
+        return Response(ValorSerializer(valor).data)
 
 
 # --- CRUD de Conceptos ---

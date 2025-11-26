@@ -1,25 +1,39 @@
 from datetime import date
+from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
+from django.core.paginator import Paginator, EmptyPage
+from django.db.models import Q
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
-from rest_framework.response import Response
+
+# Modelos
 from alumnos.models import Alumno
 from django.utils import timezone
 from .models import MesPago, MetodoPago, Pago, PagoDetalle
+
+# Serializers
 from .serializers import (
     MesPagoSerializer, MetodoPagoSerializer, PagoSerializer, PagoDetalleSerializer
 )
 
+# --- VISTAS DEL FRONTEND ---
+
+def home_ctacte(request):
+    return render(request, "ctacte/home.html")
+
+# --- VISTAS DE LA API ---
+
 @api_view(['GET'])
 def ctacte_api_root(request):
     return Response({
-        'meses': request.build_absolute_uri('meses/'),
-        'metodos-pagos': request.build_absolute_uri('metodos-pagos/'),
-        'pagos': request.build_absolute_uri('pagos/'),
-        'pagos-detalle': request.build_absolute_uri('pagos-detalle/'),
+        'meses': request.build_absolute_uri(reverse('ctacte:mespago-list')),
+        'metodos-pagos': request.build_absolute_uri(reverse('ctacte:metodopago-list')),
+        'pagos': request.build_absolute_uri(reverse('ctacte:pago-list')),
+        'pagos-detalle': request.build_absolute_uri(reverse('ctacte:pagodetalle-list')),
     })
+
 
 # -------- MesPago --------
 class MesPagoListCreate(APIView):
@@ -159,24 +173,24 @@ class PagoDetalleDetail(APIView):
         obj = get_object_or_404(PagoDetalle, pk=pk)
         obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
 class RegistrarPago(APIView):
     def post(self, request):
         try:
             data = request.data
+
             alumno_id = data.get("id_alumno")
             metodo_id = data.get("id_metodo_pago")
-            meses_ids = data.get("meses", [])
+            meses_data = data.get("meses", [])
             importe_total = float(data.get("importe_total"))
-            anio_req = data.get("anio")  # opcional: si el front lo envía
 
-            if not alumno_id or not metodo_id or not meses_ids:
-                return Response({"error": "Faltan datos obligatorios"}, status=status.HTTP_400_BAD_REQUEST)
+            if not alumno_id or not metodo_id or not meses_data:
+                return Response({"error": "Faltan datos obligatorios"}, status=400)
 
             alumno = Alumno.objects.get(pk=alumno_id)
             metodo = MetodoPago.objects.get(pk=metodo_id)
 
-            anio_pago = int(anio_req) if anio_req else timezone.now().year
-
+            # Crear cabecera del pago
             pago = Pago.objects.create(
                 id_alumno=alumno,
                 id_metodo_pago=metodo,
@@ -184,14 +198,24 @@ class RegistrarPago(APIView):
                 importe_total=importe_total
             )
 
-            importe_por_mes = round(importe_total / len(meses_ids), 2)
-            for mes_id in meses_ids:
+            # Calcular importe por mes (prorrateo)
+            importe_por_mes = round(importe_total / len(meses_data), 2)
+
+            # Crear cada detalle
+            for item in meses_data:
+                mes_id = item["mes"]
+                anio_pago = item["anio"]
+
                 mes = MesPago.objects.get(pk=mes_id)
+
+                # concepto_id: 1 cuota, 2 inscripción
+                concepto_id = 2 if mes.descripcion.lower().startswith("insc") else 1
+
                 PagoDetalle.objects.create(
                     pago=pago,
                     mes=mes,
                     anio_pago=anio_pago,
-                    id_concepto_id=1,  # 1 = Cuota
+                    id_concepto_id=concepto_id,
                     importe=importe_por_mes
                 )
 
@@ -199,29 +223,19 @@ class RegistrarPago(APIView):
                 "success": True,
                 "id_pago": pago.id_pago,
                 "alumno": f"{alumno.apellido}, {alumno.nombre}",
-                "importe_total": importe_total,
-                "anio_pago": anio_pago,
-                "cantidad_meses": len(meses_ids)
-            }, status=status.HTTP_201_CREATED)
+                "total": importe_total,
+                "cantidad_meses": len(meses_data)
+            }, status=201)
 
-        except Alumno.DoesNotExist:
-            return Response({"error": "Alumno no encontrado"}, status=status.HTTP_404_NOT_FOUND)
-        except MetodoPago.DoesNotExist:
-            return Response({"error": "Método de pago no encontrado"}, status=status.HTTP_404_NOT_FOUND)
-        except MesPago.DoesNotExist:
-            return Response({"error": "Mes no válido"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": str(e)}, status=400)
 
 
 class MesesPendientes(APIView):
     """
     GET /api/ctacte/pendientes/?alumno=<id>
-
-    Devuelve:
-    - anio_ingreso
-    - inscripcion_pendiente (True/False)
-    - meses { "2026": [...], "2027": [...], ... }
+    Calcula qué meses debe el alumno basándose en su año de ingreso
+    y su último pago realizado.
     """
 
     def get(self, request):
@@ -231,14 +245,11 @@ class MesesPendientes(APIView):
 
         alumno = get_object_or_404(Alumno, pk=alumno_id)
 
-        # -------------------------
         # 1) AÑO DE INGRESO
-        # -------------------------
+        # Si anio_ingreso es None, usar el año de inscripción
         anio_ingreso = alumno.anio_ingreso or alumno.inscripcion.year
 
-        # -------------------------
         # 2) ÚLTIMO AÑO PAGADO
-        # -------------------------
         ult_pago = (
             PagoDetalle.objects
             .filter(pago__id_alumno_id=alumno.id_alumno)
@@ -249,6 +260,8 @@ class MesesPendientes(APIView):
         )
 
         if ult_pago:
+            # Si pagó 2024, mostramos hasta 2025 (anio_final + 1)
+            # El max asegura que no vayamos hacia atrás si el ingreso es posterior
             anio_final = max(anio_ingreso, ult_pago + 1)
         else:
             anio_final = anio_ingreso + 1  # Nunca pagó nada
@@ -263,9 +276,7 @@ class MesesPendientes(APIView):
             .values("id_mes", "descripcion")
         )
 
-        # -------------------------
-        # 4) MESES YA PAGADOS
-        # -------------------------
+        # 4) MESES YA PAGADOS (Tupla: año, mes_id)
         pagados = set(
             PagoDetalle.objects
             .filter(pago__id_alumno_id=alumno.id_alumno, mes__isnull=False)
@@ -297,11 +308,14 @@ class MesesPendientes(APIView):
 
             # Agregar meses comunes (enero–diciembre)
             for mes in meses_catalogo:
+                # Si la combinación (2025, Marzo) no está pagada, se agrega
                 if (anio, mes["id_mes"]) not in pagados:
                     disponibles.append({
                         "id_mes": mes["id_mes"],
                         "descripcion": mes["descripcion"]
                     })
+            if disponibles:
+                meses_por_anio[str(anio)] = disponibles
 
             meses_por_anio[str(anio)] = disponibles
 

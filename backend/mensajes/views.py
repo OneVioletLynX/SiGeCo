@@ -1,16 +1,18 @@
 # En mensajes/views.py
-
 from django.shortcuts import get_object_or_404, render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.http import JsonResponse
+# from django.http import JsonResponse
 from django.utils import timezone
-from datetime import datetime
+# from datetime import datetime
 
 from .models import Mensaje
 from .serializers import MensajeSerializer
 from .mensajes_instantaneos import enviar_mensaje_instantaneo
+
+from alumnos.models import Alumno 
+from .enviar_whatsapp import enviar_whatsapp
 
 # -------------------------------
 # Vistas principales de la API
@@ -25,34 +27,40 @@ class MensajeListCreate(APIView):
     # MÉTODO GET CORREGIDO (REEMPLAZA TU MÉTODO 'get' ACTUAL)
     # ----------------------------------------------------
     def get(self, request):
-        
-        # 1. Obtener parámetros de la URL
-        tipo_envio = request.GET.get('tipo_envio', '') # El nuevo filtro
+        # 1. Obtener parámetros
+        tipo_envio = request.GET.get('tipo_envio', '')
+        search = request.GET.get('search', '').strip()  # <--- NUEVO: Capturar búsqueda
         page = int(request.GET.get('page', 1))
-        page_size = int(request.GET.get('page_size', 10)) # Default a 10 como en tu JS
+        page_size = int(request.GET.get('page_size', 10))
 
         # 2. Queryset base
         qs = Mensaje.objects.all().order_by('-fecha_creacion')
 
-        # 3. Aplicar filtro (si existe)
+        # 3. Aplicar filtros
         if tipo_envio:
             qs = qs.filter(tipo_envio=tipo_envio)
+        
+        if search:  # <--- NUEVO: Lógica de búsqueda
+            from django.db.models import Q  # Importar Q al inicio del archivo si no está
+            qs = qs.filter(
+                Q(titulo__icontains=search) | 
+                Q(descripcion__icontains=search)
+            )
 
-        # 4. Paginación manual (la misma lógica que tenías en 'mensajes_list')
+        # 4. Paginación manual
         total = qs.count()
         start = (page - 1) * page_size
         end = start + page_size
         
-        # 5. Serializar los resultados de la página
         serializer = MensajeSerializer(qs[start:end], many=True)
 
-        # 6. Devolver respuesta en el formato que el JS espera
         return Response({
             'count': total,
             'num_pages': (total + page_size - 1) // page_size,
             'page': page,
             'page_size': page_size,
-            'results': serializer.data, # El JS espera la clave 'results'
+            'next': end < total, # <--- NUEVO: Flag para saber si hay sig. página
+            'results': serializer.data,
         })
     # ----------------------------------------------------
     # FIN DE LA CORRECCIÓN
@@ -121,6 +129,73 @@ class MensajeListCreate(APIView):
         print("SERIALIZER NO ES VÁLIDO.")
         print("Errores:", serializer.errors)
         # --- FIN DEBUG ---
+        return Response(serializer.errors, status=400)
+    
+    def post(self, request):
+        print("\n--- INICIANDO POST /api/mensajes/ ---")
+        
+        serializer = MensajeSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            # 1. Guardamos el mensaje primero
+            fecha_envio_aware = serializer.validated_data.get('fecha_envio')
+            fecha_final = fecha_envio_aware if fecha_envio_aware else timezone.now()
+
+            mensaje = serializer.save(
+                fecha_envio=fecha_final,
+                estado_envio='pendiente'
+            )
+            
+            # 2. Lógica de envío INSTANTÁNEO (si no es programado)
+            if not mensaje.en_programado:
+                
+                # Obtenemos los IDs de los destinatarios (viene del JSON)
+                ids_alumnos = request.data.get('destino_deudores', [])
+                
+                # --- CASO CORREO ---
+                if mensaje.tipo_envio == 'correo':
+                    carreras_destino = request.data.get('destino_carrera', [])
+                    enviar_mensaje_instantaneo(
+                        mensaje,
+                        alumnos_destino=ids_alumnos,
+                        carreras_destino=carreras_destino
+                    )
+                    mensaje.estado_envio = 'enviado'
+                    mensaje.save()
+
+                # --- CASO WHATSAPP (NUEVO) ---
+                elif mensaje.tipo_envio == 'whatsapp':
+                    print(f"🚀 Iniciando envío masivo de WhatsApp a {len(ids_alumnos)} alumnos...")
+                    
+                    # Buscamos los objetos Alumno en la base de datos
+                    alumnos = Alumno.objects.filter(pk__in=ids_alumnos)
+                    
+                    enviados_ok = 0
+                    
+                    for alumno in alumnos:
+                        # IMPORTANTE: Revisa si tu campo se llama 'telefono', 'celular' o 'movil'
+                        # Aquí asumo que se llama 'telefono'.
+                        telefono = getattr(alumno, 'telefono', None) 
+                        
+                        if telefono:
+                            # Llamamos a nuestra función de utilidad
+                            exito = enviar_whatsapp(telefono, mensaje.descripcion)
+                            if exito:
+                                enviados_ok += 1
+                        else:
+                            print(f"⚠️ El alumno {alumno.id} no tiene teléfono registrado.")
+
+                    # Actualizamos el estado del mensaje
+                    if enviados_ok > 0:
+                        mensaje.estado_envio = 'enviado'
+                    else:
+                        mensaje.estado_envio = 'fallido' # Opcional, si ninguno salió
+                        
+                    mensaje.save()
+                    print(f"🏁 Fin envío WhatsApp. Total enviados: {enviados_ok}")
+
+            return Response(MensajeSerializer(mensaje).data, status=201)
+        
         return Response(serializer.errors, status=400)
 
 

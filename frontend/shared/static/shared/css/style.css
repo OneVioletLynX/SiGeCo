@@ -372,10 +372,11 @@ th.asc img {
 
 /* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ TOOLBAR ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 
+
 tr.selected {
   background-color: #cce5ff;
 }
-/* --- Modal general --- */
+
 .modal {
   display: none;
   position: fixed;
@@ -576,7 +577,6 @@ tr.selected {
   display: flex;
   align-items: flex-end;
   gap: 8px;
-
 }
 .filter-container label {
   font-weight: 600;

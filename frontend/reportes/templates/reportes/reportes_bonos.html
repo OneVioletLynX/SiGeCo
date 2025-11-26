@@ -1,0 +1,46 @@
+{% extends "shared/base.html" %}
+{% load static %}
+
+{% block title %}Reporte de Bonos Cooperadores{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'shared/css/reportes_pdf.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="main-report-container">
+
+    <h2>Bonos Cooperadores Cobrados por Carrera 💰</h2>
+
+    <div class="table-wrapper">
+        <div class="filter-container">
+            
+            <div class="filtro-group">
+                <label for="fecha_desde" class="form-label fw-bold">Fecha Desde</label>
+                <input type="date" id="fecha_desde" class="form-control" value="2025-01-01">
+            </div>
+
+            <div class="filtro-group">
+                <label for="fecha_hasta" class="form-label fw-bold">Fecha Hasta</label>
+                <input type="date" id="fecha_hasta" class="form-control" value="{% now "Y-m-d" %}">
+            </div>
+
+            <div class="action-button-wrapper">
+                <button id="generar-pdf-bonos-btn" class="btn btn-primary"
+                    data-icon-url="{% static 'shared/assets/print.svg' %}">
+                    <img src="{% static 'shared/assets/print.svg' %}" alt="Imprimir"
+                        style="width: 20px; height: 20px; vertical-align: middle;">
+                    Generar PDF de Bonos
+                </button>
+            </div>
+        </div>
+
+        <p class="mt-3">Asegúrate de seleccionar las fechas y presiona "Generar PDF de Bonos" para obtener el reporte.</p>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'shared/js/reportes_bonos.js' %}" defer></script> 
+{% endblock %}

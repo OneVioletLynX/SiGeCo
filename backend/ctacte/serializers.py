@@ -28,10 +28,11 @@ class PagoDetalleSerializer(serializers.ModelSerializer):
 class PagoDetalleLiteSerializer(serializers.ModelSerializer):
     mes = serializers.CharField(source="mes.descripcion")
     anio = serializers.IntegerField(source="anio_pago")
+    pago_id = serializers.IntegerField(source="pago.id_pago")
 
     class Meta:
         model = PagoDetalle
-        fields = ["mes", "anio", "importe"]
+        fields = ["mes", "anio", "importe", "pago_id"]
 
 
 class PagoSerializer(serializers.ModelSerializer):

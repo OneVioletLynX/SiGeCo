@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>{{ titulo_reporte }}</title>
+
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 1.5cm;
+        }
+        body {
+            margin-bottom: 100px;
+            margin-top: 80px;
+        }
+
+        .header-img {
+            margin-bottom: 25px;
+        }
+
+        .footer-img {
+            margin-top: 25px;
+        }
+
+        h1 {
+            font-size: 18pt;
+            margin-bottom: 3px;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 5px;
+        }
+
+        .report-header { 
+            text-align: left;
+            font-size: 11pt;
+            margin-bottom: 15px;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 10pt;
+        }
+
+        .report-table th,
+        .report-table td {
+            border: 1px solid #ccc;
+            padding: 5px;
+            text-align: left;
+        }
+
+        .footer-fixed {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header-img" style="width: 100%; text-align: center;">
+        <img src="{{ header_url }}" style="width: 100%; max-height: 120px;">
+    </div>
+
+    <h1>{{ titulo_reporte }}</h1>
+
+    <div class="report-header">
+        Fecha de Emisión: {{ fecha_generacion }}
+    </div>
+
+    <table class="report-table">
+        <thead>
+            <tr>
+                <th>Legajo</th>
+                <th>Apellido y Nombre</th>
+                <th>Documento</th>
+                <th>Teléfono</th>
+                <th>Dirección</th>
+                <th>Carrera</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for alumno in data_alumnos %}
+            <tr>
+                <td>{{ alumno.legajo }}</td>
+                <td>{{ alumno.apellido }}, {{ alumno.nombre }}</td>
+                <td>{{ alumno.dni }}</td>
+                <td>{{ alumno.telefono }}</td>
+                <td>{{ alumno.direccion }}</td>
+                <td>{{ alumno.carrera }}</td>
+                <td>{{ alumno.estado }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if not data_alumnos %}
+    <p>No se encontraron alumnos con los filtros seleccionados.</p>
+    {% endif %}
+
+    <div class="footer-fixed footer-img">
+        <img src="{{ footer_url }}" style="width: 100%; max-height: 80px;">
+    </div>
+
+</body>
+
+</html>

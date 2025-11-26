@@ -13,14 +13,15 @@
 
 
     <div class="search-container" style="position: relative;">
-      <input type="text" id="buscador" placeholder="Nombre o DNI" autocomplete="off" class="form-control" />
+      <label for="">Buscar</label>
+      <input type="text" id="buscador" placeholder="Nombre, Apellido o Documento" autocomplete="off" class="form-control" />
       <div id="sugerencias" class="suggestions-box"></div>
     </div>
 
     <div style="display: flex">
 
       <div class="toolbar">
-        <div class="action-button">
+        <div class="action-button" id="btnEliminarPago">
           <img src="{% static 'shared/assets/add.svg' %}" alt="">
           <div class="text">Eliminar</div>
         </div>
@@ -58,7 +59,7 @@
 
 <!-- 🔹 MODAL DE ALTA DE COBRO -->
 <div id="altaModal" class="modal">
-  <div class="modal-content" style="display: flex; flex-direction: row;">
+  <div class="modal-content" style="display: flex; flex-direction: row; max-width: fit-content;">
 
     <!-- 🔹 Lado Izquierdo: Selección de Meses -->
     <div class="meses-container">

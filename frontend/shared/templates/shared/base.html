@@ -15,7 +15,6 @@
 </head>
 
 <body>
-
     <header>
         <div class="left">
             <div class="brand">
@@ -25,11 +24,11 @@
         </div>
         <div class="right">
             <!-- <a href="#"><img src="{% static 'shared/assets/school.svg' %}" alt="carrera"></a>
-        <a href="#"><img src="{% static 'shared/assets/payments.svg' %}" alt="cobros"></a>
-        <a href="#"><img src="{% static 'shared/assets/group.svg' %}" alt="alumnos"></a>
-        <a href="#"><img src="{% static 'shared/assets/mail.svg' %}" alt="notificaciones"></a> -->
-            <a href="#"><img src="{% static 'shared/assets/settings.svg' %}" alt="configuracion"></a>
-            <img src="{% static 'shared/assets/account.svg' %}" alt="img-user" class="user">
+            <a href="#"><img src="{% static 'shared/assets/payments.svg' %}" alt="cobros"></a>
+            <a href="#"><img src="{% static 'shared/assets/group.svg' %}" alt="alumnos"></a>
+            <a href="#"><img src="{% static 'shared/assets/mail.svg' %}" alt="notificaciones"></a> -->
+            <!-- <a href="#"><img src="{% static 'shared/assets/settings.svg' %}" alt="configuracion"></a>
+            <img src="{% static 'shared/assets/account.svg' %}" alt="img-user" class="user"> -->
         </div>
     </header>
 
@@ -38,7 +37,8 @@
             <ul>
                 <li><a href="{% url 'carreras_front:carreras' %}" class="selected"><img
                             src="{% static 'shared/assets/school.svg' %}" alt="carrera"><span>Carreras</span></a></li>
-                <li><a href="{% url 'cobros_front:cobros' %}"><img src="{% static 'shared/assets/payments.svg' %}" alt="cobros"><span>Cobros</span></a>
+                <li><a href="{% url 'cobros_front:cobros' %}"><img src="{% static 'shared/assets/payments.svg' %}"
+                            alt="cobros"><span>Cobros</span></a>
                 </li>
                 <li><a href="{% url 'alumnos_front:alumnos' %}"><img src="{% static 'shared/assets/group.svg' %}"
                             alt="alumnos"><span>Alumnos</span></a></li>
@@ -58,14 +58,16 @@
                         </svg>
                     </a>
                     <ul class="submenu">
-                        <li><a href="#"><img src="{% static 'shared/assets/docs.svg' %}" alt="cobros"><span>Bonos
+                        <li><a href="{% url 'reportes:reportes_bonos' %}"><img src="{% static 'shared/assets/docs.svg' %}" alt="cobros"><span>Bonos
                                     pagados por alumno</span></a></li>
-                        <li><a href="#"><img src="{% static 'shared/assets/docs.svg' %}" alt="cobros"><span>Listado de
+                        <li><a href="{% url 'reportes:reportes_alumnos' %}"><img src="{% static 'shared/assets/docs.svg' %}" alt="cobros"><span>Listado de
                                     alumnos</span></a></li>
                         <li><a href="#"><img src="{% static 'shared/assets/docs.svg' %}"
                                     alt="cobros"><span>Recaudacion</span></a></li>
                     </ul>
                 </li>
+            </ul>
+            </li>
             </ul>
         </nav>
     </div>

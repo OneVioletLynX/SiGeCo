@@ -10,6 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('alumnos', '0001_initial'),
+        ('valores', '0001_initial'),
     ]
 
     operations = [
@@ -56,9 +57,11 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='PagoDetalle',
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
+                ('id_detalle', models.AutoField(primary_key=True, serialize=False)),
+                ('anio_pago', models.PositiveIntegerField(blank=True, null=True)),
                 ('importe', models.DecimalField(decimal_places=2, default=0, max_digits=12)),
-                ('mes', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pagos_detalle', to='ctacte.mespago')),
+                ('id_concepto', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='valores.concepto')),
+                ('mes', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='pagos_detalle', to='ctacte.mespago')),
                 ('pago', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='detalles', to='ctacte.pago')),
             ],
             options={
