@@ -9,7 +9,7 @@ from ctacte.views import MesPagoListCreate, MesPagoDetail, MetodoPagoListCreate,
 from valores.views import ValorVigenteView
 from mensajes.views import MensajeListCreate, MensajeDetail
 from mensajes.views import MensajeListCreate 
-from reportes.views import seccion_contabilidad, seccion_alumnos, seccion_admin
+from reportes.views import seccion_contabilidad, seccion_alumnos, seccion_admin, generar_pdf_alumnos, generar_pdf_bonos_por_carrera
 
 urlpatterns = [ 
 
@@ -61,15 +61,17 @@ urlpatterns = [
     path('api/pago-detalle/', PagoDetalleListCreate.as_view(), name='pago-detalle-lista'), 
     # Para operaciones sobre carreras-cursadas
     path('api/pago-detalle/<int:pago_id>/<int:mes_id>/', PagoDetalleDetail.as_view(), name='pago-detalle-detalle'),
-    #Estadisticas
+    # Estadisticas
     path('api/seccion/contabilidad/', seccion_contabilidad, name='seccion_contabilidad'), 
     path('api/seccion/alumnos/', seccion_alumnos, name='seccion_alumnos'), 
     path('api/seccion/administrativo/', seccion_admin, name='seccion_admin'), 
+    # Reportes
+    path('api/generar_pdf_alumnos/', generar_pdf_alumnos, name='generar_pdf_alumnos'),
+    path('api/generar_pdf_bonos/', generar_pdf_bonos_por_carrera, name='generar_pdf_bonos'),
     # Mensajes
     path('api/mensajes/', MensajeListCreate.as_view(), name='api-mensajes'),
     path('api/mensajes/<int:pk>/', MensajeDetail.as_view(), name='api-mensajes-detail'),
     path('mensajes/', include('mensajes.urls', namespace='mensajes')),
-
     # CTActe: frontend + API
     path('ctacte/', include('ctacte.urls', namespace='ctacte')),
 ]

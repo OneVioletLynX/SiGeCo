@@ -4,95 +4,21 @@
 
 .meses-container {
   max-width: 700px;
-<<<<<<< HEAD
-  margin: 0 auto;
-  padding: 20px;
-=======
   margin-right: 25px;
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
   font-family: "Inter", sans-serif;
   color: #222;
 }
 
-<<<<<<< HEAD
-.meses-container h2 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-}
-
-=======
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
 .year-group {
   margin-bottom: 1.8rem;
 }
 
-<<<<<<< HEAD
-.year-group h3 {
-  font-size: 1.2rem;
-=======
 .modal-content h3 {
   font-weight: 800;
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
   margin-bottom: 0.8rem;
   color: #444;
 }
 
-<<<<<<< HEAD
-.months-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 12px;
-}
-
-/* ================
-   📅 Grilla de meses
-   ================ */
-.months-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  /* 3 columnas */
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.month {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: white;
-  padding: 10px 14px;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.month:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
-}
-
-.month.selected {
-  background-color: #007bff;
-  color: white;
-}
-
-.month.selected span {
-  color: white;
-}
-
-.month img.icono-mes {
-  width: 18px;
-  height: 18px;
-  transition: transform 0.2s ease;
-}
-
-.month.selected img.icono-mes {
-  filter: invert(1); /* vuelve blanca la imagen en modo seleccionado */
-  transform: scale(1.1);
-}
-
-=======
 /* ===============================
    📅 Grilla de meses
    =============================== */
@@ -107,7 +33,6 @@
 /* ===============================
    🔲 Tarjetas de mes individual
    =============================== */
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
 
 .month {
   display: flex;
@@ -116,11 +41,7 @@
   background: white;
   padding: 8px 12px;
   border-radius: 10px;
-<<<<<<< HEAD
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-=======
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   cursor: pointer;
 }
@@ -135,8 +56,6 @@
   color: #333;
 }
 
-<<<<<<< HEAD
-=======
 /* Icono dentro del mes */
 .month img.icono-mes {
   width: 18px;
@@ -160,7 +79,6 @@
 }
 
 /* Botón (si lo usás dentro del mes) */
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
 .month button {
   background: none;
   border: none;
@@ -179,27 +97,12 @@
    💳 Detalle de pago
    =============================== */
 .detalle-container {
-<<<<<<< HEAD
-  margin-top: 25px;
-  padding: 20px;
-  border-radius: 12px;
-  background-color: #f8f9fa;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.detalle-container h3 {
-  margin-bottom: 15px;
-  font-size: 1.2rem;
-  color: #333;
-}
-=======
   display: flex; 
   justify-content: space-between; 
   flex-direction: column; 
   height: 100%;
 }
 
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
 
 .form-group {
   display: flex;
@@ -208,10 +111,6 @@
 }
 
 .form-group label {
-<<<<<<< HEAD
-  font-size: 14px;
-=======
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
   color: #444;
   margin-bottom: 5px;
 }
@@ -223,30 +122,15 @@
   border-radius: 8px;
   font-size: 14px;
   outline: none;
-<<<<<<< HEAD
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
-}
-
-=======
 }
 
 
 /* Ocultos */
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
 .hidden {
   display: none;
 }
 
-<<<<<<< HEAD
-=======
 /* Checkbox de recargo */
->>>>>>> 1c988ca79943e86bcb4fca0a65d0e2eb6e2ecb53
 .recargo {
   display: flex;
   align-items: center;

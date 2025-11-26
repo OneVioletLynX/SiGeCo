@@ -1,0 +1,61 @@
+{% extends "shared/base.html" %}
+{% load static %}
+
+{% block title %}Listado de Alumnos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'shared/css/reportes_pdf.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="main-report-container">
+
+    <div class="table-wrapper">
+        <div class="filter-container">
+
+            <div class="filtro-group">
+                <label class="form-label fw-bold">Estado</label>
+                <select id="filtroEstado" class="form-select filtro">
+                    <option value="all">Todos</option>
+                </select>
+            </div>
+            <div class="filtro-group">
+                <label for="filtroCarrera" class="form-label fw-bold">Carreras</label>
+                <select id="filtroCarrera" class="form-select filtro">
+                    <option value="all">Todas</option>
+                </select>
+            </div>
+
+            <div class="action-button-wrapper">
+                <button id="generar-pdf-btn" class="btn btn-primary"
+                    data-icon-url="{% static 'shared/assets/print.svg' %}">
+                    <img src="{% static 'shared/assets/print.svg' %}" alt="Imprimir"
+                        style="width: 20px; height: 20px; vertical-align: middle;">
+                    Generar PDF Filtrado
+                </button>
+            </div>
+
+        </div>
+
+        <div class="table-content-area">
+            <table id="tabla-alumnos">
+                <thead>
+                    <tr>
+                        <th>Legajo</th>
+                        <th>Apellido y Nombre</th>
+                        <th>Documento</th>
+                        <th>Estado</th>
+                        <th>Carrera</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'shared/js/reportes.js' %}" defer></script>
+{% endblock %}

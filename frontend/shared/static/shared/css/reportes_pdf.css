@@ -1,0 +1,71 @@
+.filter-container {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    align-items: start;
+    gap: 30px;
+    margin-bottom: 20px;
+    width: fit-content;
+}
+
+.filtro-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+#filtroEstadoContainer {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 10px 14px;
+    background: var(--background-color);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 200px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.action-button-wrapper {
+    display: flex;
+    align-items: end;
+}
+
+/* asegurar que padding y borders no rompan anchos */
+* { box-sizing: border-box; }
+
+/* solo este contenedor debe scrollear */
+.table-content-area {
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: auto;
+    max-height: 60vh;
+}
+
+/* prevenir doble scroll en el padre */
+.table-content-area * {
+    overflow: visible !important;
+}
+
+/* tabla coherente */
+#tabla-alumnos {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    min-width: 900px;
+}
+
+/* apariencia */
+#tabla-alumnos th,
+#tabla-alumnos td {
+    padding: 14px 12px;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-bottom: 1px solid #e6e6e6;
+}
