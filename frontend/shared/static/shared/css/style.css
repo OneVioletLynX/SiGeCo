@@ -330,7 +330,6 @@ th.asc img {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin-top: 72px;
     margin-right: 10px;
 }
 
@@ -577,7 +576,7 @@ tr.selected {
   display: flex;
   align-items: flex-end;
   gap: 8px;
-  margin-bottom: 10px;
+
 }
 .filter-container label {
   font-weight: 600;
@@ -630,7 +629,7 @@ tr.selected {
   display: flex;
   flex-direction: column;
   width: 70%;
-  gap: 15px;
+  gap: 10px;
 }
 
 

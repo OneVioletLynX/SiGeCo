@@ -17,8 +17,8 @@ class Valor(models.Model):
     id_valor = models.AutoField(primary_key=True)
     id_carrera = models.ForeignKey(Carrera, on_delete=models.CASCADE, related_name='valores')
     id_concepto = models.ForeignKey(Concepto, on_delete=models.CASCADE, related_name='valores')
-    fecha_inicio = models.DateField()
-    fecha_fin = models.DateField(null=True, blank=True)
+    fecha_inicio = models.DateTimeField()
+    fecha_fin = models.DateTimeField(null=True, blank=True)
     importe = models.DecimalField(max_digits=10, decimal_places=2)
 
     class Meta:
