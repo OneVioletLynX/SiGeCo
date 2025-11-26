@@ -7,13 +7,13 @@ class MensajeSerializer(serializers.ModelSerializer):
         child=serializers.IntegerField(),
         required=False,
         allow_empty=True,
-        write_only=True  # write_only=True es clave aquí
+        write_only=True
     )
     destino_carrera = serializers.ListField(
         child=serializers.IntegerField(),
         required=False,
         allow_empty=True,
-        write_only=True  # write_only=True es clave aquí
+        write_only=True
     )
 
     # Campos que MUESTRAN info (solo para leer)
@@ -47,60 +47,49 @@ class MensajeSerializer(serializers.ModelSerializer):
             'estado_envio'
         ]
 
-    # ---------------------------
+    # ------------------------------------------------------------------------------------
     # Métodos para mostrar info
-    # ---------------------------
+    # ------------------------------------------------------------------------------------
     def get_destino_deudores_info(self, obj):
-        # 'obj' es la instancia de Mensaje
-        # obj.destino_deudores es el campo JSONField (una lista de IDs)
+        # Solución para el FieldError: Quitamos 'telefono_respaldo' de la consulta de valores
         if not obj.destino_deudores:
             return []
         return list(Alumno.objects.filter(id_alumno__in=obj.destino_deudores)
-                       .values('id_alumno', 'nombre', 'apellido', 'email'))
-
+                         .values('id_alumno', 'nombre', 'apellido', 'email', 'telefono'))
+    
     def get_destino_carrera_info(self, obj):
-        # obj.destino_carrera es el campo JSONField (una lista de IDs)
         if not obj.destino_carrera:
             return []
         return list(Carrera.objects.filter(id_carrera__in=obj.destino_carrera)
-                       .values('id_carrera', 'descripcion'))
+                         .values('id_carrera', 'descripcion'))
 
-    # ---------------------------
-    # Crear mensaje (ESTA ES LA CORRECCIÓN)
-    # ---------------------------
+    # ------------------------------------------------------------------------------------
+    # Crear mensaje
+    # ------------------------------------------------------------------------------------
     def create(self, validated_data):
-        # 1. Sacamos las listas de los datos validados
         deudores_ids = validated_data.pop('destino_deudores', [])
         carreras_ids = validated_data.pop('destino_carrera', [])
 
-        # 2. Creamos el objeto Mensaje con el RESTO de los datos
-        #    (validated_data ya no tiene las listas 'virtuales')
         mensaje = super().create(validated_data)
 
-        # 3. Asignamos manualmente las listas a los campos JSONField del modelo
         mensaje.destino_deudores = deudores_ids
         mensaje.destino_carrera = carreras_ids
-        
-        # 4. Guardamos el objeto Mensaje con las listas ya asignadas
         mensaje.save()
 
         return mensaje
 
-    # ---------------------------
-    # Actualizar mensaje (Corregido también por si acaso)
-    # ---------------------------
+    # ------------------------------------------------------------------------------------
+    # Actualizar mensaje
+    # ------------------------------------------------------------------------------------
     def update(self, instance, validated_data):
-        # Sacamos las listas
         deudores_ids = validated_data.pop('destino_deudores', None)
         carreras_ids = validated_data.pop('destino_carrera', None)
 
-        # Asignamos las listas si es que vinieron
         if deudores_ids is not None:
             instance.destino_deudores = deudores_ids
         if carreras_ids is not None:
             instance.destino_carrera = carreras_ids
 
-        # Actualizamos el resto de los campos
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 

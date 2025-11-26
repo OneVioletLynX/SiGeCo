@@ -3,491 +3,621 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Mensajes</title>
+  <title>Gestión de Mensajes | SiGeCo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
   <style>
+    :root {
+      --primary: #2563eb; --primary-hover: #1d4ed8;
+      --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+      --surface: #ffffff; --bg: #f3f4f6;
+      --text-main: #1f2937; --text-secondary: #6b7280;
+      --border: #e5e7eb; --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; padding: 20px; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-main); padding: 24px; }
     
-    .ctacte-container { max-width: 1400px; margin: 0 auto; }
+    .layout-container { max-width: 1400px; margin: 0 auto; }
+    .main-content { display: flex; gap: 24px; margin-bottom: 80px; align-items: flex-start; }
     
-    /* Barra de header eliminada */
+    /* --- SIDEBAR --- */
+    .sidebar { 
+      display: flex; flex-direction: column; gap: 12px; width: 260px; 
+      background: var(--surface); padding: 20px; border-radius: 12px;
+      box-shadow: var(--shadow); position: sticky; top: 20px;
+    }
+    .sidebar-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; margin-top: 10px; margin-bottom: 4px; }
     
-    .ctacte-main { display: flex; gap: 20px; margin-bottom: 80px; }
-    .ctacte-actions { display: flex; flex-direction: column; gap: 10px; width: 200px; /* Ancho fijo para el panel */ }
-    /* Estilo para el filtro en el panel lateral */
-    .ctacte-actions label { font-size: 14px; font-weight: 500; margin-top: 10px; margin-bottom: 5px; }
-    .ctacte-actions select { padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; width: 100%; }
+    /* Buscador */
+    .search-box { position: relative; margin-bottom: 10px; }
+    .search-box input { padding-left: 36px; }
+    .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-secondary); }
 
-    .ctacte-grid-wrapper { flex: 1; }
-    .ctacte-table-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow-x: auto; }
-    
-    table { width: 100%; border-collapse: collapse; }
-    th { background: #f8f9fa; padding: 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #dee2e6; white-space: nowrap; }
-    td { padding: 12px; border-bottom: 1px solid #e9ecef; }
-    tr:hover { background: #f8f9fa; }
+    .sidebar select, .sidebar input { padding: 10px; border: 1px solid var(--border); border-radius: 8px; width: 100%; background: #f9fafb; font-size: 14px; }
+    .sidebar input:focus, .sidebar select:focus { border-color: var(--primary); outline: none; background: white; }
 
-    /* Estilo para filas en modo edición */
-    tbody.modo-seleccion-editar tr { cursor: pointer; }
-    tbody.modo-seleccion-editar tr:hover { background: #e9f5ff; }
-    /* Estilo para filas en modo eliminación */
-    tbody.modo-seleccion-eliminar tr { cursor: crosshair; }
-    tbody.modo-seleccion-eliminar tr:hover { background: #f8d7da; }
+    /* --- TABLA --- */
+    .grid-wrapper { flex: 1; }
+    .table-card { background: var(--surface); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border); }
+    .table-responsive { overflow-x: auto; }
+    
+    table { width: 100%; border-collapse: collapse; min-width: 900px; }
+    th { background: #f9fafb; padding: 14px 16px; text-align: left; font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); border-bottom: 1px solid var(--border); }
+    td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: top; }
+    tr:hover { background-color: #f9fafb; }
 
-    .btn { padding: 10px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: all 0.2s; width: 100%; text-align: left; }
-    .btn:hover:not(:disabled) { opacity: 0.8; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-primary { background: #007bff; color: white; }
-    .btn-secondary { background: #6c757d; color: white; }
-    .btn-ghost { background: white; border: 1px solid #ddd; }
-    .btn-warning { background: #ffc107; color: black; }
-    .btn-danger { background: #dc3545; color: white; }
+    /* Modos */
+    body.mode-edit tr:hover { background-color: #eff6ff; cursor: pointer; }
+    body.mode-delete tr:hover { background-color: #fef2f2; cursor: pointer; }
+
+    /* --- BOTONES --- */
+    .btn { 
+      display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; 
+      border: 1px solid transparent; border-radius: 8px; cursor: pointer; 
+      font-size: 14px; font-weight: 500; transition: all 0.2s; justify-content: flex-start;
+    }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
     
-    .btn-fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: #007bff; color: white; font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; text-align: center; }
-    .btn-fab .fab-label { display: none; }
+    .btn-ghost { background: transparent; color: var(--text-main); width: 100%; }
+    .btn-ghost:hover { background: var(--bg); }
+    .btn-ghost.active-edit { background: #eff6ff; color: var(--primary); border-color: var(--primary); font-weight: 600; }
+    .btn-ghost.active-delete { background: #fef2f2; color: var(--danger); border-color: var(--danger); font-weight: 600; }
+
+    .btn-primary { background: var(--primary); color: white; justify-content: center; }
+    .btn-primary:hover { background: var(--primary-hover); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+    .btn-danger { background: var(--danger); color: white; justify-content: center; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-secondary { background: white; color: var(--text-main); border-color: var(--border); justify-content: center; }
+    .btn-secondary:hover { background: #f9fafb; }
+
+    .btn-fab { 
+      position: fixed; bottom: 32px; right: 32px; width: 56px; height: 56px; 
+      border-radius: 50%; background: var(--primary); color: white; border: none;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); display: flex; align-items: center; 
+      justify-content: center; cursor: pointer; transition: transform 0.2s; z-index: 50;
+    }
+    .btn-fab:hover { transform: scale(1.1); }
+
+    /* --- UI ELEMENTS --- */
+    .icon { width: 20px; height: 20px; stroke-width: 2; }
+    .badge { padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+    .badge-whatsapp { background: #d1fae5; color: #065f46; }
+    .badge-email { background: #dbeafe; color: #1e40af; }
+    .badge-gray { background: #f3f4f6; color: #4b5563; }
+
+    .btn-wa-inline { 
+      background: white; border: 1px solid var(--success); color: var(--success); 
+      width: 24px; height: 24px; border-radius: 50%; display: inline-flex; 
+      align-items: center; justify-content: center; margin-left: 6px; cursor: pointer; transition: all 0.2s; 
+    }
+    .btn-wa-inline:hover { background: var(--success); color: white; transform: scale(1.1); }
+
+    /* --- MODALES --- */
+    .modal-backdrop { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); align-items: center; justify-content: center; z-index: 1000; }
+    .modal { background: white; border-radius: 16px; width: 95%; max-width: 680px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); animation: slideUp 0.3s ease-out; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     
-    .pagination { display: flex; justify-content: center; align-items: center; gap: 20px; margin-top: 20px; }
-    .empty { text-align: center; padding: 40px; color: #6c757d; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--border); }
+    .modal-title { font-size: 18px; font-weight: 700; color: var(--text-main); }
+    .modal-body { padding: 24px; }
+
+    /* Form Grid */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .form-col-full { grid-column: span 2; }
     
-    /* Modal */
-    .modal-backdrop { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
-    .modal { background: white; border-radius: 8px; width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #dee2e6; }
-    .modal-title { font-size: 20px; font-weight: 600; }
-    .modal-close-btn { background: none; border: none; font-size: 24px; cursor: pointer; padding: 0 10px; }
-    .modal-body { padding: 20px; }
-    
-    form { padding: 20px; }
-    .form-row { display: flex; gap: 15px; margin-bottom: 15px; }
-    .field { flex: 1; display: flex; flex-direction: column; }
-    .field.oculto { display: none; }
-    label { margin-bottom: 5px; font-weight: 500; font-size: 14px; }
-    label small { color: #6c757d; font-weight: normal; }
-    input, select, textarea { padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px; font-family: inherit; }
+    label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--text-main); }
+    input, select, textarea { padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; width: 100%; background: #f9fafb; transition: all 0.2s; }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); background: white; outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
     textarea { min-height: 100px; resize: vertical; }
-    
-    .form-error { display: none; background: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin: 15px 0; }
-    .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-    
+
+    .form-actions { display: flex; justify-content: flex-end; gap: 12px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .form-error { background: #fef2f2; color: #991b1b; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #fecaca; display: none; font-size: 14px; }
+
     /* Autocomplete */
-    .autocomplete-multi { position: relative; border: 1px solid #ced4da; border-radius: 4px; padding: 8px; background: white; min-height: 42px; }
-    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
-    .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; background: #007bff; color: white; border-radius: 12px; font-size: 13px; }
-    .chip-remove { background: none; border: none; color: white; cursor: pointer; font-size: 16px; padding: 0; line-height: 1; }
-    #alumnos-input, #carreras-input { border: none; padding: 4px; flex: 1; min-width: 120px; outline: none; }
-    .suggestions { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ced4da; border-top: none; border-radius: 0 0 4px 4px; max-height: 200px; overflow-y: auto; z-index: 10; margin-top: -1px; }
-    .suggestion-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
-    .suggestion-item:hover { background: #f8f9fa; }
+    .autocomplete-multi { border: 1px solid var(--border); border-radius: 8px; padding: 6px; background: #f9fafb; min-height: 44px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .autocomplete-multi:focus-within { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+    .chip { background: #eff6ff; color: var(--primary); padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+    .chip-remove { border: none; background: none; color: var(--primary); cursor: pointer; font-size: 16px; font-weight: bold; padding: 0; }
+    #alumnos-input, #carreras-input { background: transparent; border: none; padding: 4px; flex: 1; min-width: 100px; outline: none; box-shadow: none; }
+    .suggestions { position: absolute; background: white; border: 1px solid var(--border); border-radius: 8px; width: 25%; max-height: 200px; overflow-y: auto; z-index: 20; margin-top: 4px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+    .suggestion-item { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid var(--bg); font-size: 14px; }
+    .suggestion-item:hover { background: #f3f4f6; color: var(--primary); }
+
+    /* TOAST (Notificaciones) */
+    #toast-container { position: fixed; top: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
+    .toast { background: white; padding: 16px 20px; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-left: 4px solid var(--primary); font-size: 14px; font-weight: 500; animation: slideIn 0.3s ease-out; display: flex; align-items: center; gap: 10px; min-width: 300px; }
+    .toast.success { border-color: var(--success); }
+    .toast.error { border-color: var(--danger); }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* Type Selector */
+    .type-selector { display: flex; justify-content: center; gap: 20px; padding: 10px 0; }
+    .type-btn { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 20px; border: 2px solid var(--border); border-radius: 12px; width: 150px; cursor: pointer; transition: all 0.2s; background: white; }
+    .type-btn:hover { border-color: var(--primary); background: #eff6ff; transform: translateY(-3px); }
+    .type-label { font-weight: 600; font-size: 14px; }
+    /* Agrega esto al final de tus estilos si no está */
+    .oculto { 
+      display: none !important; 
+    }
   </style>
 </head>
 <body>
 
-<section class="ctacte-container">
-  <div class="ctacte-main">
-    <aside class="ctacte-actions">
-      <button type="button" class="btn btn-ghost" id="btn-iniciar-eliminacion">✕ Eliminar</button>
-      <button type="button" class="btn btn-ghost" id="btn-iniciar-edicion">✏️ Editar</button>
-      <button type="button" class="btn btn-ghost" id="mensajes-refresh-btn">🔄 Refrescar</button>
-      
-      <label for="filtro-tipo-envio">Filtrar por tipo:</label>
-      <select id="filtro-tipo-envio">
-        <option value="">Todos los tipos</option>
-        <option value="correo">Email</option>
-        <option value="whatsapp">Whatsapp</option>
-      </select>
-    </aside>
+<div id="toast-container"></div>
 
-    <div class="ctacte-grid-wrapper">
-      <div class="ctacte-table-card">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Título</th>
-              <th>Descripción</th>
-              <th>Tipo envío</th>
-              <th>Fecha envío</th>
-              <th>Destinatarios (deudores)</th>
-              <th>Destinatarios (carreras)</th>
-              <th>Fecha creación</th>
-            </tr> 
-          </thead>
-          <tbody id="mensajes-body"></tbody>
-        </table>
-
-        <div id="mensajes-empty" class="empty" style="display:none;">No hay mensajes.</div>
-
-        <div class="pagination">
-          <button id="mensajes-prev-btn" class="btn" style="width: auto;">‹ Anterior</button>
-          <div id="mensajes-page-info">Página 1 / 1</div>
-          <button id="mensajes-next-btn" class="btn" style="width: auto;">Siguiente ›</button>
-        </div>
-      </div>
+<div id="confirm-modal" class="modal-backdrop" style="z-index: 2100;">
+  <div class="modal" style="max-width: 400px;">
+    <div class="modal-header" style="border-bottom:none; padding-bottom:0;">
+      <div class="modal-title" id="confirm-title">Confirmar Acción</div>
     </div>
-  </div>
-
-  <div class="ctacte-fab">
-    <button type="button" class="btn btn-fab" id="fab-btn">
-      <span class="fab-icon">＋</span>
-      <span class="fab-label">Agregar</span>
-    </button>
-  </div>
-</section>
-
-<div id="tipo-modal" class="modal-backdrop">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Tipo de mensaje</div>
-      <button id="tipo-modal-close" class="modal-close-btn">←</button>
-    </div>
-    <div class="modal-body">
-      <p style="margin-bottom: 20px;">¿Qué tipo de mensaje querés crear?</p>
-      <div style="display: flex; justify-content: center; gap: 12px;">
-        <button id="btn-instantaneo" type="button" class="btn btn-primary" style="width: auto;">⚡ Instantáneo</button>
-        <button id="btn-programado" type="button" class="btn btn-ghost" style="width: auto;">🕓 Programado</button>
+    <div class="modal-body" style="padding-top: 10px;">
+      <p id="confirm-msg" style="color: var(--text-secondary); margin-bottom: 20px;"></p>
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button id="confirm-btn-cancel" class="btn btn-secondary">Cancelar</button>
+        <button id="confirm-btn-ok" class="btn btn-primary">Confirmar</button>
       </div>
     </div>
   </div>
 </div>
 
-<div id="modal-backdrop" class="modal-backdrop">
+<section class="layout-container">
+  <div class="main-content">
+    
+    <aside class="sidebar">
+      <div class="sidebar-title">Buscador</div>
+      <div class="search-box">
+        <!-- <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg> -->
+        <input type="text" id="search-input" placeholder="Buscar mensaje...">
+      </div>
+
+      <div class="sidebar-title">Acciones</div>
+      <button class="btn btn-ghost" id="btn-toggle-edit">
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"></path></svg>
+        Modo Edición
+      </button>
+      
+      <button class="btn btn-ghost" id="btn-toggle-delete">
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+        Modo Eliminación
+      </button>
+      
+      <button class="btn btn-ghost" id="btn-refresh">
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+        Refrescar
+      </button>
+      
+      <hr style="border:0; border-top:1px solid var(--border); margin:10px 0;">
+      
+      <div class="sidebar-title">Filtrar por canal</div>
+      <select id="filtro-tipo">
+        <option value="">Todos los canales</option>
+        <option value="correo">Email</option>
+        <option value="whatsapp">WhatsApp</option>
+      </select>
+    </aside>
+
+    <div class="grid-wrapper">
+      <div class="table-card">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Descripción</th>
+                <th>Canal</th>
+                <th>Fecha</th>
+                <th>Alumnos</th>
+                <th>Carreras</th>
+              </tr> 
+            </thead>
+            <tbody id="mensajes-body"></tbody>
+          </table>
+        </div>
+        
+        <div id="mensajes-empty" style="text-align:center; padding:60px; color:var(--text-secondary); display:none;">
+          <svg class="icon" style="width:48px; height:48px; opacity:0.3; margin-bottom:10px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+          <p>No se encontraron mensajes.</p>
+        </div>
+
+        <div class="pagination" style="display:flex; justify-content:center; align-items:center; gap:16px; padding:20px; border-top:1px solid var(--border);">
+          <button id="btn-prev" class="btn btn-secondary" style="width:auto;">Anterior</button>
+          <span id="page-info" style="font-size:14px; color:var(--text-secondary);"></span>
+          <button id="btn-next" class="btn btn-secondary" style="width:auto;">Siguiente</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button id="fab-btn" class="btn-fab" title="Nuevo Mensaje">
+    <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>
+  </button>
+</section>
+
+<div id="tipo-modal" class="modal-backdrop">
+  <div class="modal" style="max-width: 500px;">
+    <div class="modal-header">
+      <div class="modal-title">Nuevo Mensaje</div>
+      <button class="btn btn-ghost" style="width:auto; padding:4px;" onclick="closeTipoModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="text-align:center; color:var(--text-secondary); margin-bottom:24px;">¿Cómo deseas enviar este mensaje?</p>
+      <div class="type-selector">
+        <div class="type-btn" id="btn-choice-instant">
+          <svg class="icon" style="width:32px; height:32px; color:#f59e0b;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          <span class="type-label">Instantáneo</span>
+          <span style="font-size:11px; color:var(--text-secondary);">WhatsApp o Email</span>
+        </div>
+        <div class="type-btn" id="btn-choice-scheduled">
+          <svg class="icon" style="width:32px; height:32px; color:#2563eb;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span class="type-label">Programado</span>
+          <span style="font-size:11px; color:var(--text-secondary);">Solo Email</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="main-modal" class="modal-backdrop">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title" id="modal-title">Nuevo mensaje</div>
-      <button id="modal-close-x" class="modal-close-btn">←</button>
+      <div class="modal-title" id="main-modal-title">Redactar Mensaje</div>
+      <button class="btn btn-ghost" style="width:auto; padding:4px;" onclick="closeMainModal()">✕</button>
     </div>
 
-    <form id="nuevo-mensaje-form" novalidate>
-      <div class="form-row">
-        <div class="field">
-          <label for="titulo">Título <small>(obligatorio)</small></label>
-          <input id="titulo" name="titulo" type="text" required maxlength="200" placeholder="Título del mensaje">
+    <form id="mensaje-form" novalidate>
+      <div class="modal-body">
+        <div class="form-error" id="form-error"></div>
+
+        <div class="form-grid">
+          <div class="field form-col-full">
+            <label for="titulo">Asunto / Título</label>
+            <input id="titulo" name="titulo" type="text" required maxlength="200" placeholder="Ej: Aviso de Vencimiento">
+          </div>
+
+          <div class="field">
+            <label for="tipo_envio">Canal de Envío</label>
+            <select id="tipo_envio" name="tipo_envio" required>
+              <option value="whatsapp">WhatsApp (Instantáneo)</option> 
+              <option value="correo">Correo Electrónico</option>
+            </select>
+          </div>
+
+          <div class="field" id="container-fecha">
+            <label for="fecha_envio">Fecha Programada</label>
+            <input type="datetime-local" id="fecha_envio" name="fecha_envio">
+          </div>
+
+          <div class="field form-col-full">
+            <label for="descripcion">Cuerpo del Mensaje</label>
+            <textarea id="descripcion" name="descripcion" placeholder="Escribe el contenido..." required></textarea>
+          </div>
+
+          <div class="field form-col-full">
+            <label>Alumnos Destinatarios</label>
+            <div class="autocomplete-multi" id="ac-alumnos">
+              <div class="chips" id="chips-alumnos"></div>
+              <input type="text" id="input-alumnos" placeholder="Buscar alumno..." autocomplete="off">
+              <div class="suggestions" id="sugg-alumnos" style="display:none;"></div>
+            </div>
+          </div>
+
+          <div class="field form-col-full">
+            <label>Carreras Destinatarias</label>
+            <div class="autocomplete-multi" id="ac-carreras">
+              <div class="chips" id="chips-carreras"></div>
+              <input type="text" id="input-carreras" placeholder="Buscar carrera..." autocomplete="off">
+              <div class="suggestions" id="sugg-carreras" style="display:none;"></div>
+            </div>
+          </div>
         </div>
-       <div class="field">
-        <label for="tipo_envio">Tipo de envío <small>(obligatorio)</small></label>
-        <select id="tipo_envio" name="tipo_envio" required>
-          <option value="" disabled>Seleccionar...</option>
-          <option value="whatsapp" disabled>Whatsapp</option>
-          <option value="correo" selected>Email</option>
-        </select>
-      </div>
-      </div>
 
-      <div class="form-row">
-        <div class="field" id="fecha-envio-group">
-          <label for="fecha_envio">Fecha y hora de envío:</label>
-          <input type="datetime-local" id="fecha_envio" name="fecha_envio" required>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeMainModal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btn-save">Guardar Mensaje</button>
         </div>
-      </div>
-
-      <div class="form-row">
-        <div class="field" style="flex:2">
-          <label for="descripcion">Descripción <small>(obligatorio)</small></label>
-          <textarea id="descripcion" name="descripcion" placeholder="Texto del mensaje..." required></textarea>
-        </div>
-      </div>
-
-      <div class="form-row" style="flex-direction: column;">
-        <label>Destinos alumnos</label>
-        <div class="autocomplete-multi" id="alumnos-autocomplete">
-          <div class="chips" id="alumnos-chips"></div>
-          <input type="text" id="alumnos-input" placeholder="Buscar alumnos..." autocomplete="off" />
-          <div class="suggestions" id="alumnos-suggestions" style="display:none;"></div>
-        </div>
-
-        <label style="margin-top: 15px;">Destinos carreras</label>
-        <div class="autocomplete-multi" id="carreras-autocomplete">
-          <div class="chips" id="carreras-chips"></div>
-          <input type="text" id="carreras-input" placeholder="Buscar carreras..." autocomplete="off" />
-          <div class="suggestions" id="carreras-suggestions" style="display:none;"></div>
-        </div>
-      </div>
-
-      <div class="form-error" id="form-error">Por favor completa los campos requeridos.</div>
-
-      <div class="form-actions">
-        <button type="button" id="modal-cancel" class="btn btn-secondary" style="width: auto;">Cancelar</button>
-        <button type="submit" class="btn btn-primary" style="width: auto;">Guardar</button>
       </div>
     </form>
   </div>
 </div>
 
 <script>
-// ============ CONFIGURACIÓN ============
-const API_URL = '/api/mensajes/';
-const ALUMNOS_SEARCH_URL = '/api/alumnos/?search=';
-const CARRERAS_SEARCH_URL = '/api/carreras/?search=';
+// ==========================================
+// CONFIGURACIÓN & HELPERS
+// ==========================================
+const API_BASE = '/api/mensajes/';
+const SEARCH_ALUMNOS = '/api/alumnos/?search=';
+const SEARCH_CARRERAS = '/api/carreras/?search=';
 
-// ============ HELPERS ============
 function getCookie(name) {
   const v = document.cookie.split('; ').find(row => row.startsWith(name + '='));
   return v ? decodeURIComponent(v.split('=')[1]) : null;
 }
-
 const csrftoken = getCookie('csrftoken');
 
+// Convertir ISO a formato datetime-local (YYYY-MM-DDTHH:MM)
+function toDatetimeLocal(isoString) {
+  if (!isoString) return '';
+  const date = new Date(isoString);
+  date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+  return date.toISOString().slice(0, 16);
+}
+
+// Formato legible para tabla
 function formatDate(iso) {
   if (!iso) return '';
-  // Formatea a YYYY-MM-DDTHH:MM para el input datetime-local
-  if (iso.length > 16) {
-      return iso.slice(0, 16);
-  }
   const d = new Date(iso);
-  return isNaN(d) ? iso : d.toLocaleDateString('es-AR');
+  return isNaN(d) ? iso : d.toLocaleDateString('es-AR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
 }
 
-function escapeHtml(unsafe) {
-  return String(unsafe)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
+function escapeHtml(text) {
+  if (!text) return "";
+  return String(text).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m]);
 }
 
-// ============ MODALES ============
-const tipoModal = document.getElementById('tipo-modal');
-const tipoModalClose = document.getElementById('tipo-modal-close');
-const btnInstantaneo = document.getElementById('btn-instantaneo');
-const btnProgramado = document.getElementById('btn-programado');
-const fabBtn = document.getElementById('fab-btn');
-
-const modalBackdrop = document.getElementById('modal-backdrop');
-const modalCloseX = document.getElementById('modal-close-x');
-const modalCancel = document.getElementById('modal-cancel');
-const nuevoForm = document.getElementById('nuevo-mensaje-form');
-const formError = document.getElementById('form-error');
-const fechaEnvioGroup = document.getElementById('fecha-envio-group');
-const fechaEnvioInput = document.getElementById('fecha_envio');
-const modalTitle = document.getElementById('modal-title');
-
-function openTipoModal() { tipoModal.style.display = 'flex'; }
-function closeTipoModal() { tipoModal.style.display = 'none'; }
-function openMainModal() {
-  modalBackdrop.style.display = 'flex';
-  setTimeout(() => document.getElementById('titulo').focus(), 50);
+// TOAST NOTIFICATION SYSTEM (Reemplazo de alert)
+function showToast(msg, type='success') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<span>${msg}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3500);
 }
-function closeMainModal() {
-  modalBackdrop.style.display = 'none';
-  nuevoForm.reset();
-  formError.style.display = 'none';
+
+// MODAL DE CONFIRMACIÓN (Reemplazo de window.confirm)
+function showConfirm(title, msg, onConfirm) {
+  const modal = document.getElementById('confirm-modal');
+  const titleEl = document.getElementById('confirm-title');
+  const msgEl = document.getElementById('confirm-msg');
+  const btnOk = document.getElementById('confirm-btn-ok');
+  const btnCancel = document.getElementById('confirm-btn-cancel');
+
+  titleEl.textContent = title;
+  msgEl.textContent = msg;
+  modal.style.display = 'flex';
+
+  // Limpiar eventos previos para evitar múltiples triggers
+  const newBtnOk = btnOk.cloneNode(true);
+  btnOk.parentNode.replaceChild(newBtnOk, btnOk);
   
-  // Limpiar estado de edición
-  delete nuevoForm.dataset.esProgramado;
-  delete nuevoForm.dataset.editId;
-  modalTitle.textContent = 'Nuevo mensaje';
+  const newBtnCancel = btnCancel.cloneNode(true);
+  btnCancel.parentNode.replaceChild(newBtnCancel, btnCancel);
 
-  fechaEnvioGroup.classList.remove('oculto');
-  alumnosAC.clear();
-  carrerasAC.clear();
+  newBtnOk.addEventListener('click', () => {
+    modal.style.display = 'none';
+    if(onConfirm) onConfirm();
+  });
+
+  newBtnCancel.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
 }
 
-fabBtn.addEventListener('click', openTipoModal);
-tipoModalClose.addEventListener('click', closeTipoModal);
-tipoModal.addEventListener('click', (e) => { if (e.target === tipoModal) closeTipoModal(); });
+// ==========================================
+// LÓGICA WHATSAPP (FRONTEND)
+// ==========================================
+function abrirWhatsApp(telefono, mensaje) {
+  if (!telefono || telefono == 0) return;
+  let t = String(telefono).replace(/\D/g, '');
+  if (!t.startsWith('54')) t = '549' + t;
+  const url = `https://wa.me/${t}?text=${encodeURIComponent(mensaje)}`;
+  window.open(url, '_blank');
+}
 
-btnInstantaneo.addEventListener('click', () => {
-  closeTipoModal();
-  fechaEnvioGroup.classList.add('oculto');
-  fechaEnvioInput.required = false;
-  fechaEnvioInput.value = '';
-  nuevoForm.dataset.esProgramado = 'false';
-  openMainModal();
-});
+// ==========================================
+// GESTIÓN DE ESTADO (MODOS)
+// ==========================================
+let appState = {
+  mode: 'normal', // 'normal', 'edit', 'delete'
+  page: 1,
+  filter: '',
+  search: '' // Para el buscador
+};
 
-btnProgramado.addEventListener('click', () => {
-  closeTipoModal();
-  fechaEnvioGroup.classList.remove('oculto');
-  fechaEnvioInput.required = true;
-  nuevoForm.dataset.esProgramado = 'true';
-  openMainModal();
-});
+const btnEdit = document.getElementById('btn-toggle-edit');
+const btnDel = document.getElementById('btn-toggle-delete');
+const body = document.body;
 
-modalCloseX.addEventListener('click', closeMainModal);
-modalCancel.addEventListener('click', closeMainModal);
-modalBackdrop.addEventListener('click', (e) => { if (e.target === modalBackdrop) closeMainModal(); });
+function setMode(newMode) {
+  // Reset visuales
+  btnEdit.classList.remove('active-edit');
+  btnDel.classList.remove('active-delete');
+  body.classList.remove('mode-edit', 'mode-delete');
 
-// ============ AUTOCOMPLETE GENÉRICO (con método 'set') ============
-function setupAutocompleteMulti(opts) {
-  const input = document.getElementById(opts.inputId);
-  const sugg = document.getElementById(opts.suggestionsId);
-  const chips = document.getElementById(opts.chipsId);
-  const selected = [];
-
-  let debounceTimer;
-  
-  input.addEventListener('input', (e) => {
-    clearTimeout(debounceTimer);
-    const q = e.target.value.trim();
-    
-    if (!q) {
-      sugg.style.display = 'none';
-      sugg.innerHTML = '';
-      return;
+  if (appState.mode === newMode) {
+    appState.mode = 'normal'; // Toggle off
+  } else {
+    appState.mode = newMode;
+    if (newMode === 'edit') {
+      btnEdit.classList.add('active-edit');
+      body.classList.add('mode-edit');
+      showToast('Modo Edición Activo: Selecciona un mensaje de la tabla', 'success');
     }
+    if (newMode === 'delete') {
+      btnDel.classList.add('active-delete');
+      body.classList.add('mode-delete');
+      showToast('Modo Eliminación Activo: Selecciona para borrar', 'error');
+    }
+  }
+}
 
-    debounceTimer = setTimeout(async () => {
+btnEdit.addEventListener('click', () => setMode('edit'));
+btnDel.addEventListener('click', () => setMode('delete'));
+
+// ==========================================
+// AUTOCOMPLETE LOGIC
+// ==========================================
+function initAutocomplete(opts) {
+  const input = document.getElementById(opts.inputId);
+  const suggBox = document.getElementById(opts.suggId);
+  const chipBox = document.getElementById(opts.chipId);
+  let selected = [];
+  let timer;
+
+  const render = () => {
+    chipBox.innerHTML = '';
+    selected.forEach((item, idx) => {
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+      chip.innerHTML = `${item.name} <button type="button" class="chip-remove">×</button>`;
+      chip.querySelector('button').onclick = () => { selected.splice(idx, 1); render(); };
+      chipBox.appendChild(chip);
+    });
+  };
+
+  input.addEventListener('input', (e) => {
+    clearTimeout(timer);
+    const q = e.target.value.trim();
+    if (!q) { suggBox.style.display='none'; return; }
+    
+    timer = setTimeout(async () => {
       try {
-        const res = await fetch(opts.searchUrl + encodeURIComponent(q));
-        if (!res.ok) throw new Error('Error en búsqueda');
-        
+        const res = await fetch(opts.url + encodeURIComponent(q));
         const data = await res.json();
-        sugg.innerHTML = '';
-
         const items = Array.isArray(data) ? data : (data.results || []);
         
-        if (items.length === 0) {
-          sugg.innerHTML = '<div class="suggestion-item" style="color:#6c757d;">No se encontraron resultados</div>';
-          sugg.style.display = 'block';
-          return;
-        }
-        
-        items.slice(0, 8).forEach(item => {
-          const itemId = item[opts.idField];
-          const displayName = typeof opts.nameField === 'function' ? opts.nameField(item) : item[opts.nameField];
-          
-          if (!itemId) {
-            console.warn('Item sin ID detectado:', item);
-            return;
-          }
-
-          const d = document.createElement('div');
-          d.className = 'suggestion-item';
-          d.textContent = displayName;
-          d.dataset.id = itemId;
-          d.dataset.name = displayName;
-
-          d.addEventListener('click', () => {
-            if (selected.some(s => String(s.id) === String(d.dataset.id))) {
-              input.value = '';
-              sugg.style.display = 'none';
-              return;
-            }
-            const finalId = isNaN(d.dataset.id) ? d.dataset.id : Number(d.dataset.id);
-            selected.push({ id: finalId, name: d.dataset.name });
-            renderChips();
-            input.value = '';
-            sugg.style.display = 'none';
+        suggBox.innerHTML = '';
+        if (!items.length) {
+          suggBox.innerHTML = '<div class="suggestion-item" style="color:#999">Sin resultados</div>';
+        } else {
+          items.slice(0,6).forEach(i => {
+            const id = i[opts.idField];
+            const name = opts.formatName(i);
+            const div = document.createElement('div');
+            div.className = 'suggestion-item';
+            div.textContent = name;
+            div.onclick = () => {
+              if(!selected.some(s=>String(s.id)===String(id))) { selected.push({id, name}); render(); }
+              input.value=''; suggBox.style.display='none';
+            };
+            suggBox.appendChild(div);
           });
-
-          sugg.appendChild(d);
-        });
-
-        sugg.style.display = items.length ? 'block' : 'none';
-      } catch (err) {
-        console.error('Error autocomplete:', err);
-        sugg.innerHTML = '<div class="suggestion-item" style="color:#dc3545;">Error al buscar</div>';
-        sugg.style.display = 'block';
-      }
+        }
+        suggBox.style.display='block';
+      } catch(e){ console.error(e); }
     }, 300);
   });
 
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Backspace' && input.value === '' && selected.length) {
-      selected.pop();
-      renderChips();
-    }
-  });
-
-  document.addEventListener('click', (e) => {
-    if (!input.contains(e.target) && !sugg.contains(e.target)) {
-      sugg.style.display = 'none';
-    }
-  });
-
-  function renderChips() {
-    chips.innerHTML = '';
-    selected.forEach((s, idx) => {
-      const c = document.createElement('span');
-      c.className = 'chip';
-      c.textContent = s.name;
-      
-      const x = document.createElement('button');
-      x.type = 'button';
-      x.className = 'chip-remove';
-      x.textContent = '×';
-      x.addEventListener('click', () => {
-        selected.splice(idx, 1);
-        renderChips();
-      });
-      
-      c.appendChild(x);
-      chips.appendChild(c);
-    });
-  }
+  document.addEventListener('click', e => { if(!input.contains(e.target)) suggBox.style.display='none'; });
 
   return {
     getIds: () => selected.map(s => s.id),
-    clear: () => {
-      selected.length = 0;
-      renderChips();
-      input.value = '';
-      sugg.style.display = 'none';
-    },
-    set: (items) => {
-      selected.length = 0;
-      if (Array.isArray(items)) {
-        items.forEach(item => {
-          if (item && typeof item.id !== 'undefined' && typeof item.name !== 'undefined') {
-            selected.push(item);
-          }
-        });
-      }
-      renderChips();
-    }
+    set: (items) => { selected = items || []; render(); },
+    clear: () => { selected = []; render(); input.value=''; suggBox.style.display='none'; }
   };
 }
 
-// ============ INICIALIZACIÓN AUTOCOMPLETE ============
-const alumnosAC = setupAutocompleteMulti({
-  inputId: 'alumnos-input',
-  suggestionsId: 'alumnos-suggestions',
-  chipsId: 'alumnos-chips',
-  searchUrl: ALUMNOS_SEARCH_URL,
-  idField: 'id_alumno',
-  nameField: item => `${item.apellido}, ${item.nombre}`
+const acAlumnos = initAutocomplete({ 
+  inputId:'input-alumnos', suggId:'sugg-alumnos', chipId:'chips-alumnos', 
+  url: SEARCH_ALUMNOS, idField:'id_alumno', formatName: i => `${i.apellido}, ${i.nombre}` 
+});
+const acCarreras = initAutocomplete({ 
+  inputId:'input-carreras', suggId:'sugg-carreras', chipId:'chips-carreras', 
+  url: SEARCH_CARRERAS, idField:'id_carrera', formatName: i => i.descripcion 
 });
 
-const carrerasAC = setupAutocompleteMulti({
-  inputId: 'carreras-input',
-  suggestionsId: 'carreras-suggestions',
-  chipsId: 'carreras-chips',
-  searchUrl: CARRERAS_SEARCH_URL,
-  idField: 'id_carrera',
-  nameField: 'descripcion'
+// ==========================================
+// CRUD & FORMULARIO
+// ==========================================
+const form = document.getElementById('mensaje-form');
+const containerFecha = document.getElementById('container-fecha');
+const inputFecha = document.getElementById('fecha_envio');
+const selectTipo = document.getElementById('tipo_envio');
+let isScheduled = false; 
+
+// Abrir Modal de Tipo
+document.getElementById('fab-btn').addEventListener('click', () => {
+  document.getElementById('tipo-modal').style.display = 'flex';
 });
 
-// ============ SUBMIT FORMULARIO (POST / PUT) ============
-nuevoForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  formError.style.display = 'none';
+function closeTipoModal() { document.getElementById('tipo-modal').style.display = 'none'; }
 
-  const titulo = document.getElementById('titulo').value.trim();
-  const descripcion = document.getElementById('descripcion').value.trim();
-  const tipo_envio = document.getElementById('tipo_envio').value;
-  const fecha_envio = document.getElementById('fecha_envio').value || null;
-  const esProgramado = nuevoForm.dataset.esProgramado === 'true';
+// Selección de Tipo
+document.getElementById('btn-choice-instant').addEventListener('click', () => {
+  isScheduled = false;
+  setupForm(false);
+});
+document.getElementById('btn-choice-scheduled').addEventListener('click', () => {
+  isScheduled = true;
+  setupForm(true);
+});
 
-  if (!titulo || !descripcion || !tipo_envio || (esProgramado && !fecha_envio)) {
-    formError.textContent = 'Complete todos los campos obligatorios.';
-    formError.style.display = 'block';
-    return;
+function setupForm(scheduled, editData = null) {
+  closeTipoModal();
+  document.getElementById('main-modal').style.display = 'flex';
+  document.getElementById('form-error').style.display = 'none';
+  
+  
+  // Reset
+  if (!editData) {
+    form.reset();
+    acAlumnos.clear();
+    acCarreras.clear();
+    delete form.dataset.editId;
+    document.getElementById('main-modal-title').textContent = 'Nuevo Mensaje';
+  } else {
+    document.getElementById('main-modal-title').textContent = `Editar Mensaje #${editData.id}`;
+    form.dataset.editId = editData.id;
+    document.getElementById('titulo').value = editData.titulo;
+    document.getElementById('descripcion').value = editData.descripcion;
+    
+    // Poblar Autocompletes
+    const als = (editData.destino_deudores_info||[]).map(d=>({id:d.id_alumno, name:`${d.apellido}, ${d.nombre}`}));
+    const crs = (editData.destino_carrera_info||[]).map(c=>({id:c.id_carrera, name:c.descripcion}));
+    acAlumnos.set(als);
+    acCarreras.set(crs);
   }
 
+  // Configurar campos
+  if (scheduled) {
+    containerFecha.classList.remove('oculto');
+    inputFecha.required = true;
+    // Programado -> Solo Email
+    selectTipo.innerHTML = `<option value="correo" selected>Correo Electrónico</option>`;
+    selectTipo.disabled = true;
+    
+    if(editData && editData.fecha_envio) inputFecha.value = toDatetimeLocal(editData.fecha_envio);
+  } else {
+    containerFecha.classList.add('oculto');
+    inputFecha.required = false;
+    inputFecha.value = '';
+    // Instantáneo -> WhatsApp o Email
+    selectTipo.disabled = false;
+    selectTipo.innerHTML = `
+      <option value="whatsapp">WhatsApp (Instantáneo)</option>
+      <option value="correo">Correo Electrónico</option>
+    `;
+    if(editData) selectTipo.value = editData.tipo_envio;
+  }
+}
+
+function closeMainModal() { document.getElementById('main-modal').style.display = 'none'; }
+
+// SUBMIT
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btnSave = document.getElementById('btn-save');
+  btnSave.disabled = true;
+  btnSave.textContent = 'Guardando...';
+
+  const tipoFinal = selectTipo.disabled ? 'correo' : selectTipo.value;
+  
   const payload = {
-    titulo,
-    descripcion,
-    tipo_envio,
-    fecha_envio,
-    destino_deudores: alumnosAC.getIds(),
-    destino_carrera: carrerasAC.getIds(),
-    en_programado: esProgramado,
-    estado_envio: esProgramado ? 'pendiente' : 'enviado'
+    titulo: document.getElementById('titulo').value,
+    descripcion: document.getElementById('descripcion').value,
+    tipo_envio: tipoFinal,
+    fecha_envio: inputFecha.value || null,
+    en_programado: isScheduled,
+    estado_envio: isScheduled ? 'pendiente' : 'enviado',
+    destino_deudores: acAlumnos.getIds(),
+    destino_carrera: acCarreras.getIds()
   };
 
-  const esEdicion = !!nuevoForm.dataset.editId;
-  const url = esEdicion ? `${API_URL}${nuevoForm.dataset.editId}/` : API_URL;
-  const method = esEdicion ? 'PUT' : 'POST';
+  const editId = form.dataset.editId;
+  const url = editId ? `${API_BASE}${editId}/` : API_BASE;
+  const method = editId ? 'PUT' : 'POST';
 
   try {
     const res = await fetch(url, {
@@ -496,273 +626,183 @@ nuevoForm.addEventListener('submit', async (e) => {
       body: JSON.stringify(payload)
     });
 
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.detail || `Error ${res.status}`);
-    }
-
+    if (!res.ok) throw new Error('Error al guardar');
+    
     const data = await res.json();
-    console.log(esEdicion ? 'Mensaje actualizado:' : 'Mensaje creado:', data);
+    showToast(editId ? 'Mensaje actualizado correctamente' : 'Mensaje creado con éxito');
     closeMainModal();
-    loadMensajes(currentPage);
+    loadData(appState.page);
+
+    // === AUTO ENVÍO WHATSAPP ===
+    if (tipoFinal === 'whatsapp' && !isScheduled) {
+      if (data.destino_deudores_info && data.destino_deudores_info.length > 0) {
+        const count = data.destino_deudores_info.length;
+        
+        // Usar el Modal de Confirmación en lugar de confirm()
+        showConfirm(
+          'Envío de WhatsApp', 
+          `El registro se guardó. ¿Quieres abrir WhatsApp para enviar a ${count} destinatarios ahora?`, 
+          () => {
+            // Lógica de apertura masiva
+            data.destino_deudores_info.forEach(d => {
+              abrirWhatsApp(d.telefono, data.descripcion);
+            });
+            showToast('Abriendo pestañas de WhatsApp...', 'success');
+          }
+        );
+      }
+    }
 
   } catch (err) {
-    console.error('Error al guardar:', err);
-    let msg = 'Error al guardar';
-    if (err.message) {
-        msg += `: ${err.message}`;
-    }
-    formError.textContent = msg;
-    formError.style.display = 'block';
+    document.getElementById('form-error').textContent = err.message;
+    document.getElementById('form-error').style.display = 'block';
+  } finally {
+    btnSave.disabled = false;
+    btnSave.textContent = 'Guardar Mensaje';
   }
 });
 
-// ============ TABLA MENSAJES ============
+// ==========================================
+// ELIMINAR
+// ==========================================
+function deleteItem(id) {
+  showConfirm('Eliminar Mensaje', '¿Estás seguro de que deseas eliminar este mensaje permanentemente?', async () => {
+    try {
+      const res = await fetch(`${API_BASE}${id}/`, {
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': csrftoken }
+      });
+      if (res.ok || res.status === 204) {
+        showToast('Mensaje eliminado', 'success');
+        loadData(appState.page);
+        setMode('normal');
+      } else {
+        showToast('Error al eliminar', 'error');
+      }
+    } catch(e) { console.error(e); }
+  });
+}
+
+// ==========================================
+// CARGA DE DATOS
+// ==========================================
 const tbody = document.getElementById('mensajes-body');
-const refreshBtn = document.getElementById('mensajes-refresh-btn');
-const prevBtn = document.getElementById('mensajes-prev-btn');
-const nextBtn = document.getElementById('mensajes-next-btn');
-const pageInfo = document.getElementById('mensajes-page-info');
-const emptyMsg = document.getElementById('mensajes-empty');
-const filtroTipoEnvio = document.getElementById('filtro-tipo-envio'); // CAMBIO: Filtro agregado
+const emptyState = document.getElementById('mensajes-empty');
+let cacheData = {};
 
-// CAMBIO: Lógica de selección (Editar y Eliminar)
-const btnIniciarEdicion = document.getElementById('btn-iniciar-edicion');
-const btnIniciarEliminacion = document.getElementById('btn-iniciar-eliminacion');
-let modoEdicion = false;
-let modoEliminacion = false;
-let cacheMensajes = {};
-
-function cancelarModoEdicion() {
-    modoEdicion = false;
-    btnIniciarEdicion.textContent = '✏️ Editar';
-    btnIniciarEdicion.classList.remove('btn-warning');
-    btnIniciarEdicion.classList.add('btn-ghost');
-    tbody.classList.remove('modo-seleccion-editar');
-}
-
-function cancelarModoEliminacion() {
-    modoEliminacion = false;
-    btnIniciarEliminacion.textContent = '✕ Eliminar';
-    btnIniciarEliminacion.classList.remove('btn-danger');
-    btnIniciarEliminacion.classList.add('btn-ghost');
-    tbody.classList.remove('modo-seleccion-eliminar');
-}
-
-btnIniciarEdicion.addEventListener('click', () => {
-    if (modoEliminacion) cancelarModoEliminacion(); // Desactiva el otro modo
-    modoEdicion = !modoEdicion;
-    if (modoEdicion) {
-        btnIniciarEdicion.textContent = 'Seleccionando (Cancelar)';
-        btnIniciarEdicion.classList.add('btn-warning');
-        btnIniciarEdicion.classList.remove('btn-ghost');
-        tbody.classList.add('modo-seleccion-editar');
-    } else {
-        cancelarModoEdicion();
-    }
-});
-
-btnIniciarEliminacion.addEventListener('click', () => {
-    if (modoEdicion) cancelarModoEdicion(); // Desactiva el otro modo
-    modoEliminacion = !modoEliminacion;
-    if (modoEliminacion) {
-        btnIniciarEliminacion.textContent = 'Seleccionando (Cancelar)';
-        btnIniciarEliminacion.classList.add('btn-danger');
-        btnIniciarEliminacion.classList.remove('btn-ghost');
-        tbody.classList.add('modo-seleccion-eliminar');
-    } else {
-        cancelarModoEliminacion();
-    }
-});
-// --- Fin lógica de selección ---
-
-let currentPage = 1;
-let pageSize = 10;
-let numPages = 1;
-let lastTipoEnvio = ''; // CAMBIO: Variable para el filtro
-
-// CAMBIO: 'fetch' ahora incluye 'tipo_envio'
-async function fetchMensajesRaw({ tipo_envio = '', page = 1, page_size = 10 } = {}) {
-  const url = new URL(API_URL, window.location.origin);
-  if (tipo_envio) url.searchParams.set('tipo_envio', tipo_envio); // Agrega el filtro a la URL
-  url.searchParams.set('page', page);
-  url.searchParams.set('page_size', page_size);
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('API error: ' + res.status);
-  return res.json();
-}
-
-// CAMBIO: 'loadMensajes' ahora usa 'lastTipoEnvio'
-async function loadMensajes(page = 1) {
+async function loadData(page = 1) {
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-secondary);">Cargando datos...</td></tr>';
+  
   try {
-    cacheMensajes = {};
-    // Pasa el filtro actual al hacer el fetch
-    const data = await fetchMensajesRaw({ tipo_envio: lastTipoEnvio, page, page_size: pageSize });
+    const url = new URL(API_BASE, window.location.origin);
+    if (appState.filter) url.searchParams.set('tipo_envio', appState.filter);
+    if (appState.search) url.searchParams.set('search', appState.search); // Busca en el backend
+    url.searchParams.set('page', page);
+    
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('Error API');
+    const data = await res.json();
     
     const rows = data.results || [];
-    const count = data.count || 0;
-
-    currentPage = page;
-    numPages = Math.max(1, Math.ceil(count / pageSize));
-
-    renderRows(rows);
-    updatePagination();
-    prevBtn.disabled = currentPage <= 1;
-    nextBtn.disabled = currentPage >= numPages;
-    emptyMsg.style.display = rows.length === 0 ? 'block' : 'none';
+    renderTable(rows);
+    
+    appState.page = page;
+    document.getElementById('page-info').textContent = `Página ${page}`;
+    document.getElementById('btn-prev').disabled = page <= 1;
+    document.getElementById('btn-next').disabled = !data.next;
+    
+    emptyState.style.display = rows.length ? 'none' : 'block';
 
   } catch (err) {
-    console.error('Error cargando mensajes:', err);
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#dc3545;">Error cargando mensajes</td></tr>`;
-    emptyMsg.style.display = 'none';
+    console.error(err);
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">No se pudo conectar con el servidor</td></tr>';
   }
 }
 
-function renderRows(rows) {
+function renderTable(rows) {
   tbody.innerHTML = '';
-  if (!rows || rows.length === 0) {
-    emptyMsg.style.display = 'block';
-    return;
-  }
-  emptyMsg.style.display = 'none';
-
+  cacheData = {};
+  
   rows.forEach(row => {
-    const rowId = row.id ?? row.pk;
-    cacheMensajes[rowId] = row;
-
-    const deudores = Array.isArray(row.destino_deudores_info)
-      ? row.destino_deudores_info.map(d => `${d.apellido}, ${d.nombre}`).join(', ')
-      : '';
-    const carreras = Array.isArray(row.destino_carrera_info)
-      ? row.destino_carrera_info.map(c => c.descripcion).join(', ')
-      : '';
-
+    cacheData[row.id] = row;
     const tr = document.createElement('tr');
-    tr.dataset.id = rowId;
-    tr.innerHTML = `
-      <td>${rowId}</td>
-      <td>${escapeHtml(row.titulo ?? '')}</td>
-      <td>${escapeHtml(row.descripcion ?? '')}</td>
-      <td>${escapeHtml(row.tipo_envio ?? '')}</td>
-      <td>${formatDate(row.fecha_envio)}</td>
-      <td>${escapeHtml(deudores)}</td>
-      <td>${escapeHtml(carreras)}</td>
-      <td>${formatDate(row.fecha_creacion)}</td>
-    `;
+    tr.dataset.id = row.id;
     
-    // CAMBIO: Listener de click actualizado para manejar ambos modos
-    tr.addEventListener('click', () => {
-        const mensaje = cacheMensajes[tr.dataset.id];
-        if (!mensaje) return;
+    // Badge Canal
+    let badge = `<span class="badge badge-gray">${row.tipo_envio}</span>`;
+    if (row.tipo_envio === 'whatsapp') badge = `<span class="badge badge-whatsapp">WhatsApp</span>`;
+    if (row.tipo_envio === 'correo') badge = `<span class="badge badge-email">Email</span>`;
 
-        if (modoEdicion) {
-            abrirModalParaEditar(mensaje);
-        } else if (modoEliminacion) {
-            eliminarMensaje(mensaje.id, mensaje.titulo);
+    // Lista Alumnos
+    let alumnosHtml = '';
+    if (row.destino_deudores_info) {
+      alumnosHtml = row.destino_deudores_info.map(d => {
+        const name = escapeHtml(`${d.apellido}, ${d.nombre}`);
+        let btn = '';
+        // Botón individual WA
+        if (row.tipo_envio === 'whatsapp') {
+          const msgSafe = (row.descripcion||'').replace(/'/g, "\\'");
+          btn = `<button class="btn-wa-inline" onclick="event.stopPropagation(); abrirWhatsApp('${d.telefono}', '${msgSafe}')" title="Enviar ahora">➤</button>`;
         }
+        return `<div>${name} ${btn}</div>`;
+      }).join('');
+    }
+
+    const carreras = (row.destino_carrera_info||[]).map(c=>c.descripcion).join(', ');
+
+    tr.innerHTML = `
+      <td><span style="color:var(--text-secondary); font-weight:600;">#${row.id}</span></td>
+      <td>${escapeHtml(row.titulo)}</td>
+      <td><div style="max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(row.descripcion)}</div></td>
+      <td>${badge}</td>
+      <td>${formatDate(row.fecha_envio)}</td>
+      <td>${alumnosHtml}</td>
+      <td>${escapeHtml(carreras)}</td>
+    `;
+
+    // Click en fila (Manejador de Modos)
+    tr.addEventListener('click', (e) => {
+      if(e.target.closest('.btn-wa-inline')) return; // Ignorar clic en botón WA
+      
+      const item = cacheData[row.id];
+      
+      if (appState.mode === 'edit') {
+        isScheduled = item.en_programado; 
+        setupForm(isScheduled, item);
+      } else if (appState.mode === 'delete') {
+        deleteItem(row.id);
+      }
     });
 
     tbody.appendChild(tr);
   });
 }
 
-function updatePagination() {
-  pageInfo.textContent = `Página ${currentPage} / ${numPages}`;
-}
-
-// CAMBIO: Nueva función para poblar el modal de edición
-function abrirModalParaEditar(mensaje) {
-    nuevoForm.dataset.editId = mensaje.id;
-    modalTitle.textContent = `Editar Mensaje #${mensaje.id}`;
-
-    document.getElementById('titulo').value = mensaje.titulo || '';
-    document.getElementById('descripcion').value = mensaje.descripcion || '';
-    document.getElementById('tipo_envio').value = mensaje.tipo_envio || '';
-
-    const esProgramado = mensaje.en_programado;
-    nuevoForm.dataset.esProgramado = esProgramado;
-    fechaEnvioGroup.classList.toggle('oculto', !esProgramado);
-    fechaEnvioInput.required = esProgramado;
-    
-    if (esProgramado && mensaje.fecha_envio) {
-        fechaEnvioInput.value = mensaje.fecha_envio.slice(0, 16);
-    } else {
-        fechaEnvioInput.value = '';
-    }
-
-    const deudoresItems = (mensaje.destino_deudores_info || []).map(d => ({
-        id: d.id_alumno,
-        name: `${d.apellido}, ${d.nombre}`
-    }));
-    alumnosAC.set(deudoresItems);
-
-    const carrerasItems = (mensaje.destino_carrera_info || []).map(c => ({
-        id: c.id_carrera,
-        name: c.descripcion
-    }));
-    carrerasAC.set(carrerasItems);
-
-    cancelarModoEdicion();
-    openMainModal();
-}
-
-// CAMBIO: Nueva función para eliminar
-async function eliminarMensaje(id, titulo) {
-    if (!confirm(`¿Estás seguro de que querés borrar el mensaje "${titulo}" (ID: ${id})?`)) {
-        cancelarModoEliminacion();
-        return;
-    }
-
-    try {
-        const res = await fetch(`${API_URL}${id}/`, {
-            method: 'DELETE',
-            headers: { 'X-CSRFToken': csrftoken }
-        });
-
-        if (!res.ok) {
-            if (res.status === 204) {
-                // Éxito (204 No Content)
-            } else {
-                throw new Error(`Error ${res.status} al borrar`);
-            }
-        }
-
-        console.log(`Mensaje ${id} eliminado.`);
-        
-        // Recargar la tabla
-        loadMensajes(currentPage);
-
-    } catch (err) {
-        console.error('Error al eliminar:', err);
-        alert('Error al eliminar el mensaje.');
-    } finally {
-        cancelarModoEliminacion();
-    }
-}
-
-
-// CAMBIO: Listener para el filtro
-filtroTipoEnvio.addEventListener('change', (e) => {
-  lastTipoEnvio = e.target.value;
-  currentPage = 1;
-  loadMensajes(currentPage);
+// Eventos de Filtros y Búsqueda
+document.getElementById('filtro-tipo').addEventListener('change', (e) => {
+  appState.filter = e.target.value;
+  loadData(1);
 });
 
-// CAMBIO: 'loadMensajes' usa 'currentPage' (que ya usa el filtro global)
-prevBtn.addEventListener('click', () => {
-  if (currentPage > 1) { currentPage--; loadMensajes(currentPage); }
-});
-nextBtn.addEventListener('click', () => {
-  if (currentPage < numPages) { currentPage++; loadMensajes(currentPage); }
-});
-refreshBtn.addEventListener('click', () => { 
-  fullDataCache = null; 
-  loadMensajes(currentPage); 
+// Búsqueda con Debounce (retraso para no saturar)
+let searchTimer;
+document.getElementById('search-input').addEventListener('input', (e) => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    appState.search = e.target.value.trim();
+    loadData(1);
+  }, 400);
 });
 
-// Carga inicial
-loadMensajes(1);
+document.getElementById('btn-refresh').addEventListener('click', () => loadData(appState.page));
+document.getElementById('btn-prev').addEventListener('click', () => { if(appState.page>1) loadData(appState.page-1) });
+document.getElementById('btn-next').addEventListener('click', () => loadData(appState.page+1));
+
+// Init
+loadData(1);
+
+
+
 </script>
-
 </body>
 </html>

@@ -52,3 +52,8 @@ build/
 # Archivos de medios y estáticos
 #/media/
 #staticfiles/
+
+__pycache__/
+*.pyc
+*.pyo
+db.sqlite3

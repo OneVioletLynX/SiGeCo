@@ -6,26 +6,26 @@ from django.db.models import Q
 from .models import Alumno
 from .serializers import AlumnoSerializer
 
-
 class AlumnoListCreate(APIView):
     """
     GET: Lista de alumnos con filtros por estado, carrera y búsqueda.
     POST: Crea un nuevo alumno.
     """
     def get(self, request):
-        estado = request.query_params.get('estado')
-        carrera = request.query_params.get('carrera')
-        search = request.query_params.get('search')
+        try:
+            estado = request.query_params.get('estado')
+            carrera = request.query_params.get('carrera')
+            search = request.query_params.get('search') # <--- Campo usado por el autocomplete
 
-        alumnos = Alumno.objects.all()
+            alumnos = Alumno.objects.all()
 
         # 🔹 Filtro por estado
         if estado and estado != "all":
             alumnos = alumnos.filter(carreras_cursadas__id_estado_id=estado)
 
-        # 🔹 Filtro por carrera
-        if carrera and carrera != "all":
-            alumnos = alumnos.filter(carreras_cursadas__carrera_id=carrera)
+            # --- 2. FILTRO POR CARRERA ---
+            if carrera and carrera != "all":
+                alumnos = alumnos.filter(carreras_cursadas__carrera_id=carrera)
 
         # 🔹 Búsqueda general
         if search:
@@ -89,7 +89,9 @@ class AlumnoDetail(APIView):
         if not nuevo_estado:
             return Response({"error": "Debe indicar un id_estado"}, status=status.HTTP_400_BAD_REQUEST)
 
-        carrera = alumno.carreras_cursadas.first()  # 👈 usamos el related_name correcto
+        # OJO AQUÍ: Asegúrate que 'carreras_cursadas' sea el related_name correcto en models.py
+        carrera = alumno.carreras_cursadas.first() 
+        
         if not carrera:
             return Response({"error": "El alumno no tiene carrera cursada asociada"}, status=status.HTTP_400_BAD_REQUEST)
 
