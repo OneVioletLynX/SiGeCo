@@ -27,7 +27,7 @@ class AlumnoListCreate(APIView):
         if carrera and carrera != "all":
             alumnos = alumnos.filter(carreras_cursadas__carrera_id=carrera)
 
-        # 🔹 Búsqueda por texto
+        # 🔹 Búsqueda general
         if search:
             alumnos = alumnos.filter(
                 Q(nombre__icontains=search)
@@ -35,9 +35,24 @@ class AlumnoListCreate(APIView):
                 | Q(dni__icontains=search)
             )
 
+        # 🔹 Filtros directos para validación de unicidad
+        dni = request.query_params.get('dni')
+        email = request.query_params.get('email')
+        legajo = request.query_params.get('legajo')
+
+        if dni:
+            alumnos = alumnos.filter(dni=dni)
+
+        if email:
+            alumnos = alumnos.filter(email=email)
+
+        if legajo:
+            alumnos = alumnos.filter(legajo=legajo)
+
         alumnos = alumnos.order_by('id_alumno').distinct()
         serializer = AlumnoSerializer(alumnos, many=True)
         return Response(serializer.data)
+
 
     def post(self, request):
         serializer = AlumnoSerializer(data=request.data)

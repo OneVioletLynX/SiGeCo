@@ -19,7 +19,34 @@ class AlumnoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Alumno
-        fields = '__all__'   # incluye campos del modelo + los SerializerMethodField
+        fields = [
+            # ----- Campos reales del modelo Alumno -----
+            'id_alumno',
+            'legajo',
+            'nombre',
+            'apellido',
+            'fecha_nacimiento',
+            'dni',
+            'ciudad',
+            'direccion',
+            'numero',
+            'prefijo',
+            'telefono',
+            'email',
+            'inscripcion',
+            'fecha_inscripcion',
+            'anio_ingreso',
+
+            # ----- Campos WRITE-ONLY para manejo de carrera/estado -----
+            'id_carrera',
+            'id_estado',
+
+            # ----- Campos READ-ONLY -----
+            'carrera_actual',
+            'estado_actual',
+            'carrera_nombre',
+            'estado_nombre',
+        ]
 
     # ------------------------------------------------------------------
     # Helpers de solo lectura
@@ -43,6 +70,50 @@ class AlumnoSerializer(serializers.ModelSerializer):
     def get_estado_nombre(self, obj):
         cc = self._get_carrera_cursada(obj)
         return cc.id_estado.descripcion if cc and cc.id_estado else None
+
+
+        # ------------------------------------------------------------------
+    # VALIDACIONES DE UNICIDAD (DNI, EMAIL, LEGAJO)
+    # ------------------------------------------------------------------
+    def validate(self, data):
+        instance = self.instance  # None si es POST, objeto si es PUT
+
+        dni = data.get('dni')
+        email = data.get('email')
+        legajo = data.get('legajo')
+
+        # ----- DNI único -----
+        if dni is not None:
+            qs = Alumno.objects.filter(dni=dni)
+            if instance:
+                qs = qs.exclude(id_alumno=instance.id_alumno)
+            if qs.exists():
+                raise serializers.ValidationError({
+                    "dni": "Este DNI ya está registrado."
+                })
+
+        # ----- EMAIL único -----
+        if email:
+            qs = Alumno.objects.filter(email=email)
+            if instance:
+                qs = qs.exclude(id_alumno=instance.id_alumno)
+            if qs.exists():
+                raise serializers.ValidationError({
+                    "email": "Este email ya está registrado."
+                })
+
+        # ----- LEGAJO único (si no es null) -----
+        if legajo:
+            qs = Alumno.objects.filter(legajo=legajo)
+            if instance:
+                qs = qs.exclude(id_alumno=instance.id_alumno)
+            if qs.exists():
+                raise serializers.ValidationError({
+                    "legajo": "Este legajo ya está registrado."
+                })
+
+        return data
+
 
     # ------------------------------------------------------------------
     # create
