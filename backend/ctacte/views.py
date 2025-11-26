@@ -173,26 +173,24 @@ class PagoDetalleDetail(APIView):
         obj = get_object_or_404(PagoDetalle, pk=pk)
         obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
 class RegistrarPago(APIView):
     def post(self, request):
         try:
             data = request.data
+
             alumno_id = data.get("id_alumno")
             metodo_id = data.get("id_metodo_pago")
-            meses_ids = data.get("meses", [])
+            meses_data = data.get("meses", [])
             importe_total = float(data.get("importe_total"))
-            anio_req = data.get("anio")  # opcional
 
-            if not alumno_id or not metodo_id or not meses_ids:
-                return Response({"error": "Faltan datos obligatorios"}, status=status.HTTP_400_BAD_REQUEST)
+            if not alumno_id or not metodo_id or not meses_data:
+                return Response({"error": "Faltan datos obligatorios"}, status=400)
 
             alumno = Alumno.objects.get(pk=alumno_id)
             metodo = MetodoPago.objects.get(pk=metodo_id)
-            
-            # Usar año actual si no viene en el request
-            anio_pago = int(anio_req) if anio_req else timezone.now().year
 
-            # 1. Crear la cabecera del Pago
+            # Crear cabecera del pago
             pago = Pago.objects.create(
                 id_alumno=alumno,
                 id_metodo_pago=metodo,
@@ -200,16 +198,24 @@ class RegistrarPago(APIView):
                 importe_total=importe_total
             )
 
-            # 2. Calcular y crear los detalles
-            importe_por_mes = round(importe_total / len(meses_ids), 2)
-            
-            for mes_id in meses_ids:
+            # Calcular importe por mes (prorrateo)
+            importe_por_mes = round(importe_total / len(meses_data), 2)
+
+            # Crear cada detalle
+            for item in meses_data:
+                mes_id = item["mes"]
+                anio_pago = item["anio"]
+
                 mes = MesPago.objects.get(pk=mes_id)
+
+                # concepto_id: 1 cuota, 2 inscripción
+                concepto_id = 2 if mes.descripcion.lower().startswith("insc") else 1
+
                 PagoDetalle.objects.create(
                     pago=pago,
                     mes=mes,
                     anio_pago=anio_pago,
-                    id_concepto_id=1,  # IMPORTANTE: Asegurate que el ID 1 (Cuota) exista en tabla Conceptos
+                    id_concepto_id=concepto_id,
                     importe=importe_por_mes
                 )
 
@@ -217,19 +223,12 @@ class RegistrarPago(APIView):
                 "success": True,
                 "id_pago": pago.id_pago,
                 "alumno": f"{alumno.apellido}, {alumno.nombre}",
-                "importe_total": importe_total,
-                "anio_pago": anio_pago,
-                "cantidad_meses": len(meses_ids)
-            }, status=status.HTTP_201_CREATED)
+                "total": importe_total,
+                "cantidad_meses": len(meses_data)
+            }, status=201)
 
-        except Alumno.DoesNotExist:
-            return Response({"error": "Alumno no encontrado"}, status=status.HTTP_404_NOT_FOUND)
-        except MetodoPago.DoesNotExist:
-            return Response({"error": "Método de pago no encontrado"}, status=status.HTTP_404_NOT_FOUND)
-        except MesPago.DoesNotExist:
-            return Response({"error": "Mes no válido"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": str(e)}, status=400)
 
 
 class MesesPendientes(APIView):

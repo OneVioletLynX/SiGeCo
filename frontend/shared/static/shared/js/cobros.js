@@ -8,26 +8,17 @@
 
   let alumnoSeleccionado = null;
   let carreraSeleccionadaId = null;
+  let pagoSeleccionado = null;
 
-  const CONCEPTO_CUOTA_ID = 1; // cuota mensual
-  const CONCEPTO_INSCRIPCION_ID = 2; // inscripción
+  const CONCEPTO_CUOTA_ID = 1;
+  const CONCEPTO_INSCRIPCION_ID = 2;
 
   document.addEventListener("DOMContentLoaded", () => {
 
-
-      function formatearFecha(fechaISO) {
+    function formatearFecha(fechaISO) {
       if (!fechaISO) return "";
-
       const f = new Date(fechaISO);
-
-      const dia = String(f.getDate()).padStart(2, "0");
-      const mes = String(f.getMonth() + 1).padStart(2, "0");
-      const anio = f.getFullYear();
-
-      const hora = String(f.getHours()).padStart(2, "0");
-      const minuto = String(f.getMinutes()).padStart(2, "0");
-
-      return `${dia}/${mes}/${anio} ${hora}:${minuto}`;
+      return `${String(f.getDate()).padStart(2, "0")}/${String(f.getMonth() + 1).padStart(2, "0")}/${f.getFullYear()} ${String(f.getHours()).padStart(2, "0")}:${String(f.getMinutes()).padStart(2, "0")}`;
     }
 
     const buscador = document.getElementById("buscador");
@@ -35,35 +26,26 @@
 
     const modal = document.getElementById("altaModal");
     const btnAbrir = document.getElementById("btnAgregar");
-    const btnCerrar = document.querySelector(".modal .close");
     const metodoSelect = document.getElementById("metodo_pago");
     const campoComprobante = document.getElementById("campo-comprobante");
     const campoTarjeta = document.getElementById("campo-tarjeta");
     const form = document.getElementById("cobroForm");
     const contenedorMeses = document.querySelector(".meses-container");
 
-    let timeout = null;
-
+    // ===========================
+    // MÉTODO DE PAGO (mostrar campos)
+    // ===========================
     metodoSelect.addEventListener("change", function () {
-      const metodo = metodoSelect.value;
-
-      // Ocultar todo por defecto
       campoComprobante.classList.add("hidden");
       campoTarjeta.classList.add("hidden");
 
-      if (metodo === "2") {  // ejemplo: 2 = TRANSFERENCIA
-        campoComprobante.classList.remove("hidden");
-      }
-
-      if (metodo === "3") {  // ejemplo: 3 = TARJETA
-        campoTarjeta.classList.remove("hidden");
-      }
+      if (this.value === "2") campoComprobante.classList.remove("hidden");   // Transferencia
+      if (this.value === "3") campoTarjeta.classList.remove("hidden");       // Tarjeta
     });
 
-
-    // =====================================
-    // BUSCADOR DE ALUMNOS
-    // =====================================
+    // ===========================
+    // BUSCADOR ALUMNOS
+    // ===========================
     buscador.addEventListener("input", () => {
       const q = buscador.value.trim();
       if (q.length < 2) {
@@ -71,15 +53,12 @@
         sugerencias.style.display = "none";
         return;
       }
-
       buscarAlumnos(q);
-
     });
 
     async function buscarAlumnos(q) {
       try {
-        const url = `${API_BASE}/api/alumnos/?search=${encodeURIComponent(q)}`;
-        const resp = await fetch(url);
+        const resp = await fetch(`${API_BASE}/api/alumnos/?search=${encodeURIComponent(q)}`);
         const data = await resp.json();
         const alumnos = data.results || data || [];
 
@@ -90,19 +69,18 @@
           return;
         }
 
-
         alumnos.forEach((al) => {
-        const item = document.createElement("div");
-        item.classList.add("suggestion-item");
-        item.textContent = `${al.apellido}, ${al.nombre}`;
-        item.addEventListener("click", () => seleccionarAlumno(al));
-        sugerencias.appendChild(item);
+          const item = document.createElement("div");
+          item.classList.add("suggestion-item");
+          item.textContent = `${al.apellido}, ${al.nombre}`;
+          item.addEventListener("click", () => seleccionarAlumno(al));
+          sugerencias.appendChild(item);
         });
 
         sugerencias.style.display = "block";
+
       } catch (err) {
         sugerencias.innerHTML = "<div class='no-results'>Sin resultados</div>";
-
       }
     }
 
@@ -114,94 +92,126 @@
       alumnoSeleccionado = alumno;
       carreraSeleccionadaId = alumno.carrera_actual;
 
-      // === MOSTRAR BOTÓN AGREGAR ===
-      const btnAgregar = document.getElementById("btnAgregar");
-      if (btnAgregar) {
-        btnAgregar.style.display = "flex";
-      }
-
+      btnAbrir.style.display = "flex";
       cargarPagos(alumno.id_alumno);
     }
 
-
-    // =====================================
-    // CARGAR PAGOS EXISTENTES
-    // =====================================
+    // ===========================
+    // CARGAR PAGOS
+    // ===========================
     async function cargarPagos(alumnoId) {
       try {
-        const url = `${API_BASE}/api/pago/?alumno=${alumnoId}`;
-        const resp = await fetch(url);
+        const resp = await fetch(`${API_BASE}/api/pago/?alumno=${alumnoId}`);
         const pagos = await resp.json();
+        const tbody = document.getElementById("tabla-cobros");
+        tbody.innerHTML = "";
 
-        const tbody =
-          document.getElementById("tabla-cobros-body") ||
-          document.getElementById("tabla-cobros");
+        pagos.forEach((pago) => {
+          const detalles = pago.detalles || [];
+          detalles.forEach((det) => {
+            const tr = document.createElement("tr");
 
-        tbody.innerHTML = ""; 
+            // 🔥 clave para seleccionar pago completo
+            tr.dataset.pago = pago.id_pago;
 
-      pagos.forEach((pago) => {
-        const detalles = pago.detalles || [];
+            tr.innerHTML = `
+              <td>${det.anio}</td>
+              <td>${det.mes}</td>
+              <td>$${parseFloat(det.importe).toFixed(2)}</td>
+              <td>${formatearFecha(pago.fecha_pago)}</td>
+              <td>${pago.metodo}</td>
+            `;
 
-        detalles.forEach((det) => {
-          const tr = document.createElement("tr");
-
-          tr.innerHTML = `
-            <td>${det.anio}</td>
-            <td>${det.mes}</td>
-            <td>$${det.importe}</td>
-            <td>${formatearFecha(pago.fecha_pago)}</td>
-            <td>${pago.metodo}</td>
-          `;
-
-          tbody.appendChild(tr);
+            tbody.appendChild(tr);
+          });
         });
-      });
+
+        // AGREGAR EVENTOS DE SELECCIÓN
+        document.querySelectorAll("#tabla-cobros tr").forEach((row) => {
+          row.addEventListener("click", () => {
+            const pagoId = row.dataset.pago;
+
+            // limpiar selección previa
+            document.querySelectorAll("#tabla-cobros tr").forEach(r => {
+              r.classList.remove("selected-pago");
+            });
+
+            // seleccionar todas las filas del pago
+            document.querySelectorAll(`#tabla-cobros tr[data-pago='${pagoId}']`)
+              .forEach(r => r.classList.add("selected-pago"));
+
+            pagoSeleccionado = pagoId;
+          });
+        });
 
       } catch (err) {
         console.error("Error cargando pagos:", err);
       }
     }
 
-    // =====================================
+    // ===========================
+    // ELIMINAR PAGO COMPLETO
+    // ===========================
+    const btnEliminarPago = document.getElementById("btnEliminarPago");
+
+    if (btnEliminarPago) {
+      btnEliminarPago.addEventListener("click", async () => {
+        if (!pagoSeleccionado) {
+          alert("Seleccioná un pago para eliminar.");
+          return;
+        }
+
+        if (!confirm("¿Eliminar TODO el pago seleccionado?")) return;
+
+        const resp = await fetch(`${API_BASE}/api/pago/${pagoSeleccionado}/`, {
+          method: "DELETE",
+        });
+
+        if (resp.ok) {
+          alert("Pago eliminado correctamente.");
+          cargarPagos(alumnoSeleccionado.id_alumno);
+          pagoSeleccionado = null;
+        } else {
+          alert("Error eliminando el pago.");
+        }
+      });
+    }
+
+    // ===========================
     // ABRIR MODAL
-    // =====================================
+    // ===========================
     btnAbrir.addEventListener("click", async () => {
       if (!alumnoSeleccionado) {
-        alert("Seleccioná un alumno antes de agregar un cobro.");
+        alert("Seleccioná un alumno primero.");
         return;
       }
-
       await cargarMesesPendientes();
       modal.style.display = "block";
     });
 
-    // BOTÓN CANCELAR
+    // Cerrar modal
     document.getElementById("btnCancelar").addEventListener("click", () => {
+      modal.style.display = "none";
+      form.reset();
+    });
+
+    window.addEventListener("click", function (e) {
+      if (e.target === modal) {
         modal.style.display = "none";
         form.reset();
+      }
     });
 
-    // Cerrar modal al hacer clic afuera
-    window.addEventListener("click", function(e) {
-        if (e.target === modal) {
-            modal.style.display = "none";
-            form.reset();
-        }
-    });
-
-
-    // =====================================
-    // CARGAR MESES DINÁMICOS
-    // =====================================
+    // ===========================
+    // CARGAR MESES PENDIENTES
+    // ===========================
     async function cargarMesesPendientes() {
       try {
-        const url = `${API_BASE}/api/ctacte/pendientes/?alumno=${alumnoSeleccionado.id_alumno}`;
-        const resp = await fetch(url);
+        const resp = await fetch(`${API_BASE}/ctacte/pendientes/?alumno=${alumnoSeleccionado.id_alumno}`);
         const data = await resp.json();
 
         contenedorMeses.innerHTML = `<h2>Meses</h2>`;
 
-        // MESES POR AÑO
         for (const anio in data.meses) {
           const meses = data.meses[anio];
 
@@ -212,15 +222,11 @@
           `;
 
           meses.forEach((m) => {
-
             const esInscripcion =
               m.descripcion.toLowerCase() === "inscripcion" ||
               m.id_mes == 1;
 
-            // ❌ Si es inscripción pero NO es el año de ingreso → NO mostrar
-            if (esInscripcion && parseInt(anio) !== data.anio_ingreso) {
-              return;
-            }
+            if (esInscripcion && parseInt(anio) !== data.anio_ingreso) return;
 
             html += `
               <div class="month" data-id_mes="${m.id_mes}" data-anio="${anio}">
@@ -229,28 +235,25 @@
             `;
           });
 
-
-
-
           html += `</div></div>`;
           contenedorMeses.innerHTML += html;
         }
 
-        // EVENTOS DE SELECCIÓN
         document.querySelectorAll(".month").forEach((m) => {
           m.addEventListener("click", () => {
             m.classList.toggle("selected");
             actualizarImporteAuto();
           });
         });
+
       } catch (err) {
         console.error("Error cargando meses pendientes:", err);
       }
     }
 
-    // =====================================
-    // IMPORTE AUTOMÁTICO SUMANDO MESES
-    // =====================================
+    // ===========================
+    // SUMAR IMPORTES AUTOMÁTICAMENTE
+    // ===========================
     async function actualizarImporteAuto() {
       try {
         const seleccionados = document.querySelectorAll(".month.selected");
@@ -269,28 +272,26 @@
 
           const fechaRef = `${anio}-${String(idMes).padStart(2, "0")}-01`;
 
-          const url = `${API_BASE}/api/valores/vigente/?carrera=${carreraSeleccionadaId}&concepto=${CONCEPTO_CUOTA_ID}&fecha=${fechaRef}`;
+          const resp = await fetch(
+            `${API_BASE}/api/valores/vigente/?carrera=${carreraSeleccionadaId}&concepto=${CONCEPTO_CUOTA_ID}&fecha=${fechaRef}`
+          );
 
-          const resp = await fetch(url);
-
-          if (!resp.ok) {
-            console.warn("Sin valor vigente para:", fechaRef);
-            continue;
-          }
+          if (!resp.ok) continue;
 
           const data = await resp.json();
           total += parseFloat(data.importe);
         }
 
         document.getElementById("importe").value = total.toFixed(2);
+
       } catch (err) {
         console.error("Error sumando importes:", err);
       }
     }
 
-    // =====================================
+    // ===========================
     // REGISTRAR PAGO
-    // =====================================
+    // ===========================
     if (form) {
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -313,26 +314,25 @@
         let anioUsado = null;
 
         mesesMarcados.forEach((m) => {
-          const idMes = m.dataset.id_mes;
-          if (idMes === "INSCRIPCION") {
-            meses.push("INSCRIPCION");
-            anioUsado = alumnoSeleccionado.anio_ingreso;
+          const idMes = parseInt(m.dataset.id_mes);
+          const anio = parseInt(m.dataset.anio);
+
+          if (idMes === 0 || idMes === "INSCRIPCION") {
+            meses.push({ mes: "INSCRIPCION", anio: alumnoSeleccionado.anio_ingreso });
           } else {
-            meses.push(parseInt(idMes));
-            anioUsado = parseInt(m.dataset.anio);
+            meses.push({ mes: idMes, anio: anio });
           }
         });
-
+        
         const payload = {
           id_alumno: alumnoSeleccionado.id_alumno,
           id_metodo_pago: parseInt(metodo),
-          meses: meses.filter((x) => x !== "INSCRIPCION"),
-          anio: anioUsado,
+          meses: meses,
           importe_total: importe,
         };
 
         try {
-          const resp = await fetch(`${API_BASE}/api/ctacte/registrar-pago/`, {
+          const resp = await fetch(`${API_BASE}/ctacte/registrar-pago/`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
@@ -346,10 +346,10 @@
           }
 
           alert("Pago registrado correctamente.");
-
           modal.style.display = "none";
           form.reset();
           cargarPagos(alumnoSeleccionado.id_alumno);
+
         } catch (err) {
           console.error("Error registrando pago:", err);
           alert("Error al guardar el pago.");

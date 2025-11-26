@@ -27,13 +27,8 @@ from ctacte.views import (
 )
 # Mensajes
 from mensajes.views import MensajeListCreate, MensajeDetail
-<<<<<<< HEAD
-# Reportes
-from reportes.views import seccion_contabilidad, seccion_alumnos, seccion_admin
-=======
 from mensajes.views import MensajeListCreate 
 from reportes.views import seccion_contabilidad, seccion_alumnos, seccion_admin, generar_pdf_alumnos, generar_pdf_bonos_por_carrera
->>>>>>> dfc2c9f61c2a4e109cb5cdca5ff807a3fd2ebaa7
 
 
 urlpatterns = [

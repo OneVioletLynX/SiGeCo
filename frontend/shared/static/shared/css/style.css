@@ -372,10 +372,11 @@ th.asc img {
 
 /* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ TOOLBAR ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 
+
 tr.selected {
   background-color: #cce5ff;
 }
-/* --- Modal general --- */
+
 .modal {
   display: none;
   position: fixed;
@@ -394,8 +395,9 @@ tr.selected {
   margin: 5% auto;
   padding: 30px;
   border-radius: 15px;
-  width: fit-content;
-  max-width: 900px;
+  width: 100%;
+  max-width: 500px;   /* ajustable */
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -403,32 +405,11 @@ tr.selected {
 
 /* --- Encabezado del modal --- */
 .modal-content h2 {
-  text-align: left;
-  font-weight: 900;
-  margin-bottom: 10px;
+  text-align: center;
+  margin-bottom: 20px;
 }
 
 
-/* =====================================
-MODAL
-===================================== */
-
-
-
-/* --- Formulario con dos columnas --- */
-#alumnoForm {
-  display: grid;
-  grid-template-columns: 0.75fr 1.25fr 1.25fr 0.75fr;
-  gap: 15px 20px;
-}
-
-.gc-2 {
-  grid-column: span 2;
-}
-
-.gc-1 {
-  grid-column: span 1;
-}
 
 
 
