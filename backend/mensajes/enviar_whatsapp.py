@@ -5,37 +5,34 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def formatear_numero_argentina(telefono):
+def formatear_numero_argentina(prefijo, telefono):
     """
-    Convierte '351 155 123456' -> '+5493515123456'
-    Twilio requiere formato E.164 estricto.
+    Combina prefijo + teléfono y devuelve formato E.164 para WhatsApp:
+    +549{prefijo}{telefono}
+
+    Reglas Argentina:
+    - eliminar 0 del prefijo si existe (0351 → 351)
+    - eliminar el 15 si el número lo incluye (15551234 → 5551234)
+    - agregar +54 9 al inicio
     """
-    if not telefono:
+
+    if not prefijo or not telefono:
         return None
-    
-    # 1. Dejar solo números y el símbolo +
-    limpio = "".join(c for c in str(telefono) if c.isdigit() or c == '+')
-    
-    # 2. Si ya viene con +549 (formato internacional ok), devolverlo
-    if limpio.startswith('+549'):
-        return limpio
 
-    # 3. Si empieza con 549 (sin el +), agregarlo
-    if limpio.startswith('549'):
-        return f"+{limpio}"
-        
-    # 4. Caso común: número local (ej: 3515123456 o 0351...)
-    # Quitamos el '0' inicial si existe (ej: 0351 -> 351)
-    if limpio.startswith('0'):
-        limpio = limpio[1:]
-        
-    # Quitamos el '15' de celulares si existe y el número es largo
-    # (Esto es un heuristic simple, puede requerir ajustes según tu zona)
-    # if limpio.startswith('15') and len(limpio) > 8: 
-    #    limpio = limpio[2:]
+    prefijo = str(prefijo).strip()
+    telefono = str(telefono).strip()
 
-    # Agregamos el prefijo de Argentina (+54) y el 9 de móvil
-    return f"+549{limpio}"
+    # Sacar 0 inicial del prefijo
+    if prefijo.startswith("0"):
+        prefijo = prefijo[1:]
+
+    # Sacar el 15 del teléfono si lo tiene
+    if telefono.startswith("15") and len(telefono) > 8:
+        telefono = telefono[2:]
+
+    # Número final para Twilio
+    return f"+549{prefijo}{telefono}"
+
 
 def enviar_whatsapp(numero_destino, cuerpo_mensaje):
     """

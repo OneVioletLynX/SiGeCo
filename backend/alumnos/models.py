@@ -15,6 +15,7 @@ class Alumno(models.Model):
     ciudad = models.CharField(max_length=100)
     direccion = models.CharField(max_length=100)
     numero = models.IntegerField()
+        
     prefijo = models.IntegerField()
     telefono = models.PositiveIntegerField()
 

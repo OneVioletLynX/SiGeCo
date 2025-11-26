@@ -12,12 +12,11 @@ class AlumnoListCreate(APIView):
     POST: Crea un nuevo alumno.
     """
     def get(self, request):
-        try:
-            estado = request.query_params.get('estado')
-            carrera = request.query_params.get('carrera')
-            search = request.query_params.get('search') # <--- Campo usado por el autocomplete
+        estado = request.query_params.get('estado')
+        carrera = request.query_params.get('carrera')
+        search = request.query_params.get('search') # <--- Campo usado por el autocomplete
 
-            alumnos = Alumno.objects.all()
+        alumnos = Alumno.objects.all()
 
         # 🔹 Filtro por estado
         if estado and estado != "all":

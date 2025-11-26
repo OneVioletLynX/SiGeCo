@@ -58,7 +58,7 @@ class Pago(models.Model):
 
     class Meta:
         # Verifica si tu tabla es 'pago' o 'ctacte_pago'
-        db_table = 'pago' 
+        db_table = 'ctacte_pago' 
         ordering = ['-fecha_pago']
         verbose_name = "Pago"
         verbose_name_plural = "Pagos"
@@ -69,8 +69,9 @@ class Pago(models.Model):
 
 
 class PagoDetalle(models.Model):
-    id = models.AutoField(primary_key=True)   # ✔ PK limpia, sin problemas
-
+    # Fusioné la definición de ID explícito con los campos nuevos
+    id_detalle = models.AutoField(primary_key=True)
+    
     pago = models.ForeignKey(
         Pago,
         on_delete=models.CASCADE,
@@ -100,7 +101,4 @@ class PagoDetalle(models.Model):
 
     def __str__(self):
         mes_desc = self.mes.descripcion if self.mes else ''
-        return f'Pago #{self.pago_id} - {mes_desc} - {self.importe}'
-
-
-
+        return f"Detalle {self.id_detalle} - Pago {self.pago_id} - {mes_desc}"
