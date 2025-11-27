@@ -2,43 +2,67 @@ from django.contrib import admin
 from django.urls import path, include
 
 # --- IMPORTACIONES ---
-# Usuarios
-from usuarios.views import UsuarioListCreate, UsuarioDetail, LoginView
-# Alumnos
+
+# 1. Usuarios (CORREGIDO: Importamos el módulo completo)
+from usuarios import views as usuarios_views
+
+# 2. Alumnos
 from alumnos.views import AlumnoListCreate, AlumnoDetail
-# Carreras
+
+# 3. Carreras
 from carreras.views import (
     CarreraListCreate, CarreraDetail, 
     EstadoListCreate, EstadoDetail, 
     CarreraCursadasListCreate, CarreraCursadasDetail
 )
-# Valores
+
+# 4. Valores
 from valores.views import (
     ValoresListCreate, ValoresDetail, 
     ConceptoListCreate, ConceptoDetail, 
     ValorVigenteView
 )
-# Cta Cte (Pagos)
+
+# 5. Cta Cte (Pagos)
 from ctacte.views import (
     MesPagoListCreate, MesPagoDetail, 
     MetodoPagoListCreate, MetodoPagoDetail, 
     PagoListCreate, PagoDetail, 
     PagoDetalleListCreate, PagoDetalleDetail
 )
-# Mensajes
-from mensajes.views import MensajeListCreate, MensajeDetail
-# Reportes
+
+# 6. Reportes
 from reportes.views import seccion_contabilidad, seccion_alumnos, seccion_admin
 
 
 urlpatterns = [
+    # -------------------------------------------------------
+    # 1. LOGIN Y ADMIN
+    # -------------------------------------------------------
+    # Al entrar a http://127.0.0.1:8001/ se abre el LOGIN
+    path('', usuarios_views.login_view, name='home'),
+    
+    # Rutas internas de la app usuarios (logout, dashboard)
+    path('usuarios/', include('usuarios.urls')),
+    
+    # Admin de Django
     path('admin/', admin.site.urls),
 
-    # --- USUARIOS ---
-    path('api/usuarios/', UsuarioListCreate.as_view(), name='usuarios-lista'),
-    path('api/usuarios/<int:pk>/', UsuarioDetail.as_view(), name='usuario-detalle'),
-    path('api/login/', LoginView.as_view(), name='login'),
 
+    # -------------------------------------------------------
+    # 2. APPS PRINCIPALES (Con Frontend propio)
+    # -------------------------------------------------------
+    # Mensajes (Index + su propia API interna)
+    path('mensajes/', include('mensajes.urls')),
+    
+    # Cta Cte (Index + su propia API interna)
+    path('ctacte/', include('ctacte.urls')),
+
+
+    # -------------------------------------------------------
+    # 3. API GLOBAL (Endpoins sueltos para Select2/AJAX)
+    # -------------------------------------------------------
+    
     # --- ALUMNOS ---
     path('api/alumnos/', AlumnoListCreate.as_view(), name='alumnos-lista'),
     path('api/alumnos/<int:pk>/', AlumnoDetail.as_view(), name='alumno-detalle'),
@@ -61,15 +85,7 @@ urlpatterns = [
     path('api/concepto/', ConceptoListCreate.as_view(), name='concepto-lista'),
     path('api/concepto/<int:pk>/', ConceptoDetail.as_view(), name='concepto-detalle'),
 
-    # --- MENSAJES ---
-    # API Endpoint
-    path('api/mensajes/', MensajeListCreate.as_view(), name='api-mensajes'),
-    path('api/mensajes/<int:pk>/', MensajeDetail.as_view(), name='api-mensajes-detail'),
-    # Frontend / Template URL include
-    path('mensajes/', include('mensajes.urls', namespace='mensajes')),
-
-    # --- CTA CTE (PAGOS) ---
-    # API Endpoints explícitos
+    # --- CTA CTE (API ENDPOINTS SUELTOS) ---
     path('api/mes-pago/', MesPagoListCreate.as_view(), name='mes-pago-lista'),
     path('api/mes-pago/<int:pk>/', MesPagoDetail.as_view(), name='mes-pago-detalle'),
 
@@ -82,14 +98,7 @@ urlpatterns = [
     path('api/pago-detalle/', PagoDetalleListCreate.as_view(), name='pago-detalle-lista'),
     path('api/pago-detalle/<int:pago_id>/<int:mes_id>/', PagoDetalleDetail.as_view(), name='pago-detalle-detalle'),
 
-    # OJO: He comentado esta línea de abajo porque ya estás definiendo las rutas API una por una arriba.
-    # Si 'ctacte.urls' también define rutas API, tendrías rutas duplicadas o confusas.
-    # path("api/ctacte/", include("ctacte.urls")), 
-
-    # Frontend / Template URL include para CtaCte
-    path('ctacte/', include('ctacte.urls', namespace='ctacte')),
-
-    # --- REPORTES / SECCIONES ---
+    # --- REPORTES ---
     path('api/seccion/contabilidad/', seccion_contabilidad, name='seccion_contabilidad'), 
     path('api/seccion/alumnos/', seccion_alumnos, name='seccion_alumnos'), 
     path('api/seccion/administrativo/', seccion_admin, name='seccion_admin'), 

@@ -1,25 +1,31 @@
 from django.db import models
-import secrets
+from django.utils import timezone
 
 class Usuario(models.Model):
+    # Mapeo exacto a tu tabla
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
+    email = models.EmailField(max_length=254, unique=True)
+    
+    # En Django se llama password, aquí lo mapeamos a tu columna 'password_hash'
+    password = models.CharField(max_length=128, db_column='password_hash')
+    
+    # Usaremos el token para definir el ROL por ahora si no quieres cambiar la estructura
+    # 'ADMIN' = Administrador, cualquier otra cosa = Normal
+    token = models.CharField(max_length=40, unique=True, default='normal') 
+    
+    creado = models.DateTimeField(default=timezone.now)
+    actualizado = models.DateTimeField(default=timezone.now)
 
+    class Meta:
+        db_table = 'usuarios_usuario'
+        managed = False # Django no tocará esta tabla
+        verbose_name = 'Usuario'
+        verbose_name_plural = 'Usuarios'
 
-# Guardamos la contraseña hasheada acá (nunca en texto plano)
-    password_hash = models.CharField(max_length=128)
-
-#Toekn propio por usuario (lo generamos automáticamente)
-    token = models.CharField(max_length=40 , unique=True, editable=False)
-
-    creado = models.DateTimeField(auto_now_add=True)
-    actualizado = models.DateTimeField(auto_now=True)
-    def save(self, *args, **kwargs):
-        if not self.token:
-            self.token = secrets.token_hex(20) # 40 chars
-        super().save(*args, **kwargs)
     def __str__(self):
-        return f"{self.nombre} ({self.email})"
+        return f"{self.nombre} {self.apellido}"
 
-# Create your models here.
+    @property
+    def es_admin(self):
+        return self.token == 'ADMIN'

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Administración - SiGeCo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar { box-shadow: 0 2px 4px rgba(0,0,0,.1); }
+        .card-custom { border: none; border-radius: 12px; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
+        .table-custom th { background-color: #f8f9fa; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; color: #6c757d; }
+        .avatar-circle { width: 35px; height: 35px; background-color: #e9ecef; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #495057; }
+        .btn-icon { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="#"><i class="bi bi-shield-lock-fill me-2"></i>SiGeCo Admin</a>
+        <div class="d-flex text-white align-items-center">
+            <div class="me-3 text-end d-none d-md-block">
+                <small class="d-block opacity-75">Bienvenido,</small>
+                <span class="fw-bold">{{ request.session.usuario_nombre }}</span>
+            </div>
+            <a href="{% url 'usuarios:logout' %}" class="btn btn-light btn-sm text-primary fw-bold">
+                <i class="bi bi-box-arrow-right"></i> Salir
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-0">Gestión de Usuarios</h2>
+            <p class="text-muted mb-0">Administra el acceso al sistema</p>
+        </div>
+        <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCrear">
+            <i class="bi bi-person-plus-fill me-2"></i>Nuevo Usuario
+        </button>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card card-custom overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-custom table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Usuario</th>
+                            <th>Email</th>
+                            <th>Registro</th>
+                            <th class="text-end pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in usuarios %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-circle me-3">
+                                        {{ u.nombre|slice:":1" }}{{ u.apellido|slice:":1" }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ u.nombre }} {{ u.apellido }}</div>
+                                        <small class="text-muted">ID: {{ u.id }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ u.email }}</td>
+                            <td>
+                                <span class="badge bg-light text-secondary border">
+                                    <i class="bi bi-calendar3 me-1"></i> {{ u.creado|date:"d/m/Y" }}
+                                </span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-outline-primary btn-icon me-1" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#modalEditar"
+                                        data-id="{{ u.id }}"
+                                        data-nombre="{{ u.nombre }}"
+                                        data-apellido="{{ u.apellido }}"
+                                        data-email="{{ u.email }}"
+                                        title="Editar">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                
+                                <button class="btn btn-outline-danger btn-icon" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#modalEliminar"
+                                        data-id="{{ u.id }}"
+                                        data-nombre="{{ u.nombre }} {{ u.apellido }}"
+                                        title="Eliminar">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                <i class="bi bi-people display-4 mb-3 d-block opacity-25"></i>
+                                No hay usuarios registrados.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalCrear" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold"><i class="bi bi-person-plus me-2"></i>Nuevo Usuario</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="crear">
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label fw-bold">Nombre</label>
+                            <input type="text" name="nombre" class="form-control" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold">Apellido</label>
+                            <input type="text" name="apellido" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Email</label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Contraseña</label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-link text-secondary text-decoration-none" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary px-4">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalEditar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-info text-white"> <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i>Editar Usuario</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="editar">
+                <input type="hidden" name="user_id" id="edit_id">
+                
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label fw-bold">Nombre</label>
+                            <input type="text" name="nombre" id="edit_nombre" class="form-control" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold">Apellido</label>
+                            <input type="text" name="apellido" id="edit_apellido" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Email</label>
+                            <input type="email" name="email" id="edit_email" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Nueva Contraseña <small class="text-muted fw-normal">(Opcional)</small></label>
+                            <input type="password" name="password" class="form-control" placeholder="Dejar en blanco para mantener la actual">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-link text-secondary text-decoration-none" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-info text-white px-4">Actualizar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalEliminar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm"> <div class="modal-content border-0 shadow">
+            <div class="modal-body text-center p-4">
+                <i class="bi bi-exclamation-circle text-danger display-4 mb-3"></i>
+                <h5 class="fw-bold mb-2">¿Eliminar Usuario?</h5>
+                <p class="text-muted mb-4">Estás a punto de eliminar a <strong id="delete_nombre"></strong>. Esta acción no se puede deshacer.</p>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="eliminar">
+                    <input type="hidden" name="user_id" id="delete_id">
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Lógica para el Modal Editar
+    const modalEditar = document.getElementById('modalEditar')
+    modalEditar.addEventListener('show.bs.modal', event => {
+        // Botón que activó el modal
+        const button = event.relatedTarget
+        
+        // Extraer info de los atributos data-*
+        const id = button.getAttribute('data-id')
+        const nombre = button.getAttribute('data-nombre')
+        const apellido = button.getAttribute('data-apellido')
+        const email = button.getAttribute('data-email')
+
+        // Actualizar los inputs del modal
+        modalEditar.querySelector('#edit_id').value = id
+        modalEditar.querySelector('#edit_nombre').value = nombre
+        modalEditar.querySelector('#edit_apellido').value = apellido
+        modalEditar.querySelector('#edit_email').value = email
+    })
+
+    // Lógica para el Modal Eliminar
+    const modalEliminar = document.getElementById('modalEliminar')
+    modalEliminar.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget
+        const id = button.getAttribute('data-id')
+        const nombre = button.getAttribute('data-nombre')
+
+        modalEliminar.querySelector('#delete_id').value = id
+        modalEliminar.querySelector('#delete_nombre').textContent = nombre
+    })
+</script>
+
+</body>
+</html>
