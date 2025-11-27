@@ -2,6 +2,51 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib import messages
 from .models import Usuario
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import json
+
+@csrf_exempt
+def api_login(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Método no permitido"}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        email = data.get("email")
+        password = data.get("password")
+    except:
+        return JsonResponse({"error": "JSON inválido"}, status=400)
+
+    try:
+        usuario = Usuario.objects.get(email=email)
+
+        raw_pass = usuario.password
+
+        # Verificar password
+        if raw_pass.startswith("pbkdf2_"):
+            valido = check_password(password, raw_pass)
+        else:
+            valido = (password == raw_pass)
+            if valido:
+                usuario.password = make_password(password)
+                usuario.save(update_fields=["password"])
+
+        if not valido:
+            return JsonResponse({"error": "Contraseña incorrecta"}, status=401)
+
+        # Crear sesión
+        request.session['usuario_id'] = usuario.id
+        request.session['usuario_nombre'] = usuario.nombre
+        request.session['rol'] = 'ADMIN' if usuario.token == 'ADMIN' else 'NORMAL'
+
+        return JsonResponse({
+            "status": "ok",
+            "rol": "ADMIN" if usuario.token == "ADMIN" else "NORMAL"
+        })
+
+    except Usuario.DoesNotExist:
+        return JsonResponse({"error": "Usuario no encontrado"}, status=404)
 
 # ========================================================
 # 1. VISTA DE INICIO DE SESIÓN (LOGIN)

@@ -32,7 +32,7 @@ INSTALLED_APPS = [
     'alumnos_front',
     'carreras_front',
     'usuarios_front',
-
+    'mensajes_front',
     # Apps del backend (lógica, modelos, API)
     'backend.ctacte',
     'backend.alumnos',

@@ -117,11 +117,7 @@ urlpatterns = [
     # Mensajes
     path('api/mensajes/', MensajeListCreate.as_view(), name='api-mensajes'),
     path('api/mensajes/<int:pk>/', MensajeDetail.as_view(), name='api-mensajes-detail'),
-    path('mensajes/', include('mensajes.urls', namespace='mensajes')),
-    # CTActe: frontend + API
-    path('ctacte/', include('ctacte.urls', namespace='ctacte')),
 
-
-    path('', home, name='home'),
+    # path('', home, name='home'),
 
 ]

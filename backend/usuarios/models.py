@@ -8,7 +8,8 @@ class Usuario(models.Model):
     email = models.EmailField(max_length=254, unique=True)
     
     # En Django se llama password, aquí lo mapeamos a tu columna 'password_hash'
-    password = models.CharField(max_length=128, db_column='password_hash')
+    password_hash = models.CharField(max_length=128)
+
     
     # Usaremos el token para definir el ROL por ahora si no quieres cambiar la estructura
     # 'ADMIN' = Administrador, cualquier otra cosa = Normal

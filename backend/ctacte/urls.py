@@ -14,7 +14,6 @@ app_name = 'ctacte'
 
 urlpatterns = [
     path('', ctacte_api_root, name='ctacte-root'),
-    path('home/', home_ctacte, name='home'),
 
     # --- API ENDPOINTS ---
 
