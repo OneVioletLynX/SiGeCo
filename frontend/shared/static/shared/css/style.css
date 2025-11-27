@@ -92,7 +92,7 @@ header {
 }
 
 /* ==== SIDEBAR (Overlay) ==== */
-.sidebar {
+#sidebar {
     margin-top: 4rem;
     width: 4.5rem;
     height: calc(100% - 4rem);
@@ -109,21 +109,21 @@ header {
 }
 
 /* 🔹 Expande al pasar el mouse */
-.sidebar:hover {
+#sidebar:hover {
     width: 20rem;
     box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
 }
 
 /* ==== NAV ITEMS ==== */
-.sidebar nav ul {
+#sidebar nav ul {
     list-style: none;
 }
 
-.sidebar nav ul li {
+#sidebar nav ul li {
     margin-bottom: 0.3rem;
 }
 
-.sidebar a,
+#sidebar a,
 .has-submenu a {
     display: flex;
     align-items: center;
@@ -136,17 +136,17 @@ header {
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.sidebar a:hover {
+#sidebar a:hover {
     background-color: var(--background-hover);
 }
 
-.sidebar a.selected {
+#sidebar a.selected {
     color: var(--text-selected-color);
     background-color: var(--background-selected);
 }
 
 /* 🔹 Oculta los textos si no está expandido */
-.sidebar span {
+#sidebar span {
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -154,7 +154,7 @@ header {
 }
 
 /* 🔹 Muestra los textos al hacer hover */
-.sidebar:hover span {
+#sidebar:hover span {
     opacity: 1;
     visibility: visible;
 }
@@ -174,11 +174,11 @@ main {
 
 
 
-.sidebar::-webkit-scrollbar {
+#sidebar::-webkit-scrollbar {
     width: 6px;
 }
 
-.sidebar::-webkit-scrollbar-thumb {
+#sidebar::-webkit-scrollbar-thumb {
     background-color: var(--border-color);
     border-radius: 10px;
 }
@@ -237,7 +237,7 @@ main {
     background-color: var(--background-hover);
 }
 
-.sidebar a span {
+#sidebar a span {
     display: inline-block;
     width: 100px;
     opacity: 0;
@@ -245,12 +245,12 @@ main {
     transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
-.sidebar:hover a span {
+#sidebar:hover a span {
     opacity: 1;
     visibility: visible;
 }
 
-.sidebar img {
+#sidebar img {
     width: 1.6rem;
     flex-shrink: 0;
 }

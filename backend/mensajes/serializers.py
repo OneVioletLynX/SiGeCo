@@ -48,14 +48,39 @@ class MensajeSerializer(serializers.ModelSerializer):
         ]
 
     # ------------------------------------------------------------------------------------
-    # Métodos para mostrar info
+    # Métodos para mostrar info (ESTA ES LA PARTE CLAVE MODIFICADA)
     # ------------------------------------------------------------------------------------
     def get_destino_deudores_info(self, obj):
-        # Solución para el FieldError: Quitamos 'telefono_respaldo' de la consulta de valores
-        if not obj.destino_deudores:
-            return []
-        return list(Alumno.objects.filter(id_alumno__in=obj.destino_deudores)
-                         .values('id_alumno', 'nombre', 'apellido', 'email', 'telefono'))
+        """
+        Este método construye la lista final de destinatarios para el Frontend.
+        Combina:
+        1. Alumnos seleccionados manualmente.
+        2. Alumnos que cursan las carreras seleccionadas (solo activos).
+        """
+        ids_directos = obj.destino_deudores or []
+        ids_carreras = obj.destino_carrera or []
+
+        # Empezamos con un QuerySet vacío
+        qs = Alumno.objects.none()
+
+        # 1. Sumar alumnos individuales
+        if ids_directos:
+            qs = qs | Alumno.objects.filter(pk__in=ids_directos)
+
+        # 2. Sumar alumnos de las carreras (Solo ACTIVOS id_estado=1)
+        if ids_carreras:
+            # Usamos el related_name 'carreras_cursadas' que definimos en el modelo Alumno
+            qs_carrera = Alumno.objects.filter(
+                carreras_cursadas__carrera_id__in=ids_carreras,
+                carreras_cursadas__id_estado_id=1 
+            )
+            qs = qs | qs_carrera
+
+        # 3. Eliminar duplicados (si un alumno estaba en ambas listas)
+        qs = qs.distinct()
+
+        # 4. Devolver los datos necesarios para WhatsApp (Nombre y Teléfono)
+        return list(qs.values('id_alumno', 'nombre', 'apellido', 'email', 'telefono'))
     
     def get_destino_carrera_info(self, obj):
         if not obj.destino_carrera:
