@@ -1,11 +1,16 @@
 from django.contrib import admin
 from django.urls import path, include
+from .views import home
 
 urlpatterns = [
+    path('', home, name='home'),  # 🟢 Home principal
+
+    # Secciones con prefijo
+    path('carreras/', include('carreras_front.urls')),
+    path('cobros/', include('cobros_front.urls')),
+    path('alumnos/', include('alumnos_front.urls')),
+    path('reportes/', include('reportes.urls')),
+
+    # Admin
     path('admin/', admin.site.urls),
-    path('usuarios/', include('usuarios_front.urls')),
-    path('', include('carreras_front.urls')),
-    path('', include('cobros_front.urls')),
-    path('', include('reportes.urls')),  
-    path('', include('alumnos_front.urls')),  
 ]

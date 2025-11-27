@@ -9,17 +9,3 @@ class Migration(migrations.Migration):
         ('alumnos', '0003_alumno_numero_alumno_prefijo'),
     ]
 
-    operations = [
-        migrations.AddField(
-            model_name='alumno',
-            name='numero',
-            field=models.IntegerField(default=1),
-            preserve_default=False,
-        ),
-        migrations.AddField(
-            model_name='alumno',
-            name='prefijo',
-            field=models.IntegerField(default=1),
-            preserve_default=False,
-        ),
-    ]

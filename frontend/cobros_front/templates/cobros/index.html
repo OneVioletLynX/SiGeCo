@@ -14,27 +14,25 @@
 
     <div class="search-container" style="position: relative;">
       <label for="">Buscar</label>
-      <input type="text" id="buscador" placeholder="Nombre, Apellido o Documento" autocomplete="off" class="form-control" />
+      <input type="text" id="buscador" placeholder="Nombre, Apellido o Documento" autocomplete="off"
+        class="form-control" />
       <div id="sugerencias" class="suggestions-box"></div>
     </div>
 
     <div style="display: flex">
 
       <div class="toolbar">
-        <div class="action-button" id="btnEliminarPago">
-          <img src="{% static 'shared/assets/add.svg' %}" alt="">
+        <div class="action-button" id="btnEliminarPago" style="display:none;">
+          <img src="{% static 'shared/assets/remove.svg' %}" alt="">
           <div class="text">Eliminar</div>
         </div>
-        <div class="action-button">
+
+        <div class="action-button" id="btnImprimir" style="display:none;">
           <img src="{% static 'shared/assets/print.svg' %}" alt="">
           <div class="text">Imprimir</div>
         </div>
-        <!-- <div class="action-button">
-          <img src="{% static 'shared/assets/edit.svg' %}" alt="">
-          <div class="text">Modificación</div>
-        </div> -->
       </div>
-      <div>
+      <div style="width: 100%;">
         <table id="sortableTable">
           <thead>
             <tr>
@@ -47,8 +45,8 @@
           </thead>
           <tbody id="tabla-cobros"></tbody>
         </table>
-        <button id="btnAgregar" type="button" style="display:none;"><img src="{% static 'shared/assets/add.svg' %}"
-            alt="">Agregar</button>
+        <button id="btnAgregar" class="button-predeterminado" type="button" style="display:none;"><img
+            src="{% static 'shared/assets/add.svg' %}" alt="">Agregar</button>
       </div>
 
     </div>
@@ -132,11 +130,13 @@
           </div>
         </div>
         <div class="modal-buttons">
-            <button type="submit" class="btn-guardar verde"><img src="{% static 'shared/assets/check.svg' %}" >Guardar</button>
-            <button type="button" id="btnCancelar" class="btn-cancelar"><img src="{% static 'shared/assets/close.svg' %}" >Cancelar</button>
+          <button type="submit" class="button-predeterminado"><img
+              src="{% static 'shared/assets/check.svg' %}">Guardar</button>
+          <button type="button" id="btnCancelar" class="button-predeterminado"><img
+              src="{% static 'shared/assets/close.svg' %}">Cancelar</button>
         </div>
       </div>
-      
+
       <input type="hidden" id="mesesSeleccionados" name="mesesSeleccionados" />
 
 
