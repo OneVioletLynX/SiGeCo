@@ -47,14 +47,21 @@
     // BUSCADOR ALUMNOS
     // ===========================
     buscador.addEventListener("input", () => {
-      const q = buscador.value.trim();
-      if (q.length < 2) {
-        sugerencias.innerHTML = "";
-        sugerencias.style.display = "none";
-        return;
-      }
-      buscarAlumnos(q);
+        const q = buscador.value.trim();
+
+        if (q.length === 0) {
+            document.querySelector(".search-container").classList.remove("shifted");
+        }
+
+        if (q.length < 2) {
+            sugerencias.innerHTML = "";
+            sugerencias.style.display = "none";
+            return;
+        }
+
+        buscarAlumnos(q);
     });
+
 
     async function buscarAlumnos(q) {
       try {
@@ -85,16 +92,19 @@
     }
 
     async function seleccionarAlumno(alumno) {
-      buscador.value = `${alumno.apellido}, ${alumno.nombre}`;
-      sugerencias.innerHTML = "";
-      sugerencias.style.display = "none";
+        buscador.value = `${alumno.apellido}, ${alumno.nombre}`;
+        sugerencias.innerHTML = "";
+        sugerencias.style.display = "none";
 
-      alumnoSeleccionado = alumno;
-      carreraSeleccionadaId = alumno.carrera_actual;
+        alumnoSeleccionado = alumno;
+        carreraSeleccionadaId = alumno.carrera_actual;
 
-      btnAbrir.style.display = "flex";
-      cargarPagos(alumno.id_alumno);
+        const btnAgregar = document.getElementById("btnAgregar");
+        if (btnAgregar) btnAgregar.style.display = "flex";
+
+        cargarPagos(alumno.id_alumno);
     }
+
 
     // ===========================
     // CARGAR PAGOS
@@ -104,25 +114,45 @@
         const resp = await fetch(`${API_BASE}/api/pago/?alumno=${alumnoId}`);
         const pagos = await resp.json();
         const tbody = document.getElementById("tabla-cobros");
+        const searchContainer = document.querySelector(".search-container");
+
         tbody.innerHTML = "";
 
         // ================================
-        // 🔥 Determinar si realmente tiene pagos
+        // 🔍 Calcular si realmente tiene pagos
         // ================================
-        const totalDetalles = pagos.reduce((acc, pago) => acc + pago.detalles.length, 0);
+        const totalDetalles = pagos.reduce((acc, pago) => {
+          const detalles = pago.detalles || [];
+          return acc + detalles.length;
+        }, 0);
+
         const tienePagos = totalDetalles > 0;
 
-        document.getElementById("btnEliminarPago").style.display = tienePagos ? "flex" : "none";
-        document.getElementById("btnImprimir").style.display = tienePagos ? "flex" : "none";
+        // ================================
+        // 🔥 MARGEN FINAL
+        // Alumno SIN pagos  => sin margin
+        // Alumno CON pagos  => con margin
+        // ================================
+        if (tienePagos) {
+          searchContainer.classList.add("shifted");   // ✔ agregar margin
+        } else {
+          searchContainer.classList.remove("shifted"); // ❌ sin margin
+        }
 
         // ================================
-        // 🔥 Dibujar tabla de pagos (si hay)
+        // 🔥 Botones
+        // ================================
+        document.getElementById("btnEliminarPago").style.display = tienePagos ? "flex" : "none";
+        document.getElementById("btnImprimir").style.display   = tienePagos ? "flex" : "none";
+
+        // ================================
+        // 🧾 Dibujar tabla
         // ================================
         pagos.forEach((pago) => {
-          pago.detalles.forEach((det) => {
+          const detalles = pago.detalles || [];
+          detalles.forEach((det) => {
             const tr = document.createElement("tr");
 
-            // clave para seleccionar pago completo
             tr.dataset.pago = pago.id_pago;
 
             tr.innerHTML = `
@@ -138,7 +168,7 @@
         });
 
         // ================================
-        // 🔥 Eventos de selección
+        // 🎯 Eventos de selección
         // ================================
         document.querySelectorAll("#tabla-cobros tr").forEach((row) => {
           row.addEventListener("click", () => {
@@ -158,6 +188,10 @@
         console.error("Error cargando pagos:", err);
       }
     }
+
+
+
+
 
 
 
