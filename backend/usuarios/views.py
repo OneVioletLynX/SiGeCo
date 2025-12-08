@@ -6,6 +6,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import json
 
+# ========================================================
+# API LOGIN (fetch frontend)
+# ========================================================
 @csrf_exempt
 def api_login(request):
     if request.method != "POST":
@@ -13,24 +16,26 @@ def api_login(request):
 
     try:
         data = json.loads(request.body)
-        email = data.get("email")
-        password = data.get("password")
+        email = data.get("email", "").strip()
+        password = data.get("password", "")
     except:
         return JsonResponse({"error": "JSON inválido"}, status=400)
 
     try:
-        usuario = Usuario.objects.get(email=email)
+        # IGNORA MAYÚSCULAS EN EMAIL
+        usuario = Usuario.objects.get(email__iexact=email)
 
-        raw_pass = usuario.password
+        raw_pass = usuario.password_hash
 
         # Verificar password
         if raw_pass.startswith("pbkdf2_"):
             valido = check_password(password, raw_pass)
         else:
+            # texto plano
             valido = (password == raw_pass)
             if valido:
-                usuario.password = make_password(password)
-                usuario.save(update_fields=["password"])
+                usuario.password_hash = make_password(password)
+                usuario.save(update_fields=["password_hash"])
 
         if not valido:
             return JsonResponse({"error": "Contraseña incorrecta"}, status=401)
@@ -42,45 +47,43 @@ def api_login(request):
 
         return JsonResponse({
             "status": "ok",
-            "rol": "ADMIN" if usuario.token == "ADMIN" else "NORMAL"
+            "rol": request.session['rol']
         })
 
     except Usuario.DoesNotExist:
         return JsonResponse({"error": "Usuario no encontrado"}, status=404)
 
+
 # ========================================================
-# 1. VISTA DE INICIO DE SESIÓN (LOGIN)
+# LOGIN NORMAL (form HTML)
 # ========================================================
 def login_view(request):
-    # Si el usuario ya tiene sesión activa, lo redirigimos
+
     if request.session.get('usuario_id'):
         if request.session.get('rol') == 'ADMIN':
             return redirect('usuarios:admin_dashboard')
         return redirect('mensajes:index')
 
     if request.method == 'POST':
-        email = request.POST.get('email')
+        email = request.POST.get('email', "").strip()
         password = request.POST.get('password')
 
         try:
-            usuario = Usuario.objects.get(email=email)
-            
-            # Verificamos la contraseña hasheada
-            if check_password(password, usuario.password):
-                # --- CREAR SESIÓN MANUAL ---
+            # IGNORA MAYÚSCULAS
+            usuario = Usuario.objects.get(email__iexact=email)
+
+            if check_password(password, usuario.password_hash):
                 request.session['usuario_id'] = usuario.id
                 request.session['usuario_nombre'] = usuario.nombre
-                # Definir rol basado en el token
                 request.session['rol'] = 'ADMIN' if usuario.token == 'ADMIN' else 'NORMAL'
 
-                # Redirección según rol
                 if usuario.token == 'ADMIN':
                     return redirect('usuarios:admin_dashboard')
                 else:
-                    return redirect('mensajes:index')
-            else:
-                messages.error(request, "Contraseña incorrecta")
-        
+                    return redirect('http://127.0.0.1:8001/inicio')
+
+            messages.error(request, "Contraseña incorrecta")
+
         except Usuario.DoesNotExist:
             messages.error(request, "Usuario no encontrado")
 
@@ -88,72 +91,66 @@ def login_view(request):
 
 
 # ========================================================
-# 2. VISTA DE CIERRE DE SESIÓN (LOGOUT)
+# LOGOUT
 # ========================================================
 def logout_view(request):
-    request.session.flush() # Elimina todos los datos de la sesión
+    request.session.flush()
     return redirect('usuarios:login')
 
 
 # ========================================================
-# 3. DASHBOARD DE ADMINISTRADOR (GRILLA + MODALES)
+# ADMIN DASHBOARD
 # ========================================================
 def admin_dashboard(request):
-    # 1. Seguridad: Solo ADMIN puede entrar aquí
     if request.session.get('rol') != 'ADMIN':
         return redirect('usuarios:login')
 
-    # 2. Procesar Acciones (POST)
     if request.method == 'POST':
         accion = request.POST.get('accion')
-        
-        # --- CREAR USUARIO ---
+
+        # CREAR
         if accion == 'crear':
             nombre = request.POST.get('nombre')
             apellido = request.POST.get('apellido')
-            email = request.POST.get('email')
+            email = request.POST.get('email').strip()
             password = request.POST.get('password')
-            
-            if Usuario.objects.filter(email=email).exists():
+
+            if Usuario.objects.filter(email__iexact=email).exists():
                 messages.error(request, "El email ya está registrado.")
             else:
                 Usuario.objects.create(
                     nombre=nombre,
                     apellido=apellido,
                     email=email,
-                    password=make_password(password), # IMPORTANTE: Hashear password
-                    token=f"user_{email}" # Generar un token simple por defecto
+                    password_hash=make_password(password),
+                    token=f"user_{email}"
                 )
                 messages.success(request, "Usuario creado exitosamente.")
 
-        # --- EDITAR USUARIO ---
+        # EDITAR
         elif accion == 'editar':
             user_id = request.POST.get('user_id')
             usuario = get_object_or_404(Usuario, pk=user_id)
-            
+
             usuario.nombre = request.POST.get('nombre')
             usuario.apellido = request.POST.get('apellido')
-            usuario.email = request.POST.get('email')
-            
-            # Solo actualizamos password si escribieron algo nuevo
+            usuario.email = request.POST.get('email').strip()
+
             new_pass = request.POST.get('password')
             if new_pass:
-                usuario.password = make_password(new_pass)
-            
+                usuario.password_hash = make_password(new_pass)
+
             usuario.save()
             messages.success(request, "Usuario actualizado correctamente.")
 
-        # --- ELIMINAR USUARIO ---
+        # ELIMINAR
         elif accion == 'eliminar':
             user_id = request.POST.get('user_id')
             usuario = get_object_or_404(Usuario, pk=user_id)
             usuario.delete()
             messages.success(request, "Usuario eliminado.")
 
-        # Recargamos la página para ver cambios y limpiar el formulario
         return redirect('usuarios:admin_dashboard')
 
-    # 3. GET: Listar usuarios (Excluyendo al Admin principal)
     usuarios = Usuario.objects.exclude(token='ADMIN').order_by('-creado')
-    
     return render(request, 'usuarios/admin_dashboard.html', {'usuarios': usuarios})
