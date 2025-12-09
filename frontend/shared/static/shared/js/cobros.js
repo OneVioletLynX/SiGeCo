@@ -32,6 +32,24 @@
     const form = document.getElementById("cobroForm");
     const contenedorMeses = document.querySelector(".meses-container");
 
+    const btnEliminarPago = document.getElementById("btnEliminarPago");
+    const btnImprimir = document.getElementById("btnImprimir");
+
+    // 🔹 Siempre deshabilitados al inicio
+    btnEliminarPago.classList.add("disabled");
+    btnImprimir.classList.add("disabled");
+
+    // ===========================
+    // BOTÓN IMPRIMIR
+    // ===========================
+    btnImprimir.addEventListener("click", () => {
+      if (!pagoSeleccionado) {
+        alert("No hay un pago seleccionado para imprimir.");
+        return;
+      }
+      window.open(`/cobros/comprobante/${pagoSeleccionado}/`, "_blank");
+    });
+
     // ===========================
     // MÉTODO DE PAGO (mostrar campos)
     // ===========================
@@ -39,29 +57,28 @@
       campoComprobante.classList.add("hidden");
       campoTarjeta.classList.add("hidden");
 
-      if (this.value === "2") campoComprobante.classList.remove("hidden");   // Transferencia
-      if (this.value === "3") campoTarjeta.classList.remove("hidden");       // Tarjeta
+      if (this.value === "2") campoComprobante.classList.remove("hidden");
+      if (this.value === "3") campoTarjeta.classList.remove("hidden");
     });
 
     // ===========================
     // BUSCADOR ALUMNOS
     // ===========================
     buscador.addEventListener("input", () => {
-        const q = buscador.value.trim();
+      const q = buscador.value.trim();
 
-        if (q.length === 0) {
-            document.querySelector(".search-container").classList.remove("shifted");
-        }
+      if (q.length === 0) {
+        document.querySelector(".search-container").classList.remove("shifted");
+      }
 
-        if (q.length < 2) {
-            sugerencias.innerHTML = "";
-            sugerencias.style.display = "none";
-            return;
-        }
+      if (q.length < 2) {
+        sugerencias.innerHTML = "";
+        sugerencias.style.display = "none";
+        return;
+      }
 
-        buscarAlumnos(q);
+      buscarAlumnos(q);
     });
-
 
     async function buscarAlumnos(q) {
       try {
@@ -92,19 +109,18 @@
     }
 
     async function seleccionarAlumno(alumno) {
-        buscador.value = `${alumno.apellido}, ${alumno.nombre}`;
-        sugerencias.innerHTML = "";
-        sugerencias.style.display = "none";
+      buscador.value = `${alumno.apellido}, ${alumno.nombre}`;
+      sugerencias.innerHTML = "";
+      sugerencias.style.display = "none";
 
-        alumnoSeleccionado = alumno;
-        carreraSeleccionadaId = alumno.carrera_actual;
+      alumnoSeleccionado = alumno;
+      carreraSeleccionadaId = alumno.carrera_actual;
 
-        const btnAgregar = document.getElementById("btnAgregar");
-        if (btnAgregar) btnAgregar.style.display = "flex";
+      const btnAgregar = document.getElementById("btnAgregar");
+      if (btnAgregar) btnAgregar.style.display = "flex";
 
-        cargarPagos(alumno.id_alumno);
+      cargarPagos(alumno.id_alumno);
     }
-
 
     // ===========================
     // CARGAR PAGOS
@@ -118,6 +134,11 @@
 
         tbody.innerHTML = "";
 
+        // 🔹 Reset de selección
+        pagoSeleccionado = null;
+        btnEliminarPago.classList.add("disabled");
+        btnImprimir.classList.add("disabled");
+
         // ================================
         // 🔍 Calcular si realmente tiene pagos
         // ================================
@@ -128,20 +149,11 @@
 
         const tienePagos = totalDetalles > 0;
 
+        // ================================  
+        // 🔹 Mostrar/Ocultar botones
         // ================================
-        // 🔥 MARGEN FINAL
-        // ================================
-        if (tienePagos) {
-          searchContainer.classList.add("shifted");
-        } else {
-          searchContainer.classList.remove("shifted");
-        }
-
-        // ================================
-        // 🔥 Botones
-        // ================================
-        document.getElementById("btnEliminarPago").style.display = tienePagos ? "flex" : "none";
-        document.getElementById("btnImprimir").style.display   = tienePagos ? "flex" : "none";
+        btnEliminarPago.style.display = tienePagos ? "flex" : "none";
+        btnImprimir.style.display = tienePagos ? "flex" : "none";
 
         // ================================
         // 🧾 Dibujar tabla
@@ -150,7 +162,6 @@
           const detalles = pago.detalles || [];
           detalles.forEach((det) => {
             const tr = document.createElement("tr");
-
             tr.dataset.pago = pago.id_pago;
 
             tr.innerHTML = `
@@ -172,13 +183,19 @@
           row.addEventListener("click", () => {
             const pagoId = row.dataset.pago;
 
+            // Quitar selección anterior
             document.querySelectorAll("#tabla-cobros tr")
               .forEach(r => r.classList.remove("selected-pago"));
 
+            // Marcar filas del pago
             document.querySelectorAll(`#tabla-cobros tr[data-pago='${pagoId}']`)
               .forEach(r => r.classList.add("selected-pago"));
 
             pagoSeleccionado = pagoId;
+
+            // Habilitar acciones
+            btnEliminarPago.classList.remove("disabled");
+            btnImprimir.classList.remove("disabled");
           });
         });
 
@@ -190,8 +207,6 @@
     // ===========================
     // ELIMINAR PAGO COMPLETO
     // ===========================
-    const btnEliminarPago = document.getElementById("btnEliminarPago");
-
     if (btnEliminarPago) {
       btnEliminarPago.addEventListener("click", async () => {
         if (!pagoSeleccionado) {
@@ -208,7 +223,11 @@
         if (resp.ok) {
           alert("Pago eliminado correctamente.");
           cargarPagos(alumnoSeleccionado.id_alumno);
+
           pagoSeleccionado = null;
+          btnEliminarPago.classList.add("disabled");
+          btnImprimir.classList.add("disabled");
+
         } else {
           alert("Error eliminando el pago.");
         }
@@ -349,7 +368,6 @@
         }
 
         const meses = [];
-        let anioUsado = null;
 
         mesesMarcados.forEach((m) => {
           const idMes = parseInt(m.dataset.id_mes);
@@ -361,7 +379,7 @@
             meses.push({ mes: idMes, anio: anio });
           }
         });
-        
+
         const payload = {
           id_alumno: alumnoSeleccionado.id_alumno,
           id_metodo_pago: parseInt(metodo),
@@ -388,9 +406,6 @@
           form.reset();
           cargarPagos(alumnoSeleccionado.id_alumno);
 
-          // ================================
-          // 🧾 ABRIR COMPROBANTE EN PDF
-          // ================================
           if (data.id_pago) {
             window.open(`/cobros/comprobante/${data.id_pago}/`, "_blank");
           }
