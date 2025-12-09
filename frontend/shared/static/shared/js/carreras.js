@@ -15,7 +15,9 @@ document.addEventListener("DOMContentLoaded", () => {
   async function cargarCarreras() {
     try {
       const response = await fetch("http://localhost:8000/api/carreras/");
-      const carreras = await response.json();
+      let carreras = await response.json();
+
+      carreras = carreras.results || carreras;
 
       tabla.innerHTML = "";
 
@@ -29,10 +31,10 @@ document.addEventListener("DOMContentLoaded", () => {
           <td>${carrera.finalizados ?? 0}</td>
           <td>${carrera.inactivos ?? 0}</td>
         `;
+
         tr.addEventListener("click", () => seleccionarCarrera(tr, carrera));
         tabla.appendChild(tr);
 
-        // 🔹 Seleccionar automáticamente la primera carrera
         if (index === 0) {
           tr.classList.add("selected");
           carreraSeleccionada = carrera;
@@ -41,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     } catch (error) {
       console.error("Error cargando carreras:", error);
-      alert("Error al cargar las carreras.");
+      showAlert("Error al cargar las carreras.", "error");
     }
   }
 
@@ -56,29 +58,26 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ----------------------------------------------------------
-  // Actualizar tabla de la derecha (valores vigentes)
+  // Actualizar tabla de la derecha
   // ----------------------------------------------------------
   function actualizarTablaDerecha(carrera) {
     const valorCuota = document.getElementById("valorCuota");
     const valorInscripcion = document.getElementById("valorInscripcion");
     const estadoCarrera = document.getElementById("estadoCarrera");
 
-    if (valorCuota)
-      valorCuota.textContent = carrera.cuota_vigente
-        ? `$${carrera.cuota_vigente.toLocaleString()}`
-        : "—";
+    valorCuota.textContent = carrera.cuota_vigente
+      ? `$${carrera.cuota_vigente.toLocaleString()}`
+      : "—";
 
-    if (valorInscripcion)
-      valorInscripcion.textContent = carrera.inscripcion_vigente
-        ? `$${carrera.inscripcion_vigente.toLocaleString()}`
-        : "—";
+    valorInscripcion.textContent = carrera.inscripcion_vigente
+      ? `$${carrera.inscripcion_vigente.toLocaleString()}`
+      : "—";
 
-    if (estadoCarrera)
-      estadoCarrera.textContent = carrera.estado_actual ?? "—";
+    estadoCarrera.textContent = carrera.estado_actual ?? "—";
   }
 
   // ----------------------------------------------------------
-  // Abrir modal para nueva carrera
+  // Modal nuevo
   // ----------------------------------------------------------
   function abrirModalNueva() {
     form.reset();
@@ -88,46 +87,45 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ----------------------------------------------------------
-  // Abrir modal para editar
+  // Modal editar
   // ----------------------------------------------------------
   async function abrirModalEditar() {
     if (!carreraSeleccionada) {
-      alert("Seleccioná una carrera para modificar.");
+      showAlert("Seleccioná una carrera para modificar.", "warning");
       return;
     }
 
     try {
-      const response = await fetch(
-        `http://localhost:8000/api/carreras/${carreraSeleccionada.id_carrera}/`
-      );
+      const response = await fetch(`http://localhost:8000/api/carreras/${carreraSeleccionada.id_carrera}/`);
       const carrera = await response.json();
 
       form.reset();
       document.getElementById("carreraId").value = carrera.id_carrera;
       document.getElementById("descripcion").value = carrera.descripcion;
-      document.getElementById("inscripcion").value =
-        carrera.inscripcion_vigente ?? "";
-      document.getElementById("cuota").value =
-        carrera.cuota_vigente ?? "";
+      document.getElementById("inscripcion").value = carrera.inscripcion_vigente ?? "";
+      document.getElementById("cuota").value = carrera.cuota_vigente ?? "";
 
       title.innerText = "Modificar Carrera";
       modal.style.display = "block";
     } catch (error) {
       console.error("Error al obtener carrera:", error);
-      alert("No se pudo cargar la información de la carrera.");
+      showAlert("No se pudo cargar la información de la carrera.", "error");
     }
   }
 
   // ----------------------------------------------------------
-  // Baja carrera (cambia estado a Inactiva y refresca tablas)
+  // Dar de baja (PATCH)
   // ----------------------------------------------------------
   async function eliminarCarrera() {
     if (!carreraSeleccionada) {
-      alert("Seleccioná una carrera para dar de baja.");
+      showAlert("Seleccioná una carrera para dar de baja.", "warning");
       return;
     }
 
-    if (!confirm("¿Deseás marcar esta carrera como inactiva?")) return;
+    // Confirmación personalizada
+    const ok = await showConfirm("¿Deseás marcar esta carrera como inactiva?", "Dar de baja");
+    if (!ok) return;
+
 
     try {
       const response = await fetch(
@@ -135,25 +133,22 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id_estado: 2 }), // 👈 ID del estado “Inactiva”
+          body: JSON.stringify({ id_estado: 2 }),
         }
       );
 
       if (response.ok) {
         const data = await response.json();
-        alert(`Carrera marcada como ${data.nuevo_estado} ✅`);
+        showAlert(`Carrera marcada como ${data.nuevo_estado} ✅`, "success");
 
-        // 🔹 Obtener carrera actualizada desde el backend
         const refreshed = await fetch(
           `http://localhost:8000/api/carreras/${carreraSeleccionada.id_carrera}/`
         );
         const updatedCarrera = await refreshed.json();
 
-        // 🔹 Actualizar datos visuales
         carreraSeleccionada = updatedCarrera;
         actualizarTablaDerecha(updatedCarrera);
 
-        // 🔹 Actualizar solo la fila correspondiente (sin recargar toda la tabla)
         const fila = document.querySelector(
           `#tabla-carreras tr[data-id="${updatedCarrera.id_carrera}"]`
         );
@@ -166,16 +161,16 @@ document.addEventListener("DOMContentLoaded", () => {
           celdas[4].textContent = updatedCarrera.inactivos ?? 0;
         }
       } else {
-        alert("Error al dar de baja la carrera.");
+        showAlert("Error al dar de baja la carrera.", "error");
       }
     } catch (error) {
       console.error("Error al dar de baja:", error);
-      alert("Error de conexión con el servidor.");
+      showAlert("Error de conexión con el servidor.", "error");
     }
   }
 
   // ----------------------------------------------------------
-  // Guardar (crear o editar)
+  // Guardar carrera (POST y PUT)
   // ----------------------------------------------------------
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -202,30 +197,29 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (response.ok) {
-        alert(id ? "Carrera actualizada ✅" : "Carrera creada ✅");
+        showAlert(id ? "Carrera actualizada ✅" : "Carrera creada correctamente 🎉", "success");
         modal.style.display = "none";
         await cargarCarreras();
       } else {
         const err = await response.json();
         console.error(err);
-        alert("Error al guardar la carrera");
+        showAlert("Error al guardar la carrera.", "error");
       }
     } catch (error) {
       console.error("Error de red:", error);
-      alert("No se pudo conectar con el servidor");
+      showAlert("No se pudo conectar con el servidor.", "error");
     } finally {
       isSubmitting = false;
     }
   });
 
   // ----------------------------------------------------------
-  // Botones de acción (Alta, Baja, Modificación)
+  // Botones
   // ----------------------------------------------------------
   buttons.forEach((btn) => {
     const text = btn.querySelector(".text").innerText.trim();
     if (text === "Alta") btn.addEventListener("click", abrirModalNueva);
-    if (text === "Modificacion")
-      btn.addEventListener("click", abrirModalEditar);
+    if (text === "Modificacion") btn.addEventListener("click", abrirModalEditar);
     if (text === "Baja") btn.addEventListener("click", eliminarCarrera);
   });
 
@@ -238,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // ----------------------------------------------------------
-  // Inicialización
+  // Inicializar
   // ----------------------------------------------------------
   cargarCarreras();
 });

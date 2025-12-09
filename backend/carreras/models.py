@@ -24,8 +24,8 @@ class Carrera(models.Model):
     id_carrera = models.AutoField(primary_key=True)
     descripcion = models.CharField(max_length=100)
     
-    # Recordatorio: Aquí NO va id_estado, ya lo quitamos antes.
-
+    id_estado = models.ForeignKey(Estado, on_delete=models.CASCADE, default=1)
+    
     class Meta:
         db_table = 'carreras_carrera'
         verbose_name = "Carrera"

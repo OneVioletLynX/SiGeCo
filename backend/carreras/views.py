@@ -12,40 +12,27 @@ from .serializers import CarreraSerializer, EstadoSerializer, CarrerasCursadasSe
 # ============================================================================
 
 class CarreraListCreate(APIView):
+
     def get(self, request):
-        try:
-            search = request.GET.get('search', '').strip()
-            
-            # --- SOLUCIÓN AL ERROR 1054 ---
-            # Usamos .values() para pedirle a la BD SOLO lo que existe.
-            # Evitamos usar CarreraSerializer aquí porque busca 'id_estado' y rompe todo.
-            qs = Carrera.objects.values('id_carrera', 'descripcion').order_by('descripcion')
+        carreras = Carrera.objects.all().order_by("descripcion")
+        serializer = CarreraSerializer(carreras, many=True)
+        return Response(serializer.data)
 
-            if search:
-                qs = qs.filter(descripcion__icontains=search)
-
-            # Convertimos el QuerySet a lista para que sea serializable
-            return Response(list(qs))
-            
-        except Exception as e:
-            print(f"Error en GET Carreras: {e}")
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
     def post(self, request):
-        # El POST usa el serializer. Si el serializer tiene campos que no existen en DB, fallará.
         serializer = CarreraSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+
 class CarreraDetail(APIView):
     def get(self, request, pk):
-        # También corregimos el detalle por si acaso
-        carrera = Carrera.objects.values('id_carrera', 'descripcion').filter(pk=pk).first()
-        if not carrera:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        return Response(carrera)
+        carrera = get_object_or_404(Carrera, pk=pk)
+        serializer = CarreraSerializer(carrera)
+        return Response(serializer.data)
+    
 
     def put(self, request, pk):
         carrera = get_object_or_404(Carrera, pk=pk)

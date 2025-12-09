@@ -2,73 +2,77 @@
 
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Centro Universitario{% endblock %}</title>
+
     <link rel="stylesheet" href="{% static 'shared/css/style.css' %}">
 
-    {% block extra_css %}
-    <!-- Aquí se insertará CSS adicional de cada página -->
-    {% endblock %}
+    {% block extra_css %}{% endblock %}
 </head>
 
 <body>
+
     <header>
         <div class="left">
             <a href="{% url 'home' %}" class="brand" style="text-decoration: none;">
-                <!-- <img src="{% static 'shared/assets/logoCentroUni.png' %}" alt="" class="logo"> -->
                 <span class="name">Centro Universitario</span>
             </a>
-        </div>
-
-        <div class="right">
-            <!-- <a href="#"><img src="{% static 'shared/assets/school.svg' %}" alt="carrera"></a>
-            <a href="#"><img src="{% static 'shared/assets/payments.svg' %}" alt="cobros"></a>
-            <a href="#"><img src="{% static 'shared/assets/group.svg' %}" alt="alumnos"></a>
-            <a href="#"><img src="{% static 'shared/assets/mail.svg' %}" alt="notificaciones"></a> -->
-            <!-- <a href="#"><img src="{% static 'shared/assets/settings.svg' %}" alt="configuracion"></a>
-            <img src="{% static 'shared/assets/account.svg' %}" alt="img-user" class="user"> -->
         </div>
     </header>
 
     <div class="sidebar-" id="sidebar">
         <nav>
             <ul>
-                <li><a href="{% url 'carreras_front:carreras' %}"><img
-                            src="{% static 'shared/assets/school.svg' %}" alt="carrera"><span>Carreras</span></a></li>
-                <li><a href="{% url 'cobros_front:cobros' %}"><img src="{% static 'shared/assets/payments.svg' %}"
-                            alt="cobros"><span>Cobros</span></a>
+                <li><a href="{% url 'carreras_front:carreras' %}">
+                    <img src="{% static 'shared/assets/school.svg' %}">
+                    <span>Carreras</span></a>
                 </li>
-                <li><a href="{% url 'alumnos_front:alumnos' %}"><img src="{% static 'shared/assets/group.svg' %}"
-                            alt="alumnos"><span>Alumnos</span></a></li>
-                <li><a href="{% url 'mensajes_front:mensajes' %}"><img src="{% static 'shared/assets/mail.svg' %}"
-                            alt="notificaciones"><span>Mensajeria</span></a></li>
-                <li><a href="{% url 'reportes:estadisticas' %}"><img src="{% static 'shared/assets/finance.svg' %}"
-                            alt="estadisticas"><span>Estadísticas</span></a></li>
-                <!-- 🔹 Reportes con submenú -->
+
+                <li><a href="{% url 'cobros_front:cobros' %}">
+                    <img src="{% static 'shared/assets/payments.svg' %}">
+                    <span>Cobros</span></a>
+                </li>
+
+                <li><a href="{% url 'alumnos_front:alumnos' %}">
+                    <img src="{% static 'shared/assets/group.svg' %}">
+                    <span>Alumnos</span></a>
+                </li>
+
+                <li><a href="{% url 'mensajes_front:mensajes' %}">
+                    <img src="{% static 'shared/assets/mail.svg' %}">
+                    <span>Mensajería</span></a>
+                </li>
+
+                <li><a href="{% url 'reportes:estadisticas' %}">
+                    <img src="{% static 'shared/assets/finance.svg' %}">
+                    <span>Estadísticas</span></a>
+                </li>
+
+                <!-- Submenú -->
                 <li class="has-submenu">
                     <a href="#" class="submenu-toggle">
-                        <img src="{% static 'shared/assets/file_export.svg' %}" alt="reportes">
+                        <img src="{% static 'shared/assets/file_export.svg' %}">
                         <span>Reportes</span>
-                        <svg class="arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round">
-                            <polyline points="6 9 12 15 18 9" />
+                        <svg class="arrow" width="14" height="14" fill="none" stroke="currentColor">
+                            <polyline points="6 9 12 15 18 9"/>
                         </svg>
                     </a>
                     <ul class="submenu">
-                        <li><a href="{% url 'reportes:reportes_bonos' %}"><img src="{% static 'shared/assets/docs.svg' %}" alt="cobros"><span>Bonos
-                                    pagados por alumno</span></a></li>
-                        <li><a href="{% url 'reportes:reportes_alumnos' %}"><img src="{% static 'shared/assets/docs.svg' %}" alt="cobros"><span>Listado de
-                                    alumnos</span></a></li>
-                        <li><a href="#"><img src="{% static 'shared/assets/docs.svg' %}"
-                                    alt="cobros"><span>Recaudacion</span></a></li>
+                        <li><a href="{% url 'reportes:reportes_bonos' %}">
+                            <img src="{% static 'shared/assets/docs.svg' %}">
+                            <span>Bonos pagados</span></a></li>
+
+                        <li><a href="{% url 'reportes:reportes_alumnos' %}">
+                            <img src="{% static 'shared/assets/docs.svg' %}">
+                            <span>Listado alumnos</span></a></li>
+
+                        <li><a href="#">
+                            <img src="{% static 'shared/assets/docs.svg' %}">
+                            <span>Recaudación</span></a></li>
                     </ul>
                 </li>
-            </ul>
-            </li>
             </ul>
         </nav>
     </div>
@@ -77,11 +81,29 @@
         {% block content %}{% endblock %}
     </main>
 
+    <!-- 🔹 MODAL GLOBAL DE CONFIRMACIÓN -->
+    <div id="confirmModal" class="confirm-overlay hidden">
+        <div class="confirm-box">
+            <h3 id="confirmTitle">Confirmación</h3>
+            <p id="confirmMessage"></p>
+            <div class="confirm-buttons">
+                <button id="confirmCancel" class="btn-cancel">Cancelar</button>
+                <button id="confirmAccept" class="btn-accept">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔹 ALERTA GLOBAL -->
+    <div id="customAlert" class="custom-alert hidden">
+        <div class="custom-alert-content">
+            <span id="customAlertMessage"></span>
+        </div>
+    </div>
+
+    <!-- JS global -->
     <script src="{% static 'shared/js/script.js' %}"></script>
 
-    {% block extra_js %}
-    <!-- Aquí se insertará JS adicional de cada página -->
-    {% endblock %}
-</body>
 
+    {% block extra_js %}{% endblock %}
+</body>
 </html>

@@ -347,20 +347,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   // ==========================================================
-  //  BAJA ALUMNO
+  //  BAJA ALUMNO (con confirm personalizado)
   // ==========================================================
   async function darDeBajaAlumno(id) {
+
+    const ok = await showConfirm("¿Seguro que deseas dar de baja este alumno?", "Confirmar operación");
+    if (!ok) return;
+
     try {
       const r = await fetch(`http://localhost:8000/api/alumnos/${id}/`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id_estado: 2 })
       });
-      if (r.ok) cargarAlumnos();
+
+      if (r.ok) {
+        showAlert("Alumno dado de baja correctamente", "success");
+        cargarAlumnos();
+      } else {
+        showAlert("No fue posible dar de baja al alumno", "error");
+      }
+
     } catch (e) {
       console.error(e);
+      showAlert("Error de conexión con el servidor", "error");
     }
   }
+
 
   // ==========================================================
   //  TABLA + PAGINACIÓN
@@ -555,12 +568,16 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify(data)
       });
 
-      if (response.ok) {
-        form.reset();
-        delete form.dataset.editingId;
-        modal.style.display = "none";
-        await cargarAlumnos();
-      } else {
+        if (response.ok) {
+          const mensaje = id ? "Alumno modificado correctamente" : "Alumno creado correctamente";
+          showAlert(mensaje, "success");
+          
+          form.reset();
+          delete form.dataset.editingId;
+          modal.style.display = "none";
+          await cargarAlumnos();
+        }
+        else {
         const raw = await response.clone().text();
         console.log("🔍 Backend dijo:", raw);
 

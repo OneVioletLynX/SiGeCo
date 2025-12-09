@@ -5,6 +5,12 @@
 <link rel="stylesheet" href="{% static 'shared/css/carreras.css' %}" />
 {% endblock %}
 {% block content %}
+<div id="customAlert" class="custom-alert hidden">
+    <div class="custom-alert-content">
+        <span id="customAlertMessage"></span>
+    </div>
+</div>
+
 <div style="display: flex; gap: 25px">
     <div class="toolbar">
         <div class="action-button">
@@ -105,6 +111,8 @@
 
     </div>
 </div>
+
+
 {% endblock %}
 {% block extra_js %}
 <script src="{% static 'shared/js/carreras.js' %}"></script>
