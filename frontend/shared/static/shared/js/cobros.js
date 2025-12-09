@@ -130,13 +130,11 @@
 
         // ================================
         // 🔥 MARGEN FINAL
-        // Alumno SIN pagos  => sin margin
-        // Alumno CON pagos  => con margin
         // ================================
         if (tienePagos) {
-          searchContainer.classList.add("shifted");   // ✔ agregar margin
+          searchContainer.classList.add("shifted");
         } else {
-          searchContainer.classList.remove("shifted"); // ❌ sin margin
+          searchContainer.classList.remove("shifted");
         }
 
         // ================================
@@ -188,12 +186,6 @@
         console.error("Error cargando pagos:", err);
       }
     }
-
-
-
-
-
-
 
     // ===========================
     // ELIMINAR PAGO COMPLETO
@@ -395,6 +387,13 @@
           modal.style.display = "none";
           form.reset();
           cargarPagos(alumnoSeleccionado.id_alumno);
+
+          // ================================
+          // 🧾 ABRIR COMPROBANTE EN PDF
+          // ================================
+          if (data.id_pago) {
+            window.open(`/cobros/comprobante/${data.id_pago}/`, "_blank");
+          }
 
         } catch (err) {
           console.error("Error registrando pago:", err);
