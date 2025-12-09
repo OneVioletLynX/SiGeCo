@@ -190,3 +190,8 @@
 .selected-pago {
   background-color: #d1ecf1;
 }
+
+.action-button.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
