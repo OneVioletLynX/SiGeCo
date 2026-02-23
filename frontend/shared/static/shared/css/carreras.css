@@ -1,27 +1,97 @@
-/* GRID DEL FORM */
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 22px 28px;
-  margin-top: 20px;
-}
+/* ===============================
+   FORMULARIO CARRERA
+   =============================== */
 
-/* FORM GROUP */
-.form-group {
+#formCarrera {
   display: flex;
   flex-direction: column;
 }
 
-/* LABELS */
-.form-label {
-  font-weight: 700;
-  margin-bottom: 6px;
-  color: #333;
+/* --- Grupo general --- */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-weight: 600;
+  font-size: 16px;
+  color: #555;
+}
+
+/* --- Inputs más suaves --- */
+#formCarrera input {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#formCarrera input:focus {
+  border-color: var(--text-selected-color);
+  box-shadow: 0 0 0 3px rgba(53, 92, 192, 0.15);
+  outline: none;
+}
+
+/* --- Sección valores en 2 columnas --- */
+.valores-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* --- Selector de color --- */
+.color-picker {
+  display: flex;
+  justify-content: space-evenly;
+  gap: 12px;
+  margin-top: 6px;
+  margin-bottom: 8px;
+}
+
+.color-option {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.color-option:hover {
+  transform: scale(1.1);
+}
+
+.color-option.selected {
+  border: 3px solid #111;
+  transform: scale(1.15);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* --- Preview del chip --- */
+.chip-preview {
+  display: flex;
+  justify-content: center;
+}
+
+.chip-demo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-weight: 600;
   font-size: 14px;
+  transition: all 0.2s ease;
 }
 
-/* FILA ENTERA PARA EL NOMBRE DE LA CARRERA */
-#descripcion {
-  grid-column: span 2;
+.chip-demo .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
 }
 
+/* --- Botón alineado derecha --- */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}

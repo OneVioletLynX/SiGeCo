@@ -9,7 +9,7 @@ class AlumnoSerializer(serializers.ModelSerializer):
     # Para ALTA / EDICIÓN (lo envía el form)
     id_carrera = serializers.IntegerField(write_only=True, required=False)
     id_estado = serializers.IntegerField(write_only=True, required=False)
-
+    carrera_color = serializers.SerializerMethodField(read_only=True)
     # Solo lectura (para listar / detalle)
     carrera_actual = serializers.SerializerMethodField(read_only=True)   # id de carrera
     estado_actual = serializers.SerializerMethodField(read_only=True)    # id de estado
@@ -36,6 +36,7 @@ class AlumnoSerializer(serializers.ModelSerializer):
             'inscripcion',
             'fecha_inscripcion',
             'anio_ingreso',
+            
 
             # ----- Campos WRITE-ONLY para manejo de carrera/estado -----
             'id_carrera',
@@ -46,6 +47,7 @@ class AlumnoSerializer(serializers.ModelSerializer):
             'estado_actual',
             'carrera_nombre',
             'estado_nombre',
+            'carrera_color',
         ]
 
     # ------------------------------------------------------------------
@@ -71,7 +73,11 @@ class AlumnoSerializer(serializers.ModelSerializer):
         cc = self._get_carrera_cursada(obj)
         return cc.id_estado.descripcion if cc and cc.id_estado else None
 
-
+    def get_carrera_color(self, obj):
+        cc = self._get_carrera_cursada(obj)
+        if cc and cc.carrera and cc.carrera.color:
+            return cc.carrera.color
+        return None
         # ------------------------------------------------------------------
     # VALIDACIONES DE UNICIDAD (DNI, EMAIL, LEGAJO)
     # ------------------------------------------------------------------

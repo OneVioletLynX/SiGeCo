@@ -43,28 +43,14 @@ class CarreraDetail(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
     def patch(self, request, pk):
-        # OJO: Esto conceptualmente fallará si tu modelo Carrera sigue esperando 'id_estado'
-        # pero lo dejo como estaba en tu lógica original por si acaso.
         carrera = get_object_or_404(Carrera, pk=pk)
-        
-        # Esta lógica asume que la Carrera tiene estado, pero la DB dice que no.
-        # Probablemente esto de error si intentas usarlo, pero no afecta al buscador.
-        nuevo_estado_id = request.data.get('id_estado')
-        if not nuevo_estado_id:
-            return Response({"error": "Debe indicar un id_estado"}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = CarreraSerializer(carrera, data=request.data, partial=True)
 
-        try:
-            nuevo_estado = Estado.objects.get(pk=nuevo_estado_id)
-            carrera.id_estado = nuevo_estado # Esto fallará al guardar si la columna no existe
-            carrera.save()
-            
-            return Response({
-                "status": "actualizado",
-                "id_carrera": carrera.id_carrera,
-                "nuevo_estado": nuevo_estado.descripcion
-            }, status=status.HTTP_200_OK)
-        except Exception as e:
-             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
         carrera = get_object_or_404(Carrera, pk=pk)

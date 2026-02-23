@@ -333,6 +333,8 @@ th.asc img {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    align-items: flex-end;
+    margin-bottom: 15px;
 }
 
 .toolbar .action-button {
@@ -712,6 +714,30 @@ tr.selected {
   width: 10px;
   height: 10px;
   border-radius: 50%;
+}
+
+
+
+/* ===============================
+   CHIPS DE ESTADO
+   =============================== */
+
+td .chip-activo {
+  background-color: #E6F4EA;
+  color: #1E7E34;
+}
+
+td .chip-activo .dot {
+  background-color: #1E7E34;
+}
+
+td .chip-inactivo {
+  background-color: #FDECEA;
+  color: #B02A37;
+}
+
+td .chip-inactivo .dot {
+  background-color: #B02A37;
 }
 
 .acciones {

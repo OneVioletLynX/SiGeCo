@@ -13,41 +13,27 @@ document.addEventListener("DOMContentLoaded", () => {
   let filtroCarrera = "all";
   let filtroBusqueda = "";
   let searchTimeout = null;
+function aclararColor(hex, factor = 150) {
+  hex = hex.replace("#", "");
+  const r = Math.min(255, parseInt(hex.substring(0, 2), 16) + factor);
+  const g = Math.min(255, parseInt(hex.substring(2, 4), 16) + factor);
+  const b = Math.min(255, parseInt(hex.substring(4, 6), 16) + factor);
+  return `rgb(${r},${g},${b})`;
+}
 
-  // ==========================================================
-  //  CHIPS (COLORES)
-  // ==========================================================
-  const PALETA = [
-    { bg: "#E3F2FD", text: "#1565C0" },
-    { bg: "#E8F5E9", text: "#2E7D32" },
-    { bg: "#FFF3E0", text: "#EF6C00" },
-    { bg: "#FCE4EC", text: "#C2185B" },
-    { bg: "#F3E5F5", text: "#7B1FA2" },
-    { bg: "#E0F2F1", text: "#00796B" },
-    { bg: "#EDE7F6", text: "#5E35B1" },
-    { bg: "#FFF8E1", text: "#FFA000" },
-    { bg: "#E0F7FA", text: "#00838F" },
-    { bg: "#F1F8E9", text: "#558B2F" }
-  ];
+function formatearChipCarrera(nombre, color) {
+  if (!nombre) return "-";
+  if (!color) return nombre;
 
-  function obtenerColorFijo(texto) {
-    let hash = 0;
-    for (let i = 0; i < texto.length; i++) {
-      hash = texto.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return PALETA[Math.abs(hash) % PALETA.length];
-  }
+  const fondo = aclararColor(color, 150);
 
-  function formatearChipCarrera(carrera) {
-    if (!carrera) return "-";
-    const c = obtenerColorFijo(carrera);
-    return `
-      <span class="chip" style="background:${c.bg}; color:${c.text}">
-        <span class="dot" style="background:${c.text}"></span>
-        ${carrera}
-      </span>
-    `;
-  }
+  return `
+    <span class="chip" style="background:${fondo}; color:${color}">
+      <span class="dot" style="background:${color}"></span>
+      ${nombre}
+    </span>
+  `;
+}
 
   const ESTADOS_PALETA = {
     "activo":   { bg: "#E8F5E9", text: "#2E7D32" },
@@ -408,7 +394,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       tr.innerHTML = `
         <td>${alumno.apellido}, ${alumno.nombre}</td>
-        <td>${formatearChipCarrera(alumno.carrera_nombre)}</td>
+        <td>${formatearChipCarrera(alumno.carrera_nombre, alumno.carrera_color)}</td>
         <td>${formatearChipEstado(alumno.estado_nombre)}</td>
         <td class="acciones-col">
 
