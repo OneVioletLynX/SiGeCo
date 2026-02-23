@@ -214,7 +214,18 @@
           return;
         }
 
-        if (!confirm("¿Eliminar TODO el pago seleccionado?")) return;
+        if (resp.ok) {
+          showAlert("Pago eliminado correctamente", "success");
+          cargarPagos(alumnoSeleccionado.id_alumno);
+
+          pagoSeleccionado = null;
+          btnEliminarPago.classList.add("disabled");
+          btnImprimir.classList.add("disabled");
+
+        } else {
+          showAlert("Error eliminando el pago.", "error");
+        }
+
 
         const resp = await fetch(`${API_BASE}/api/pago/${pagoSeleccionado}/`, {
           method: "DELETE",
@@ -239,7 +250,8 @@
     // ===========================
     btnAbrir.addEventListener("click", async () => {
       if (!alumnoSeleccionado) {
-        alert("Seleccioná un alumno primero.");
+        showAlert("Seleccioná un alumno primero.", "warning");
+
         return;
       }
       await cargarMesesPendientes();
@@ -355,7 +367,8 @@
 
         const mesesMarcados = document.querySelectorAll(".month.selected");
         if (!mesesMarcados.length) {
-          alert("Seleccioná al menos un mes.");
+          showAlert("Seleccioná al menos un mes.", "warning");
+
           return;
         }
 
@@ -363,7 +376,8 @@
         const importe = parseFloat(document.getElementById("importe").value);
 
         if (!metodo || !importe) {
-          alert("Completá todos los campos.");
+          showAlert("Completá todos los campos.", "warning");
+
           return;
         }
 
@@ -397,11 +411,13 @@
           const data = await resp.json();
 
           if (!resp.ok || data.error) {
-            alert("Error: " + (data.error || "No se pudo registrar el pago."));
+            showAlert("Error: " + (data.error || "No se pudo registrar el pago."), "error");
+
             return;
           }
 
-          alert("Pago registrado correctamente.");
+          showAlert("Pago registrado correctamente.", "success");
+
           modal.style.display = "none";
           form.reset();
           cargarPagos(alumnoSeleccionado.id_alumno);
@@ -412,7 +428,8 @@
 
         } catch (err) {
           console.error("Error registrando pago:", err);
-          alert("Error al guardar el pago.");
+          showAlert("Error al guardar el pago.", "error");
+
         }
       });
     }

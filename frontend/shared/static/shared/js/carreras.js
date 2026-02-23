@@ -9,6 +9,30 @@ document.addEventListener("DOMContentLoaded", () => {
   let carreraSeleccionada = null;
   let isSubmitting = false;
 
+  const ESTADOS_PALETA = {
+  "activa":   { bg: "#E8F5E9", text: "#2E7D32" },
+  "inactiva": { bg: "#FFEBEE", text: "#C62828" }
+};
+
+function formatearChipEstado(estado) {
+  if (!estado) return "-";
+
+  const c = ESTADOS_PALETA[estado.toLowerCase()] 
+            || { bg:"#E0E0E0", text:"#424242" };
+
+  return `
+    <span class="chip" style="background:${c.bg}; color:${c.text}">
+      <span class="dot" style="background:${c.text}"></span>
+      ${estado}
+    </span>
+  `;
+}
+
+function formatearMoneda(valor) {
+  if (!valor) return "—";
+  return `$${Number(valor).toLocaleString("es-AR")}`;
+}
+
   // ----------------------------------------------------------
   // Cargar carreras
   // ----------------------------------------------------------
@@ -19,28 +43,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
       carreras = carreras.results || carreras;
 
-      tabla.innerHTML = "";
+tabla.innerHTML = "";
 
-      carreras.forEach((carrera, index) => {
-        const tr = document.createElement("tr");
-        tr.dataset.id = carrera.id_carrera;
-        tr.innerHTML = `
-          <td>${carrera.descripcion}</td>
-          <td>${carrera.total_alumnos ?? 0}</td>
-          <td>${carrera.activos ?? 0}</td>
-          <td>${carrera.finalizados ?? 0}</td>
-          <td>${carrera.inactivos ?? 0}</td>
-        `;
+carreras.forEach((carrera) => {
 
-        tr.addEventListener("click", () => seleccionarCarrera(tr, carrera));
-        tabla.appendChild(tr);
+  const tr = document.createElement("tr");
+  tr.dataset.id = carrera.id_carrera;
 
-        if (index === 0) {
-          tr.classList.add("selected");
-          carreraSeleccionada = carrera;
-          actualizarTablaDerecha(carrera);
-        }
-      });
+  tr.innerHTML = `
+    <td>${carrera.descripcion}</td>
+    <td>${formatearChipEstado(carrera.estado_actual)}</td>
+    <td>${formatearMoneda(carrera.cuota_vigente)}</td>
+    <td>${formatearMoneda(carrera.inscripcion_vigente)}</td>
+    <td class="acciones-col">
+      <div class="acciones">
+        <button class="btn-editar" data-id="${carrera.id_carrera}">
+          <img src="/static/shared/assets/edit.svg">
+        </button>
+        <button class="btn-baja" data-id="${carrera.id_carrera}">
+          <img src="/static/shared/assets/remove.svg">
+        </button>
+      </div>
+    </td>
+  `;
+
+  tabla.appendChild(tr);
+});
     } catch (error) {
       console.error("Error cargando carreras:", error);
       showAlert("Error al cargar las carreras.", "error");
@@ -235,4 +263,24 @@ document.addEventListener("DOMContentLoaded", () => {
   // Inicializar
   // ----------------------------------------------------------
   cargarCarreras();
+});
+
+
+document.addEventListener("click", e => {
+
+  const btn = e.target.closest("button");
+  if (!btn) return;
+
+  const id = btn.dataset.id;
+
+  if (btn.classList.contains("btn-editar")) {
+    carreraSeleccionada = { id_carrera: id };
+    abrirModalEditar();
+  }
+
+  if (btn.classList.contains("btn-baja")) {
+    carreraSeleccionada = { id_carrera: id };
+    eliminarCarrera();
+  }
+
 });
