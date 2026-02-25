@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import Carrera, CarreraCursada, Estado
 from valores.models import Valor, Concepto
 from django.utils import timezone
-from datetime import date
+
 
 
 class CarreraSerializer(serializers.ModelSerializer):
@@ -35,6 +35,7 @@ class CarreraSerializer(serializers.ModelSerializer):
             "activos",
             "finalizados",
             "inactivos",
+            "color",
         ]
 
     # -------------------------------------------------------
@@ -73,14 +74,14 @@ class CarreraSerializer(serializers.ModelSerializer):
             Valor.objects.create(
                 id_carrera=carrera,
                 id_concepto=concepto_insc,
-                fecha_inicio=date.today(),
+                fecha_inicio=timezone.now(),
                 importe=inscripcion,
             )
         if cuota is not None:
             Valor.objects.create(
                 id_carrera=carrera,
                 id_concepto=concepto_cuota,
-                fecha_inicio=date.today(),
+                fecha_inicio=timezone.now(),
                 importe=cuota,
             )
 
@@ -101,14 +102,14 @@ class CarreraSerializer(serializers.ModelSerializer):
             Valor.objects.create(
                 id_carrera=instance,
                 id_concepto=concepto_insc,
-                fecha_inicio=date.today(),
+                fecha_inicio=timezone.now(),
                 importe=inscripcion,
             )
         if cuota is not None and concepto_cuota:
             Valor.objects.create(
                 id_carrera=instance,
                 id_concepto=concepto_cuota,
-                fecha_inicio=date.today(),
+                fecha_inicio=timezone.now(),
                 importe=cuota,
             )
 

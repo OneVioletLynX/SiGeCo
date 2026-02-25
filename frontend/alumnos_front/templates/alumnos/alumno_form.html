@@ -1,0 +1,147 @@
+{% extends "shared/base.html" %}
+{% load static %}
+{% block title %}Inicio{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'shared/css/alumnos.css' %}">
+{% endblock %}
+{% block content %}
+
+<div class="form-page">
+
+    <div class="form-header">
+        <h1>Nuevo Alumno</h1>
+        <a href="/alumnos/alumnos/" class="btn-secundario">Volver</a>
+    </div>
+
+    <form id="alumnoForm" class="form-card">
+        {% csrf_token %}
+
+        <!-- ================= DATOS PERSONALES ================= -->
+        <section class="form-section">
+            <h2>Datos personales</h2>
+
+            <div class="grid-2">
+
+                <div class="input-field">
+                    <input type="text" placeholder=" " name="nombre">
+                    <label>Nombre</label>
+                    <span class="error-msg" id="error-nombre"></span>
+                </div>
+
+                <div class="input-field">
+
+                    <input type="text" placeholder=" " name="apellido">
+                    <label>Apellido</label>
+                    <span class="error-msg" id="error-apellido"></span>
+                </div>
+
+                <div class="input-field">
+                    <input type="number" placeholder=" " name="dni">
+                    <label>DNI</label>
+                    <span class="error-msg" id="error-dni"></span>
+                </div>
+
+                <div class="input-field">
+                    <input type="date" placeholder=" " name="fecha_nacimiento">
+                    <label>Fecha de nacimiento</label>
+                    <span class="error-msg" id="error-fecha_nacimiento"></span>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= CONTACTO ================= -->
+        <section class="form-section">
+            <h2>Datos de contacto</h2>
+
+            <div class="grid-2">
+
+                <div class="input-field">
+
+                    <select name="ciudad">
+                        <option value="1">Marcos Juarez</option>
+                        <option value="2">Leones</option>
+                        <option value="3">Inriville</option>
+                    </select>
+                    <label>Localidad</label>
+                </div>
+
+                <div class="input-field">
+                    <input type="text" placeholder=" " name="direccion">
+                    <label>Dirección</label>
+                    <span class="error-msg" id="error-direccion"></span>
+                </div>
+
+                <div class="input-field">
+                    <input type="number" placeholder=" " name="numero">
+                    <label>Altura</label>
+                    <span class="error-msg" id="error-numero"></span>
+                </div>
+
+                <div class="input-field">
+                    <input type="number" placeholder=" " name="prefijo">
+                    <label>Prefijo</label>
+                    <span class="error-msg" id="error-prefijo"></span>
+                </div>
+
+                <div class="input-field">
+                    <input type="number" placeholder=" " name="telefono">
+                    <label>Celular</label>
+                    <span class="error-msg" id="error-telefono"></span>
+                </div>
+
+                <div class="input-field">
+                    <input type="email" placeholder=" " name="email">
+                    <label>Correo</label>
+                    <span class="error-msg" id="error-email"></span>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= ACADÉMICO ================= -->
+        <section class="form-section">
+            <h2>Datos académicos</h2>
+
+            <div class="grid-2">
+
+                <div class="input-field">
+                    <input type="text" placeholder=" " name="legajo">
+                    <label>Legajo</label>
+                    <span class="error-msg" id="error-legajo"></span>
+                </div>
+
+                <div class="input-field">
+                    <select name="id_estado" placeholder=" " id="id_estado"></select>
+                    <label>Estado</label>
+                    <span class="error-msg" id="error-id_estado"></span>
+                </div>
+
+                <div class="input-field">
+                    <select name="id_carrera" placeholder=" " id="id_carrera"></select>
+                    <label>Carrera</label>
+                    <span class="error-msg" id="error-id_carrera"></span>
+                </div>
+
+                <div class="input-field">     
+                    <select name="anio_ingreso" placeholder=" ">
+                        <option value="2025">2025</option>
+                        <option value="2026">2026</option>
+                    </select>
+                    <label>Año de ingreso</label>
+                    <span class="error-msg" id="error-anio_ingreso"></span>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= BOTONES ================= -->
+        <div class="form-actions">
+            <a href="/alumnos/alumnos/" class="btn-secundario">Cancelar</a>
+            <button type="submit" class="btn-primario">Guardar</button>
+        </div>
+
+    </form>
+</div>
+
+{% endblock %}

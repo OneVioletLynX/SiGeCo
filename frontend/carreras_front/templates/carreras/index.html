@@ -11,20 +11,20 @@
     </div>
 </div>
 
-<div style="display: flex; gap: 25px">
+<div>
     <div class="toolbar">
         <div class="action-button">
             <img src="{% static 'shared/assets/add.svg' %}" alt="" />
             <div class="text">Alta</div>
         </div>
-        <div class="action-button">
+        <!-- <div class="action-button">
             <img src="{% static 'shared/assets/remove.svg' %}" alt="" />
             <div class="text">Baja</div>
         </div>
         <div class="action-button">
             <img src="{% static 'shared/assets/edit.svg' %}" alt="" />
             <div class="text">Modificacion</div>
-        </div>
+        </div> -->
     </div>
     <div style="display: flex; flex-direction: column; gap: 25px">
         <table id="sortableTable">
@@ -63,39 +63,78 @@
         </table> -->
     </div>
 </div>
-<div id="modalCarrera" class="modal" style="display: none">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2 id="modalCarreraTitle">Nueva Carrera</h2>
+<div id="modalCarrera" class="modal">
+  <div class="modal-content">
 
-        <form id="formCarrera" class="form-grid">
-            {% csrf_token %}
-            <input type="hidden" id="carreraId" />
+    <span class="close">&times;</span>
 
-            <div class="form-group">
-                <label class="form-label">Nombre de la carrera</label>
-                <input type="text" name="descripcion" id="descripcion" class="form-input" required />
-            </div>
+    <h2 id="modalCarreraTitle">Nueva Carrera</h2>
 
-            <div class="form-group">
-                <label class="form-label">Valor de inscripción</label>
-                <input type="number" name="inscripcion" id="inscripcion" class="form-input" step="0.01" required />
-            </div>
+    <form id="formCarrera" class="form-grid">
+      {% csrf_token %}
+      <input type="hidden" id="carreraId" />
+      <input type="hidden" id="colorCarrera" />
 
-            <div class="form-group">
-                <label class="form-label">Valor de cuota</label>
-                <input type="number" name="cuota" id="cuota" class="form-input" step="0.01" required />
-            </div>
+      <!-- ========================= -->
+      <!-- NOMBRE -->
+      <!-- ========================= -->
 
-            <div class="form-actions">
-                <button type="submit" id="btnGuardarCarrera" class="button-predeterminado">
-                    Guardar
-                </button>
-            </div>
-        </form>
+      <div class="form-group" style="column-span: 2;">
+        <label>Nombre *</label>
+        <input type="text" id="descripcion" class="form-input" />
+        <span class="error-msg" id="error-descripcion"></span>
+      </div>
 
-    </div>
+      <!-- ========================= -->
+      <!-- COLOR -->
+      <!-- ========================= -->
+
+      <div class="form-group">
+        <label>Color identificador</label>
+        <div class="color-picker" id="colorPicker"></div>
+
+        <div class="chip-preview">
+          <span class="chip-demo">
+            <span class="dot"></span>
+            Carrera ejemplo
+          </span>
+        </div>
+      </div>
+
+      <!-- ========================= -->
+      <!-- VALORES -->
+      <!-- ========================= -->
+
+      <div class="form-section">
+        <h3 class="form-subtitle">Valores</h3>
+
+        <div class="form-group">
+          <label>Inscripción *</label>
+          <input type="number" id="inscripcion" class="form-input" />
+          <span class="error-msg" id="error-inscripcion"></span>
+        </div>
+
+        <div class="form-group">
+          <label>Cuota *</label>
+          <input type="number" id="cuota" class="form-input" />
+          <span class="error-msg" id="error-cuota"></span>
+        </div>
+      </div>
+
+      <!-- ========================= -->
+      <!-- BOTÓN -->
+      <!-- ========================= -->
+
+      <div class="form-actions">
+        <button type="submit" class="button-predeterminado">
+          Guardar
+        </button>
+      </div>
+
+    </form>
+  </div>
 </div>
+
 
 
 {% endblock %}

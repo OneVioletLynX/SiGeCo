@@ -23,7 +23,7 @@ class Estado(models.Model):
 class Carrera(models.Model):
     id_carrera = models.AutoField(primary_key=True)
     descripcion = models.CharField(max_length=100)
-    
+    color = models.CharField(max_length=7, default="#1E3A8A")
     id_estado = models.ForeignKey(Estado, on_delete=models.CASCADE, default=1)
     
     class Meta:

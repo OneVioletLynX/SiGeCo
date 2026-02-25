@@ -24,31 +24,145 @@
     const buscador = document.getElementById("buscador");
     const sugerencias = document.getElementById("sugerencias");
 
-    const modal = document.getElementById("altaModal");
-    const btnAbrir = document.getElementById("btnAgregar");
     const metodoSelect = document.getElementById("metodo_pago");
     const campoComprobante = document.getElementById("campo-comprobante");
     const campoTarjeta = document.getElementById("campo-tarjeta");
     const form = document.getElementById("cobroForm");
     const contenedorMeses = document.querySelector(".meses-container");
+    let ultimoPagadoGlobal = null;
+    const btnImprimir = document.getElementById("btnImprimirPago");
 
-    const btnEliminarPago = document.getElementById("btnEliminarPago");
-    const btnImprimir = document.getElementById("btnImprimir");
+    function recalcularBloqueos() {
 
-    // 🔹 Siempre deshabilitados al inicio
-    btnEliminarPago.classList.add("disabled");
-    btnImprimir.classList.add("disabled");
+      document.querySelectorAll(".month").forEach(m => {
+        m.classList.remove("bloqueado");
+      });
 
-    // ===========================
-    // BOTÓN IMPRIMIR
-    // ===========================
-    btnImprimir.addEventListener("click", () => {
-      if (!pagoSeleccionado) {
-        alert("No hay un pago seleccionado para imprimir.");
+      const seleccionados = document.querySelectorAll(".month.selected");
+
+      if (seleccionados.length === 0) {
+        const proximo = obtenerProximoMesPermitido();
+
+        if (!proximo) return;
+
+        document.querySelectorAll(".month").forEach(m => {
+
+          if (m.classList.contains("pagado")) return;
+
+          const anio = parseInt(m.dataset.anio);
+          const mes = parseInt(m.dataset.id_mes);
+
+          if (anio !== proximo.anio || mes !== proximo.mes) {
+            m.classList.add("bloqueado");
+          }
+        });
+
         return;
       }
-      window.open(`/cobros/comprobante/${pagoSeleccionado}/`, "_blank");
-    });
+
+      // Si ya hay seleccionados → solo permitir el siguiente al último seleccionado
+      const valores = Array.from(seleccionados).map(m => {
+        return parseInt(m.dataset.anio) * 100 + parseInt(m.dataset.id_mes);
+      });
+
+      valores.sort((a, b) => b - a);
+
+      const ultimo = valores[0];
+
+      const anioUlt = Math.floor(ultimo / 100);
+      const mesUlt = ultimo % 100;
+
+      const fecha = new Date(anioUlt, mesUlt - 1);
+      fecha.setMonth(fecha.getMonth() + 1);
+
+      const siguienteAnio = fecha.getFullYear();
+      const siguienteMes = fecha.getMonth() + 1;
+
+      document.querySelectorAll(".month").forEach(m => {
+
+        if (m.classList.contains("pagado")) return;
+        if (m.classList.contains("selected")) return;
+
+        const anio = parseInt(m.dataset.anio);
+        const mes = parseInt(m.dataset.id_mes);
+
+        if (anio !== siguienteAnio || mes !== siguienteMes) {
+          m.classList.add("bloqueado");
+        }
+      });
+    }
+
+    function recalcularBloqueos() {
+
+      document.querySelectorAll(".month").forEach(m => {
+        m.classList.remove("bloqueado");
+      });
+
+      const seleccionados = document.querySelectorAll(".month.selected");
+
+      if (seleccionados.length === 0) {
+
+        const proximo = obtenerProximoMesPermitido();
+        if (!proximo) return;
+
+        document.querySelectorAll(".month").forEach(m => {
+
+          if (m.classList.contains("pagado")) return;
+
+          const anio = parseInt(m.dataset.anio);
+          const mes = parseInt(m.dataset.id_mes);
+
+          if (anio !== proximo.anio || mes !== proximo.mes) {
+            m.classList.add("bloqueado");
+          }
+        });
+
+        return;
+      }
+
+      const valores = Array.from(seleccionados).map(m => {
+        return parseInt(m.dataset.anio) * 100 + parseInt(m.dataset.id_mes);
+      });
+
+      valores.sort((a, b) => b - a);
+
+      const ultimo = valores[0];
+
+      const anioUlt = Math.floor(ultimo / 100);
+      const mesUlt = ultimo % 100;
+
+      const fecha = new Date(anioUlt, mesUlt - 1);
+      fecha.setMonth(fecha.getMonth() + 1);
+
+      const siguienteAnio = fecha.getFullYear();
+      const siguienteMes = fecha.getMonth() + 1;
+
+      document.querySelectorAll(".month").forEach(m => {
+
+        if (m.classList.contains("pagado")) return;
+        if (m.classList.contains("selected")) return;
+
+        const anio = parseInt(m.dataset.anio);
+        const mes = parseInt(m.dataset.id_mes);
+
+        if (anio !== siguienteAnio || mes !== siguienteMes) {
+          m.classList.add("bloqueado");
+        }
+      });
+    }
+    
+    if (btnImprimir) {
+      btnImprimir.addEventListener("click", () => {
+
+        if (!pagoSeleccionado) return;
+
+        window.open(
+          `/cobros/comprobante/${pagoSeleccionado}/`,
+          "_blank"
+        );
+
+      });
+    }
 
     // ===========================
     // MÉTODO DE PAGO (mostrar campos)
@@ -115,162 +229,39 @@
 
       alumnoSeleccionado = alumno;
       carreraSeleccionadaId = alumno.carrera_actual;
-
-      const btnAgregar = document.getElementById("btnAgregar");
-      if (btnAgregar) btnAgregar.style.display = "flex";
-
-      cargarPagos(alumno.id_alumno);
+      // Activar layout cuando se selecciona alumno
+      document.querySelector(".toolbar")?.classList.add("cobros-activo");
+      document.querySelector(".cobro-layout")?.classList.add("cobros-activo");
+      await cargarMesesPendientes(); // 👈 ahora esto es lo que corresponde
     }
 
-    // ===========================
-    // CARGAR PAGOS
-    // ===========================
-    async function cargarPagos(alumnoId) {
-      try {
-        const resp = await fetch(`${API_BASE}/api/pago/?alumno=${alumnoId}`);
-        const pagos = await resp.json();
-        const tbody = document.getElementById("tabla-cobros");
-        const searchContainer = document.querySelector(".search-container");
-
-        tbody.innerHTML = "";
-
-        // 🔹 Reset de selección
-        pagoSeleccionado = null;
-        btnEliminarPago.classList.add("disabled");
-        btnImprimir.classList.add("disabled");
-
-        // ================================
-        // 🔍 Calcular si realmente tiene pagos
-        // ================================
-        const totalDetalles = pagos.reduce((acc, pago) => {
-          const detalles = pago.detalles || [];
-          return acc + detalles.length;
-        }, 0);
-
-        const tienePagos = totalDetalles > 0;
-
-        // ================================  
-        // 🔹 Mostrar/Ocultar botones
-        // ================================
-        btnEliminarPago.style.display = tienePagos ? "flex" : "none";
-        btnImprimir.style.display = tienePagos ? "flex" : "none";
-
-        // ================================
-        // 🧾 Dibujar tabla
-        // ================================
-        pagos.forEach((pago) => {
-          const detalles = pago.detalles || [];
-          detalles.forEach((det) => {
-            const tr = document.createElement("tr");
-            tr.dataset.pago = pago.id_pago;
-
-            tr.innerHTML = `
-              <td>${det.anio}</td>
-              <td>${det.mes}</td>
-              <td>$${parseFloat(det.importe).toFixed(2)}</td>
-              <td>${formatearFecha(pago.fecha_pago)}</td>
-              <td>${pago.metodo}</td>
-            `;
-
-            tbody.appendChild(tr);
-          });
-        });
-
-        // ================================
-        // 🎯 Eventos de selección
-        // ================================
-        document.querySelectorAll("#tabla-cobros tr").forEach((row) => {
-          row.addEventListener("click", () => {
-            const pagoId = row.dataset.pago;
-
-            // Quitar selección anterior
-            document.querySelectorAll("#tabla-cobros tr")
-              .forEach(r => r.classList.remove("selected-pago"));
-
-            // Marcar filas del pago
-            document.querySelectorAll(`#tabla-cobros tr[data-pago='${pagoId}']`)
-              .forEach(r => r.classList.add("selected-pago"));
-
-            pagoSeleccionado = pagoId;
-
-            // Habilitar acciones
-            btnEliminarPago.classList.remove("disabled");
-            btnImprimir.classList.remove("disabled");
-          });
-        });
-
-      } catch (err) {
-        console.error("Error cargando pagos:", err);
-      }
-    }
-
-    // ===========================
-    // ELIMINAR PAGO COMPLETO
-    // ===========================
-    if (btnEliminarPago) {
-      btnEliminarPago.addEventListener("click", async () => {
-        if (!pagoSeleccionado) {
-          alert("Seleccioná un pago para eliminar.");
-          return;
-        }
-
-        if (resp.ok) {
-          showAlert("Pago eliminado correctamente", "success");
-          cargarPagos(alumnoSeleccionado.id_alumno);
-
-          pagoSeleccionado = null;
-          btnEliminarPago.classList.add("disabled");
-          btnImprimir.classList.add("disabled");
-
-        } else {
-          showAlert("Error eliminando el pago.", "error");
-        }
-
-
-        const resp = await fetch(`${API_BASE}/api/pago/${pagoSeleccionado}/`, {
-          method: "DELETE",
-        });
-
-        if (resp.ok) {
-          alert("Pago eliminado correctamente.");
-          cargarPagos(alumnoSeleccionado.id_alumno);
-
-          pagoSeleccionado = null;
-          btnEliminarPago.classList.add("disabled");
-          btnImprimir.classList.add("disabled");
-
-        } else {
-          alert("Error eliminando el pago.");
-        }
-      });
-    }
-
-    // ===========================
-    // ABRIR MODAL
-    // ===========================
-    btnAbrir.addEventListener("click", async () => {
-      if (!alumnoSeleccionado) {
-        showAlert("Seleccioná un alumno primero.", "warning");
-
-        return;
-      }
-      await cargarMesesPendientes();
-      modal.style.display = "block";
-    });
 
     // Cerrar modal
     document.getElementById("btnCancelar").addEventListener("click", () => {
-      modal.style.display = "none";
       form.reset();
-    });
 
-    window.addEventListener("click", function (e) {
-      if (e.target === modal) {
-        modal.style.display = "none";
-        form.reset();
-      }
-    });
+      document.querySelectorAll(".month.selected")
+        .forEach(m => m.classList.remove("selected"));
 
+      document.getElementById("importe").value = "";
+    });
+    
+    function obtenerProximoMesPermitido() {
+
+      if (!ultimoPagadoGlobal) return null;
+
+      const fechaUlt = new Date(
+        ultimoPagadoGlobal.anio,
+        ultimoPagadoGlobal.mes - 1
+      );
+
+      fechaUlt.setMonth(fechaUlt.getMonth() + 1);
+
+      return {
+        anio: fechaUlt.getFullYear(),
+        mes: fechaUlt.getMonth() + 1
+      };
+    }
     // ===========================
     // CARGAR MESES PENDIENTES
     // ===========================
@@ -278,7 +269,8 @@
       try {
         const resp = await fetch(`${API_BASE}/ctacte/pendientes/?alumno=${alumnoSeleccionado.id_alumno}`);
         const data = await resp.json();
-
+        ultimoPagadoGlobal = data.ultimo_pagado;
+        recalcularBloqueos();
         contenedorMeses.innerHTML = `<h2>Meses</h2>`;
 
         for (const anio in data.meses) {
@@ -291,14 +283,21 @@
           `;
 
           meses.forEach((m) => {
+
             const esInscripcion =
-              m.descripcion.toLowerCase() === "inscripcion" ||
+              m.descripcion.toLowerCase() === "inscripción" ||
               m.id_mes == 1;
 
             if (esInscripcion && parseInt(anio) !== data.anio_ingreso) return;
 
+            const clasePagado = m.pagado ? "pagado" : "";
+            const dataPago = m.pagado ? `data-pago="${m.id_pago}"` : "";
+
             html += `
-              <div class="month" data-id_mes="${m.id_mes}" data-anio="${anio}">
+              <div class="month ${clasePagado}"
+                  data-id_mes="${m.id_mes}"
+                  data-anio="${anio}"
+                  ${dataPago}>
                 <span>${m.descripcion}</span>
               </div>
             `;
@@ -307,12 +306,174 @@
           html += `</div></div>`;
           contenedorMeses.innerHTML += html;
         }
+        const proximo = obtenerProximoMesPermitido();
 
-        document.querySelectorAll(".month").forEach((m) => {
-          m.addEventListener("click", () => {
-            m.classList.toggle("selected");
-            actualizarImporteAuto();
+        if (proximo) {
+
+          document.querySelectorAll(".month").forEach(m => {
+
+            if (m.classList.contains("pagado")) return;
+
+            const anio = parseInt(m.dataset.anio);
+            const mes = parseInt(m.dataset.id_mes);
+
+            if (anio !== proximo.anio || mes !== proximo.mes) {
+              m.classList.add("bloqueado");
+            }
           });
+        }
+        document.querySelectorAll(".month").forEach((mes) => {
+
+        mes.addEventListener("click", () => {
+
+          const esPagado = mes.classList.contains("pagado");
+
+          // 🔒 Si está bloqueado → vibrar y salir
+          if (mes.classList.contains("bloqueado")) {
+
+            mes.classList.add("vibrar");
+
+            setTimeout(() => {
+              mes.classList.remove("vibrar");
+            }, 300);
+
+            showAlert("Debes pagar los meses en orden consecutivo.", "warning");
+
+            return;
+          }
+          // 🔹 Si clickea un mes NO pagado
+          if (!esPagado) {
+
+            // Limpiar selección de pagos existentes
+            document.querySelectorAll(".month.selected-pago")
+              .forEach(m => m.classList.remove("selected-pago"));
+
+            pagoSeleccionado = null;
+
+            if (btnEliminar) btnEliminar.classList.add("disabled");
+            if (btnImprimir) btnImprimir.classList.add("disabled");
+
+            mes.classList.toggle("selected");
+
+            // 🔥 habilitar siguiente mes
+            const anio = parseInt(mes.dataset.anio);
+            const mesNum = parseInt(mes.dataset.id_mes);
+
+            const fecha = new Date(anio, mesNum - 1);
+            fecha.setMonth(fecha.getMonth() + 1);
+
+            const siguienteAnio = fecha.getFullYear();
+            const siguienteMes = fecha.getMonth() + 1;
+
+            document.querySelectorAll(".month.bloqueado").forEach(m => {
+              if (
+                parseInt(m.dataset.anio) === siguienteAnio &&
+                parseInt(m.dataset.id_mes) === siguienteMes
+              ) {
+                m.classList.remove("bloqueado");
+              }
+            });
+
+            if (!seleccionConsecutivaValida()) {
+
+              mes.classList.toggle("selected"); // revertir
+
+              // 🔥 efecto vibración
+              mes.classList.add("vibrar");
+
+              setTimeout(() => {
+                mes.classList.remove("vibrar");
+              }, 300);
+
+              showAlert("Solo podés seleccionar meses consecutivos.", "warning");
+
+              return;
+            }
+
+            actualizarImporteAuto();
+            recalcularBloqueos()
+            return;
+          }
+
+          function seleccionConsecutivaValida() {
+
+          const seleccionados = Array.from(
+            document.querySelectorAll(".month.selected")
+          );
+
+          if (seleccionados.length <= 1) return true;
+
+          // Convertir a números tipo YYYYMM
+          const valores = seleccionados.map(m => {
+            const anio = parseInt(m.dataset.anio);
+            const mes = parseInt(m.dataset.id_mes);
+            return anio * 100 + mes;
+          });
+
+          valores.sort((a, b) => a - b);
+
+          for (let i = 1; i < valores.length; i++) {
+
+            const anterior = valores[i - 1];
+            const actual = valores[i];
+
+            const anioAnt = Math.floor(anterior / 100);
+            const mesAnt = anterior % 100;
+
+            const anioAct = Math.floor(actual / 100);
+            const mesAct = actual % 100;
+
+            const fechaAnt = new Date(anioAnt, mesAnt - 1);
+            const fechaAct = new Date(anioAct, mesAct - 1);
+
+            const diferenciaMeses =
+              (fechaAct.getFullYear() - fechaAnt.getFullYear()) * 12 +
+              (fechaAct.getMonth() - fechaAnt.getMonth());
+
+            if (diferenciaMeses !== 1) {
+              return false;
+            }
+          }
+
+          return true;
+        }
+          // 🔹 Si clickea un mes pagado
+
+          // Limpiar selección de meses nuevos
+          document.querySelectorAll(".month.selected")
+            .forEach(m => m.classList.remove("selected"));
+
+          actualizarImporteAuto(); // limpia importe
+          recalcularBloqueos(); 
+          const pagoId = mes.dataset.pago;
+          if (!pagoId) return;
+
+          const yaSeleccionado = mes.classList.contains("selected-pago");
+
+          // Limpiar selección anterior
+          document.querySelectorAll(".month")
+            .forEach(m => m.classList.remove("selected-pago"));
+
+          if (!yaSeleccionado) {
+
+            document.querySelectorAll(`.month[data-pago='${pagoId}']`)
+              .forEach(m => m.classList.add("selected-pago"));
+
+            pagoSeleccionado = pagoId;
+
+            if (btnEliminar) btnEliminar.classList.remove("disabled");
+            if (btnImprimir) btnImprimir.classList.remove("disabled");
+
+          } else {
+
+            pagoSeleccionado = null;
+
+            if (btnEliminar) btnEliminar.classList.add("disabled");
+            if (btnImprimir) btnImprimir.classList.add("disabled");
+          }
+
+        });
+
         });
 
       } catch (err) {
@@ -320,6 +481,34 @@
       }
     }
 
+    const btnEliminar = document.getElementById("btnEliminarPago");
+
+    if (btnEliminar) {
+      btnEliminar.addEventListener("click", async () => {
+
+        if (!pagoSeleccionado) return;
+        if (!confirm("¿Eliminar el pago completo?")) return;
+
+        const resp = await fetch(`${API_BASE}/api/pago/${pagoSeleccionado}/`, {
+          method: "DELETE"
+        });
+
+        if (resp.ok) {
+          pagoSeleccionado = null;
+          btnEliminar.classList.add("disabled");
+
+          if (btnImprimir) {
+            btnImprimir.classList.add("disabled");
+          }
+
+          await cargarMesesPendientes();
+        } else {
+          alert("Error eliminando el pago.");
+        }
+
+      });
+    }
+    
     // ===========================
     // SUMAR IMPORTES AUTOMÁTICAMENTE
     // ===========================
@@ -348,6 +537,7 @@
           if (!resp.ok) continue;
 
           const data = await resp.json();
+
           total += parseFloat(data.importe);
         }
 
@@ -418,9 +608,8 @@
 
           showAlert("Pago registrado correctamente.", "success");
 
-          modal.style.display = "none";
           form.reset();
-          cargarPagos(alumnoSeleccionado.id_alumno);
+          await cargarMesesPendientes();
 
           if (data.id_pago) {
             window.open(`/cobros/comprobante/${data.id_pago}/`, "_blank");

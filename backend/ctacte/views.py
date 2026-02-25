@@ -187,6 +187,7 @@ class RegistrarPago(APIView):
             if not alumno_id or not metodo_id or not meses_data:
                 return Response({"error": "Faltan datos obligatorios"}, status=400)
 
+
             alumno = Alumno.objects.get(pk=alumno_id)
             metodo = MetodoPago.objects.get(pk=metodo_id)
 
@@ -232,100 +233,97 @@ class RegistrarPago(APIView):
 
 
 class MesesPendientes(APIView):
-    """
-    GET /api/ctacte/pendientes/?alumno=<id>
-    Calcula qué meses debe el alumno basándose en su año de ingreso
-    y su último pago realizado.
-    """
 
     def get(self, request):
         alumno_id = request.query_params.get("alumno")
         if not alumno_id:
-            return Response({"error": "Falta el parámetro alumno"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Falta el parámetro alumno"}, status=400)
 
         alumno = get_object_or_404(Alumno, pk=alumno_id)
 
-        # 1) AÑO DE INGRESO
-        # Si anio_ingreso es None, usar el año de inscripción
+        # 1️⃣ Año de ingreso
         anio_ingreso = alumno.anio_ingreso or alumno.inscripcion.year
 
-        # 2) ÚLTIMO AÑO PAGADO
-        ult_pago = (
+        # 2️⃣ Último detalle pagado (año + mes)
+        ultimo_detalle = (
             PagoDetalle.objects
-            .filter(pago__id_alumno_id=alumno.id_alumno)
+            .filter(
+                pago__id_alumno_id=alumno.id_alumno,
+                mes__isnull=False
+            )
             .exclude(anio_pago__isnull=True)
-            .order_by("-anio_pago")
-            .values_list("anio_pago", flat=True)
+            .order_by("-anio_pago", "-mes_id")
             .first()
         )
 
-        if ult_pago:
-            # Si pagó 2024, mostramos hasta 2025 (anio_final + 1)
-            # El max asegura que no vayamos hacia atrás si el ingreso es posterior
-            anio_final = max(anio_ingreso, ult_pago + 1)
+        ultimo_pagado = None
+        if ultimo_detalle:
+            ultimo_pagado = {
+                "anio": ultimo_detalle.anio_pago,
+                "mes": ultimo_detalle.mes_id
+            }
+            anio_final = max(anio_ingreso, ultimo_detalle.anio_pago + 1)
         else:
-            anio_final = anio_ingreso + 1  # Nunca pagó nada
+            anio_final = anio_ingreso + 1
 
-        # -------------------------
-        # 3) MESES CATALOGO (Sin inscripción)
-        # -------------------------
+        # 3️⃣ Catálogo de meses
         meses_catalogo = list(
             MesPago.objects
-            .exclude(descripcion__icontains="insc")  # ⛔ evitar inscripción aquí
+            .exclude(descripcion__icontains="insc")
             .order_by("id_mes")
             .values("id_mes", "descripcion")
         )
 
-        # 4) MESES YA PAGADOS (Tupla: año, mes_id)
-        pagados = set(
-            PagoDetalle.objects
-            .filter(pago__id_alumno_id=alumno.id_alumno, mes__isnull=False)
-            .values_list("anio_pago", "mes_id")
-        )
+        # 4️⃣ Meses ya pagados
+        pagados = {
+            (detalle.anio_pago, detalle.mes_id): detalle.pago_id
+            for detalle in PagoDetalle.objects.filter(
+                pago__id_alumno_id=alumno.id_alumno,
+                mes__isnull=False
+            )
+        }
 
-        # -------------------------
-        # 5) INSCRIPCIÓN PAGADA O NO
-        # -------------------------
-        inscripcion_pendiente = not PagoDetalle.objects.filter(
+        # 5️⃣ Inscripción
+        detalle_inscripcion = PagoDetalle.objects.filter(
             pago__id_alumno_id=alumno.id_alumno,
-            id_concepto_id=2   # concepto = INSCRIPCIÓN
-        ).exists()
+            id_concepto_id=2
+        ).first()
 
-        # -------------------------
-        # 6) ARMAR RESPUESTA FINAL
-        # -------------------------
+        inscripcion_pagada = detalle_inscripcion is not None
+        pago_inscripcion = detalle_inscripcion.pago_id if detalle_inscripcion else None
+
+        # 6️⃣ Armar respuesta
         meses_por_anio = {}
 
         for anio in range(anio_ingreso, anio_final + 1):
+
             disponibles = []
 
-            # Agregar inscripción SOLO en el año de ingreso
-            if anio == anio_ingreso and inscripcion_pendiente:
+            if anio == anio_ingreso:
                 disponibles.append({
-                    "id_mes": 1,  # ID real de Inscripción
-                    "descripcion": "Inscripción"
+                    "id_mes": 1,
+                    "descripcion": "Inscripción",
+                    "pagado": inscripcion_pagada,
+                    "id_pago": pago_inscripcion
                 })
 
-            # Agregar meses comunes (enero–diciembre)
             for mes in meses_catalogo:
-                # Si la combinación (2025, Marzo) no está pagada, se agrega
-                if (anio, mes["id_mes"]) not in pagados:
-                    disponibles.append({
-                        "id_mes": mes["id_mes"],
-                        "descripcion": mes["descripcion"]
-                    })
-            if disponibles:
-                meses_por_anio[str(anio)] = disponibles
+
+                pago_id = pagados.get((anio, mes["id_mes"]))
+
+                disponibles.append({
+                    "id_mes": mes["id_mes"],
+                    "descripcion": mes["descripcion"],
+                    "pagado": pago_id is not None,
+                    "id_pago": pago_id
+                })
 
             meses_por_anio[str(anio)] = disponibles
 
-        # -------------------------
-        # 7) RESPUESTA
-        # -------------------------
         return Response({
             "alumno": alumno.id_alumno,
             "anio_ingreso": anio_ingreso,
             "anio_final": anio_final,
-            "inscripcion_pendiente": inscripcion_pendiente,
+            "ultimo_pagado": ultimo_pagado,  # 🔥 IMPORTANTE
             "meses": meses_por_anio
         })

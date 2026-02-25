@@ -333,6 +333,8 @@ th.asc img {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    align-items: flex-end;
+    margin-bottom: 15px;
 }
 
 .toolbar .action-button {
@@ -394,7 +396,6 @@ tr.selected {
 /* --- Contenido del modal --- */
 .modal-content {
   background-color: #fff;
-  margin: 5% auto;
   padding: 30px;
   border-radius: 15px;
   width: 100%;
@@ -405,23 +406,18 @@ tr.selected {
   align-items: stretch;
 }
 
-/* --- Encabezado del modal --- */
-.modal-content h2 {
-  text-align: center;
-  margin-bottom: 20px;
+
+.month {
+  user-select: none;
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* IE/Edge */
 }
-
-
-
-
-
 /* --- Inputs --- */
-#alumnoForm input, #formCarrera input,
-#alumnoForm select {
+#formCarrera input {
   padding: 10px;
   border: 1px solid #D9D9D9;
   border-radius: 8px;
-  width: 100%;
 }
 
 .form-select {
@@ -444,22 +440,6 @@ tr.selected {
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
 }
 
-
-/* --- Botón --- */
-#alumnoForm button {
-  padding: 10px;
-  background-color: #007bff;
-  border: none;
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: 0.2s;
-}
-
-#alumnoForm button:hover {
-  background-color: #0056b3;
-}
 
 /* --- Botón de cierre --- */
 .close {
@@ -525,7 +505,6 @@ tr.selected {
   margin-left: 152px;
 }
 
-
 .form-control {
     width: 100%;
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
@@ -533,9 +512,9 @@ tr.selected {
     border: 1px solid #ccc;
     border-radius: 10px;
     font-size: 14px;
-   outline: none;
+    outline: none;
+    height: 45px;
 }
-
 
 .suggestions-box {
   position: absolute;
@@ -543,7 +522,7 @@ tr.selected {
   border: 1px solid #dcdcdc;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  z-index: 10;
+  z-index: 100;
   width: 100%;
   max-height: 250px;
   overflow-y: auto;
@@ -588,47 +567,7 @@ tr.selected {
   font-weight: 600;
 }
 
-/* --- Tabla de alumnos --- */
 
-#tablaAlumnos {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 15px;
-  text-align: left;
-}
-
-#tablaAlumnos th, #tablaAlumnos td {
-  padding: 8px 10px;
-  white-space: nowrap; /* evita que corte palabras */
-}
-
-#tablaAlumnos thead {
-  background-color: #f4f4f4;
-  position: sticky;
-  top: 0; /* fija el encabezado si hay scroll */
-  z-index: 2;
-}
-
-#tablaAlumnos tbody tr:nth-child(even) {
-  background-color: #fafafa;
-}
-
-#tablaAlumnos tbody tr:hover {
-  background-color: #dceafc;
-}
-
-#tablaAlumnos tbody {
-  display: table-row-group;
-  max-height: none;
-  overflow-y: visible;
-}
-
-
-#tablaAlumnos thead, #tablaAlumnos tbody tr {
-  display: table;
-  width: 100%;
-  table-layout: fixed;
-}
 
 /* --- contenedor general de la tabla --- */
 .table-wrapper {
@@ -714,6 +653,30 @@ tr.selected {
   border-radius: 50%;
 }
 
+
+
+/* ===============================
+   CHIPS DE ESTADO
+   =============================== */
+
+td .chip-activo {
+  background-color: #E6F4EA;
+  color: #1E7E34;
+}
+
+td .chip-activo .dot {
+  background-color: #1E7E34;
+}
+
+td .chip-inactivo {
+  background-color: #FDECEA;
+  color: #B02A37;
+}
+
+td .chip-inactivo .dot {
+  background-color: #B02A37;
+}
+
 .acciones {
   display: flex;
   gap: 8px;
@@ -726,10 +689,6 @@ tr.selected {
   transition: 0.15s;
 }
 
-
-#btnAltaAlumno {
-  background-color: var(--verde);
-}
 
 .pager-icon {
   width: 18px;
