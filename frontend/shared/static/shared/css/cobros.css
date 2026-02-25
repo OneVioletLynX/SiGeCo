@@ -1,158 +1,189 @@
-/* ===============================
-   📅 Sección de Meses
-   =============================== */
+/* =====================================================
+   Variables globales cambiar colores acá
+   ===================================================== */
+
+:root {
+  --color-primary: #6CB4EE;
+  --color-primary-dark: #6CB4EE;
+
+  --color-success: #74C365;
+  --color-success-light: #fff;
+  --color-success-dark: #74C365;
+
+  --color-text: #6b5353;
+  --color-text-muted: #444;
+
+  --color-border: #ccc;
+  --color-bg: #ffffff;
+
+  --shadow-soft: 0 2px 6px rgba(0, 0, 0, 0.08);
+  --shadow-hover: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+/* =====================================================
+   Contenedor de meses
+   ===================================================== */
 
 .meses-container {
   max-width: 700px;
   margin-right: 25px;
+  padding-right: 25px;
+
   font-family: "Inter", sans-serif;
-  color: #222;
+  color: var(--color-text);
+
+  max-height: 70vh;
+  overflow-y: auto;
 }
+
+/* Scroll */
+.meses-container::-webkit-scrollbar {
+  width: 8px;
+}
+.meses-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 6px;
+}
+.meses-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Título fijo */
+.meses-container h2 {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  background: var(--color-bg);
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+/* =====================================================
+   Año
+   ===================================================== */
 
 .year-group {
   margin-bottom: 1.8rem;
 }
 
-.modal-content h3 {
-  font-weight: 800;
-  margin-bottom: 0.8rem;
-  color: #444;
-}
+/* =====================================================
+   Grilla
+   ===================================================== */
 
-/* ===============================
-   📅 Grilla de meses
-   =============================== */
-
-
-.months-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 12px;
-}
-
-/* ================
-   📅 Grilla de meses
-   ================ */
 .months-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  /* 3 columnas */
   gap: 15px;
+
   margin-bottom: 20px;
+  padding: 10px;
 }
+
+/* =====================================================
+   Tarjeta Mes
+   ===================================================== */
 
 .month {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: white;
+
+  background: var(--color-bg);
   padding: 10px 14px;
   border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  transition: all 0.2s ease;
+  border: 3px solid #fff;
+
+  box-shadow: var(--shadow-soft);
+  transition: all 0.15s ease;
   cursor: pointer;
+
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .month:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
-}
-
-.month.selected {
-  background-color: #007bff;
-  color: white;
-}
-
-.month.selected span {
-  color: white;
-}
-
-.month img.icono-mes {
-  width: 18px;
-  height: 18px;
-  transition: transform 0.2s ease;
-}
-
-.month.selected img.icono-mes {
-  filter: invert(1); /* vuelve blanca la imagen en modo seleccionado */
-  transform: scale(1.1);
-}
-
-
-/* ===============================
-   🔲 Tarjetas de mes individual
-   =============================== */
-
-.month {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: white;
-  padding: 8px 12px;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-  cursor: pointer;
-}
-
-.month:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--color-primary);
 }
 
 .month span {
   font-size: 0.95rem;
   color: #333;
-  
+  font-weight: 600;
 }
 
-/* Icono dentro del mes */
+/* Icono */
 .month img.icono-mes {
   width: 18px;
   height: 18px;
   transition: transform 0.2s ease;
 }
 
-/* Estado seleccionado */
+/* =====================================================
+   Estados
+   ===================================================== */
+
+/* Selección para pagar (azul) */
 .month.selected {
-  background-color: #007bff;
-  color: white;
+  background-color: var(--color-primary);
+  border: 3px solid var(--color-primary);
 }
 
-.month.selected span {
-  color: white;
-}
 
 .month.selected img.icono-mes {
   filter: invert(1);
   transform: scale(1.1);
 }
 
-/* Botón (si lo usás dentro del mes) */
-.month button {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
+/* Pagado (verde claro) */
+.month.pagado {
+  background-color: var(--color-success-light);
+  border: 3px solid var(--color-success);
+  color: var(--color-success);
+}
+
+/* Check visual */
+/* .month.pagado::after {
+  content: "✓";
   font-weight: bold;
-  color: #007bff;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.month button:hover {
-  color: #0056b3;
-}
-
-/* ===============================
-   💳 Detalle de pago
-   =============================== */
-.detalle-container {
-  display: flex; 
-  justify-content: space-between; 
-  flex-direction: column; 
-  height: 100%;
+  margin-left: 6px;
 } */
 
+/* Selección de pago completo (verde fuerte) */
+.month.selected-pago {
+  background: var(--color-success);
+  color: #fff;
+  /* border: 1px solid var(--color-success-dark); */
+}
+
+/* =====================================================
+   Encabezados
+   ===================================================== */
+
+.modal-content h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.modal-content h3 {
+  font-weight: 800;
+  margin-bottom: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+/* =====================================================
+   Detalle de pago
+   ===================================================== */
+
+.detalle-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
 
 .form-group {
   display: flex;
@@ -161,37 +192,109 @@
 }
 
 .form-group label {
-  color: #444;
+  color: var(--color-text-muted);
   margin-bottom: 5px;
 }
 
 .form-group input,
 .form-group select {
   padding: 8px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 14px;
   outline: none;
+  width: 100%;
 }
-
 
 /* Ocultos */
 .hidden {
   display: none;
 }
 
-/* Checkbox de recargo */
+/* Recargo */
 .recargo {
   display: flex;
   gap: 6px;
   font-size: 14px;
 }
 
-.selected-pago {
-  background-color: #d1ecf1;
-}
+/* =====================================================
+   Botones deshabilitados
+   ===================================================== */
 
+button.disabled,
 .action-button.disabled {
   opacity: 0.4;
   pointer-events: none;
+}
+
+#btnImprimirPago {
+  border: 3px solid #FCF75E;
+}
+
+#btnImprimirPago:hover {
+  background-color: #FCF75E;
+}
+
+#btnImprimirPago.disabled {
+  border-color: #fff;
+}
+
+#btnEliminarPago.disabled {
+  border-color: #fff;
+}
+
+#btnEliminarPago {
+  border: 3px solid #FF6347;
+}
+
+#btnEliminarPago:hover {
+  background-color: #FF6347;
+}
+
+#btnGuardar {
+  border: 3px solid var(--color-success);
+}
+
+#btnGuardar:hover  {
+  background-color: var(--color-success);
+}
+
+#btnCancelar {
+  border: 3px solid #FF6347;
+}
+
+#btnCancelar:hover  {
+  background-color: #FF6347;
+}
+
+/* Estado inicial oculto */
+.toolbar,
+.cobro-layout {
+  opacity: 0;
+  pointer-events: none; /* evita que se pueda hacer click */
+  transition: opacity 0.35s ease;
+}
+
+/* Estado activo */
+.cobros-activo {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* ===============================
+   🚨 Vibración error selección
+   =============================== */
+
+@keyframes vibrar {
+  0%   { transform: translateX(0); }
+  20%  { transform: translateX(-4px); }
+  40%  { transform: translateX(4px); }
+  60%  { transform: translateX(-3px); }
+  80%  { transform: translateX(3px); }
+  100% { transform: translateX(0); }
+}
+
+.month.vibrar {
+  animation: vibrar 0.25s ease;
 }

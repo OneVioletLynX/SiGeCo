@@ -4,3 +4,6 @@ from django.shortcuts import render
 
 def alumnos(request):
     return render(request, 'alumnos/index.html')
+
+def alumno_nuevo(request):
+    return render(request, "alumnos/alumno_form.html")

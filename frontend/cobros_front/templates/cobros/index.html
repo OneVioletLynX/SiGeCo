@@ -9,140 +9,115 @@
 {% block content %}
 <div>
 
-  <div style="display: flex; flex-direction: column;">
+  <div style="display: grid; grid-template-columns: auto auto; gap: 20px;">
 
-
-    <div class="search-container" style="position: relative;">
+    <div style="position: relative; grid-column: 2;">
       <label for="">Buscar</label>
       <input type="text" id="buscador" placeholder="Nombre, Apellido o Documento" autocomplete="off"
         class="form-control" />
       <div id="sugerencias" class="suggestions-box"></div>
     </div>
 
-    <div style="display: flex">
-
-      <div class="toolbar">
-        <div class="action-button disabled" id="btnEliminarPago" style="display:none;">
-          <img src="{% static 'shared/assets/remove.svg' %}" alt="">
-          <div class="text">Eliminar</div>
-        </div>
-
-        <div class="action-button disabled" id="btnImprimir" style="display:none;">
-          <img src="{% static 'shared/assets/print.svg' %}" alt="">
-          <div class="text">Imprimir</div>
-        </div>
-      </div>
-      <div style="width: 100%;">
-        <table id="sortableTable">
-          <thead>
-            <tr>
-              <th>Año</th>
-              <th>Cuota</th>
-              <th>Importe</th>
-              <th>Fecha de Pago</th>
-              <th>Método</th>
-            </tr>
-          </thead>
-          <tbody id="tabla-cobros"></tbody>
-        </table>
-        <button id="btnAgregar" class="button-predeterminado" type="button" style="display:none;"><img
-            src="{% static 'shared/assets/add.svg' %}" alt="">Agregar</button>
-      </div>
-
+    <div class="toolbar" style="grid-column: 1;">
+      <button id="btnImprimirPago" class="button-predeterminado btn-secondary disabled"><img
+          src="{% static 'shared/assets/print.svg' %}">Imprimir
+      </button>
+      <button id="btnEliminarPago" class="button-predeterminado btn-danger disabled"><img
+          src="{% static 'shared/assets/close.svg' %}">Eliminar
+      </button>
     </div>
 
 
-  </div>
-</div>
 
-<!-- 🔹 MODAL DE ALTA DE COBRO -->
-<div id="altaModal" class="modal">
-  <div class="modal-content" style="display: flex; flex-direction: row; max-width: fit-content;">
+    <!-- 🔹 MODAL DE ALTA DE COBRO -->
+    <div class="cobro-layout" style="grid-column: 2;">
+      <div class="modal-content" style="display: flex; flex-direction: row; max-width: fit-content;">
 
-    <!-- 🔹 Lado Izquierdo: Selección de Meses -->
-    <div class="meses-container">
-      <h2>Meses</h2>
+        <!-- 🔹 Lado Izquierdo: Selección de Meses -->
+        <div class="meses-container">
+          <h2>Meses</h2>
 
-      {% regroup meses by anio as meses_por_anio %}
-      {% for grupo in meses_por_anio %}
-      <div class="year-group">
-        <h3>{{ grupo.grouper }}</h3>
-        <div class="months-grid">
-          {% for mes in grupo.list %}
-          <div class="month" data-id_mes="{{ mes.id_mes }}">
-            <span>{{ mes.descripcion }}</span>
-            <img src="{% static 'shared/assets/add.svg' %}" alt="Agregar" class="icono-mes">
+          {% regroup meses by anio as meses_por_anio %}
+          {% for grupo in meses_por_anio %}
+          <div class="year-group">
+            <h3>{{ grupo.grouper }}</h3>
+            <div class="months-grid">
+              {% for mes in grupo.list %}
+              <div class="month" data-id_mes="{{ mes.id_mes }}">
+                <span>{{ mes.descripcion }}</span>
+                <img src="{% static 'shared/assets/add.svg' %}" alt="Agregar" class="icono-mes">
+              </div>
+              {% endfor %}
+            </div>
           </div>
           {% endfor %}
         </div>
+
+        <!-- 🔹 Lado Derecho: Detalle del Cobro -->
+        <form id="cobroForm">
+          {% csrf_token %}
+          <div class="detalle-container">
+
+            <div>
+              <h2>Detalle</h2>
+
+              <!-- Método de Pago -->
+              <div class="form-group">
+                <h3>Método de pago</h3>
+                <select id="metodo_pago" name="metodo_pago" required>
+                  <option value="">Seleccionar...</option>
+                  {% for metodo in metodos %}
+                  <option value="{{ metodo.id_metodo_pago }}">{{ metodo.descripcion }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <!-- Campo de comprobante (solo transferencia) -->
+              <div class="form-group hidden" id="campo-comprobante">
+                <h3>N° de comprobante</h3>
+                <input type="text" id="nro_comprobante" name="nro_comprobante" placeholder="Ej: 12345678" />
+              </div>
+
+              <!-- Campo de tarjeta (solo tarjeta) -->
+              <div class="form-group hidden" id="campo-tarjeta">
+                <h3>Seleccionar tarjeta</h3>
+                <select id="tarjeta" name="tarjeta">
+                  <option value="">Seleccionar...</option>
+                  <option value="marcos_juarez">Marcos Juárez</option>
+                  <option value="coyspu">Coyspu</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Importe -->
+            <div>
+              <div class="form-group">
+                <h3 for="importe">Importe</h3>
+                <input type="number" id="importe" name="importe" placeholder="$0.00" required />
+              </div>
+
+              <div class="form-group recargo">
+                <label for="recargo">Recargo</label>
+                <input type="checkbox" id="recargo" name="recargo" />
+              </div>
+            </div>
+            <div class="modal-buttons">
+              <button type="submit" class="button-predeterminado" id="btnGuardar"><img
+                  src="{% static 'shared/assets/check.svg' %}">Guardar</button>
+              <button type="button" id="btnCancelar" class="button-predeterminado"><img
+                  src="{% static 'shared/assets/close.svg' %}">Cancelar</button>
+            </div>
+          </div>
+
+          <input type="hidden" id="mesesSeleccionados" name="mesesSeleccionados" />
+
+
+        </form>
       </div>
-      {% endfor %}
     </div>
-
-    <!-- 🔹 Lado Derecho: Detalle del Cobro -->
-    <form id="cobroForm">
-      {% csrf_token %}
-      <div class="detalle-container">
-
-        <div>
-          <h2>Detalle</h2>
-
-          <!-- Método de Pago -->
-          <div class="form-group">
-            <h3>Método de pago</h3>
-            <select id="metodo_pago" name="metodo_pago" required>
-              <option value="">Seleccionar...</option>
-              {% for metodo in metodos %}
-              <option value="{{ metodo.id_metodo_pago }}">{{ metodo.descripcion }}</option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <!-- Campo de comprobante (solo transferencia) -->
-          <div class="form-group hidden" id="campo-comprobante">
-            <h3>N° de comprobante</h3>
-            <input type="text" id="nro_comprobante" name="nro_comprobante" placeholder="Ej: 12345678" />
-          </div>
-
-          <!-- Campo de tarjeta (solo tarjeta) -->
-          <div class="form-group hidden" id="campo-tarjeta">
-            <h3>Seleccionar tarjeta</h3>
-            <select id="tarjeta" name="tarjeta">
-              <option value="">Seleccionar...</option>
-              <option value="marcos_juarez">Marcos Juárez</option>
-              <option value="coyspu">Coyspu</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Importe -->
-        <div>
-          <div class="form-group">
-            <h3 for="importe">Importe</h3>
-            <input type="number" id="importe" name="importe" placeholder="$0.00" required />
-          </div>
-
-          <div class="form-group recargo">
-            <label for="recargo">
-              <input type="checkbox" id="recargo" name="recargo" />
-              Recargo
-            </label>
-          </div>
-        </div>
-        <div class="modal-buttons">
-          <button type="submit" class="button-predeterminado"><img
-              src="{% static 'shared/assets/check.svg' %}">Guardar</button>
-          <button type="button" id="btnCancelar" class="button-predeterminado"><img
-              src="{% static 'shared/assets/close.svg' %}">Cancelar</button>
-        </div>
-      </div>
-
-      <input type="hidden" id="mesesSeleccionados" name="mesesSeleccionados" />
-
-
-    </form>
   </div>
 </div>
+
 {% endblock %}
 
 {% block extra_js %}

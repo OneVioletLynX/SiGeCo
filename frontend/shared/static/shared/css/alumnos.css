@@ -1,97 +1,48 @@
-/* CONTENEDOR DE STEPS */
-.step-indicator {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
-    gap: 10px;
-}
+/* --- Tabla de alumnos --- */
 
-.step {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background: #d4d4d4;
-    color: #333;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    transition: 0.3s;
-}
-
-.step.active {
-    background: #007bff;
-    color: white;
-}
-
-.line {
-    width: 60px;
-    height: 3px;
-    background: #d4d4d4;
-}
-
-.step.active + .line {
-    background: #007bff;
-}
-
-/* OCULTAR STEPS */
-.form-step {
-    display: none;
+#btnAltaAlumno {
+  background-color: var(--verde);
 }
 
 
-.form-step.active {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);  /* columnas iguales */
-  gap: 15px 20px;
+#tablaAlumnos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  text-align: left;
 }
 
-.step-2.active {
-  grid-template-columns: 1fr 1fr 1fr;
+#tablaAlumnos th, #tablaAlumnos td {
+  padding: 8px 10px;
+  white-space: nowrap; /* evita que corte palabras */
 }
 
-.gc-2 {
-  grid-column: span 2;
+#tablaAlumnos thead {
+  background-color: #f4f4f4;
+  position: sticky;
+  top: 0; /* fija el encabezado si hay scroll */
+  z-index: 2;
 }
 
-.gc-1 {
-  grid-column: span 1;
+#tablaAlumnos tbody tr:nth-child(even) {
+  background-color: #fafafa;
 }
 
-.gc-3 {
-  grid-column: span 3;
+#tablaAlumnos tbody tr:hover {
+  background-color: #dceafc;
 }
 
-.gc-4 {
-  grid-column: span 4;
-}
-
-
-/* TÍTULO DE PASO */
-.step-title {
-    grid-column: span 4;
-    margin-bottom: 10px;
-}
-
-/* NAVEGACIÓN */
-.form-navigation {
-    margin-top: 20px;
-    text-align: center;
+#tablaAlumnos tbody {
+  display: table-row-group;
+  max-height: none;
+  overflow-y: visible;
 }
 
 
-
-.nav-btn:disabled {
-    background: #a3a3a3;
-}
-
-.preview-box {
-    grid-column: span 2;
-    background: #f4f4f4;
-    padding: 15px;
-    border-radius: 8px;
-    font-size: 14px;
+#tablaAlumnos thead, #tablaAlumnos tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
 }
 
 /* Centrar encabezado y contenido de la columna Acciones */
@@ -103,4 +54,117 @@ td.acciones-col {
 /* Si los botones están en un contenedor flex, también centrarlos */
 td.acciones-col .acciones {
     justify-content: center !important;
+}
+
+
+.form-page {
+  margin: 40px auto;
+}
+
+.form-card {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+.form-section {
+  margin-bottom: 40px;
+}
+
+.form-section h2 {
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.input-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-field {
+  position: relative;
+  width: 100%;
+}
+
+.input-field input,
+.input-field select {
+  width: 100%;
+  height: 55px;
+  padding: 0 15px;
+  font-size: 16px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  background: transparent;
+  transition: border-color 0.2s ease;
+}
+
+/* Label */
+.input-field label {
+  position: absolute;
+  left: 15px;
+  top: 18px;
+  font-size: 16px;
+  color: #777;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  background: white;
+  padding: 0 4px;
+}
+
+/* Focus */
+.input-field input:focus,
+.input-field select:focus {
+  border-color: black;
+}
+
+/* Cuando está en foco O tiene valor */
+.input-field input:focus + label,
+.input-field input:not(:placeholder-shown) + label,
+.input-field select:focus + label,
+.input-field select:not([value=""]) + label {
+  top: -8px;
+  font-size: 13px;
+  color:black;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 20px;
+}
+
+/* 🧠 ¿Y los select?
+
+Los select no soportan :placeholder-shown.
+
+Para que funcione bien, tu primer option debe ser:
+
+<option value="" selected disabled hidden></option>
+
+Y NO texto visible tipo "Seleccione una carrera".
+
+Ejemplo correcto:
+
+<select name="id_carrera">
+    <option value="" selected disabled hidden></option>
+</select>
+<label>Carrera</label> */
+
+.input-field input.error,
+.input-field select.error {
+  border-color: #e53935;
+}
+
+.input-field input.error + label,
+.input-field select.error + label {
+  color: #e53935;
 }
