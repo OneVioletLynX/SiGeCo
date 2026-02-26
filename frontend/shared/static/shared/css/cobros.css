@@ -252,21 +252,7 @@ button.disabled,
   background-color: #FF6347;
 }
 
-#btnGuardar {
-  border: 3px solid var(--color-success);
-}
 
-#btnGuardar:hover  {
-  background-color: var(--color-success);
-}
-
-#btnCancelar {
-  border: 3px solid #FF6347;
-}
-
-#btnCancelar:hover  {
-  background-color: #FF6347;
-}
 
 /* Estado inicial oculto */
 .toolbar,

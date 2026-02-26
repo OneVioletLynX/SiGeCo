@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "corsheaders",
     'alumnos',
     'mensajes',
+    'geografia',
 ]
 
 MIDDLEWARE = [

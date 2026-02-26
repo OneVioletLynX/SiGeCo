@@ -87,6 +87,7 @@ td.acciones-col .acciones {
 .input-field {
   display: flex;
   flex-direction: column;
+  
 }
 
 .input-field {
@@ -98,10 +99,11 @@ td.acciones-col .acciones {
 .input-field select {
   width: 100%;
   height: 55px;
-  padding: 0 15px;
+  padding: 9px 15px 0 15px;
   font-size: 16px;
-  border: 2px solid #ccc;
-  border-radius: 8px;
+  border: none;
+  border-bottom: 2px solid #ccc;
+  /* border-radius: 8px; */
   outline: none;
   background: transparent;
   transition: border-color 0.2s ease;
@@ -110,7 +112,7 @@ td.acciones-col .acciones {
 /* Label */
 .input-field label {
   position: absolute;
-  left: 15px;
+  /* left: 15px; */
   top: 18px;
   font-size: 16px;
   color: #777;
@@ -120,12 +122,6 @@ td.acciones-col .acciones {
   padding: 0 4px;
 }
 
-/* Focus */
-.input-field input:focus,
-.input-field select:focus {
-  border-color: black;
-}
-
 /* Cuando está en foco O tiene valor */
 .input-field input:focus + label,
 .input-field input:not(:placeholder-shown) + label,
@@ -133,7 +129,22 @@ td.acciones-col .acciones {
 .input-field select:not([value=""]) + label {
   top: -8px;
   font-size: 13px;
-  color:black;
+
+}
+
+.text-helper {
+  display: block;
+  font-size: 12px;
+  color: #777;
+  margin-top: 4px;
+  margin-left: 7px;
+}
+
+.input-field.has-error .text-helper {
+  opacity: 0;
+  height: 0;
+  margin: 0;
+  overflow: hidden;
 }
 
 .form-actions {
@@ -142,29 +153,33 @@ td.acciones-col .acciones {
   gap: 20px;
 }
 
-/* 🧠 ¿Y los select?
 
-Los select no soportan :placeholder-shown.
 
-Para que funcione bien, tu primer option debe ser:
-
-<option value="" selected disabled hidden></option>
-
-Y NO texto visible tipo "Seleccione una carrera".
-
-Ejemplo correcto:
-
-<select name="id_carrera">
-    <option value="" selected disabled hidden></option>
-</select>
-<label>Carrera</label> */
-
-.input-field input.error,
-.input-field select.error {
-  border-color: #e53935;
+.rojo {
+  color: #e53935;
 }
 
-.input-field input.error + label,
-.input-field select.error + label {
-  color: #e53935;
+/* ================= ERROR STATE ================= */
+
+.input-field.has-error input,
+.input-field.has-error select {
+  border-color: #c62828;
+}
+
+.input-field.has-error label {
+  color: #c62828;
+}
+
+/* Si está en focus y tiene error, sigue rojo */
+.input-field.has-error input:focus,
+.input-field.has-error select:focus {
+  border-color: #c62828;
+}
+
+/* Cuando el label flota y hay error */
+.input-field.has-error input:focus + label,
+.input-field.has-error input:not(:placeholder-shown) + label,
+.input-field.has-error select:focus + label,
+.input-field.has-error select:not([value=""]) + label {
+  color: #c62828;
 }

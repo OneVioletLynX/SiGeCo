@@ -117,7 +117,7 @@ urlpatterns = [
     # Mensajes
     path('api/mensajes/', MensajeListCreate.as_view(), name='api-mensajes'),
     path('api/mensajes/<int:pk>/', MensajeDetail.as_view(), name='api-mensajes-detail'),
-
+    path("api/", include("geografia.urls")),
     # path('', home, name='home'),
 
 ]

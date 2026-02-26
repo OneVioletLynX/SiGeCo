@@ -21,32 +21,27 @@
             <h2>Datos personales</h2>
 
             <div class="grid-2">
-
                 <div class="input-field">
-                    <input type="text" placeholder=" " name="nombre">
-                    <label>Nombre</label>
+                    <input type="text" placeholder=" " name="nombre" >
+                    <label>Nombre <span class="rojo">*</span></label>
                     <span class="error-msg" id="error-nombre"></span>
                 </div>
-
                 <div class="input-field">
-
-                    <input type="text" placeholder=" " name="apellido">
-                    <label>Apellido</label>
+                    <input type="text" placeholder=" " name="apellido" >
+                    <label>Apellido <span class="rojo">*</span></label>
                     <span class="error-msg" id="error-apellido"></span>
                 </div>
-
                 <div class="input-field">
-                    <input type="number" placeholder=" " name="dni">
-                    <label>DNI</label>
+                    <input type="number" placeholder=" " name="dni" maxlength="8" >
+                    <label>Número de documento <span class="rojo">*</span></label>
+                    <span class="text-helper">debe tener 8 dígitos</span>
                     <span class="error-msg" id="error-dni"></span>
                 </div>
-
                 <div class="input-field">
-                    <input type="date" placeholder=" " name="fecha_nacimiento">
-                    <label>Fecha de nacimiento</label>
+                    <input type="date" placeholder=" " name="fecha_nacimiento" >
+                    <label>Fecha de nacimiento <span class="rojo">*</span></label>
                     <span class="error-msg" id="error-fecha_nacimiento"></span>
                 </div>
-
             </div>
         </section>
 
@@ -55,9 +50,14 @@
             <h2>Datos de contacto</h2>
 
             <div class="grid-2">
-
                 <div class="input-field">
-
+                    <select name="provincia">
+                        <option value="1">Santa Fe</option>
+                        <option value="2">Cordoba</option>
+                    </select>
+                    <label>Provincia</label>
+                </div>
+                <div class="input-field">
                     <select name="ciudad">
                         <option value="1">Marcos Juarez</option>
                         <option value="2">Leones</option>
@@ -67,32 +67,34 @@
                 </div>
 
                 <div class="input-field">
-                    <input type="text" placeholder=" " name="direccion">
-                    <label>Dirección</label>
+                    <input type="text" placeholder=" " name="direccion" >
+                    <label>Dirección <span class="rojo">*</span></label>
                     <span class="error-msg" id="error-direccion"></span>
                 </div>
 
                 <div class="input-field">
-                    <input type="number" placeholder=" " name="numero">
-                    <label>Altura</label>
+                    <input type="number" placeholder=" " name="numero"  >
+                    <label>Altura <span class="rojo">*</span></label>
                     <span class="error-msg" id="error-numero"></span>
                 </div>
 
-                <div class="input-field">
-                    <input type="number" placeholder=" " name="prefijo">
-                    <label>Prefijo</label>
+                <div class="input-field" style="grid-row: 3;">
+                    <input type="number" placeholder=" " name="prefijo" >
+                    <label>Prefijo <span class="rojo">*</span></label>
+                    <span class="text-helper">ejemplo: 3467</span>
                     <span class="error-msg" id="error-prefijo"></span>
                 </div>
-
-                <div class="input-field">
-                    <input type="number" placeholder=" " name="telefono">
-                    <label>Celular</label>
+                <div class="input-field" style="grid-row: 3;">
+                    <input type="number" placeholder=" " name="telefono" >
+                    <label>Celular <span class="rojo">*</span></label>
+                    <span class="text-helper">ejemplo: 641684</span>
                     <span class="error-msg" id="error-telefono"></span>
                 </div>
 
-                <div class="input-field">
-                    <input type="email" placeholder=" " name="email">
-                    <label>Correo</label>
+                <div class="input-field" style="grid-column: span 2;">
+                    <input type="email" placeholder=" " name="email"    >
+                    <label>Correo <span class="rojo">*</span></label>
+                    <span class="text-helper">ejemplo: alumno@gmail.com</span>
                     <span class="error-msg" id="error-email"></span>
                 </div>
 
@@ -106,42 +108,47 @@
             <div class="grid-2">
 
                 <div class="input-field">
-                    <input type="text" placeholder=" " name="legajo">
+                    <input type="text" name="legajo" placeholder=" " >
                     <label>Legajo</label>
                     <span class="error-msg" id="error-legajo"></span>
                 </div>
 
                 <div class="input-field">
-                    <select name="id_estado" placeholder=" " id="id_estado"></select>
+                    <select name="id_estado" id="id_estado"></select>
                     <label>Estado</label>
                     <span class="error-msg" id="error-id_estado"></span>
                 </div>
 
                 <div class="input-field">
-                    <select name="id_carrera" placeholder=" " id="id_carrera"></select>
-                    <label>Carrera</label>
+                    <select name="id_carrera" id="id_carrera">
+                        <option value="" selected disabled hidden>Seleccionar</option>
+                    </select>
+                    <label>Carrera <span class="rojo">*</span></label>
                     <span class="error-msg" id="error-id_carrera"></span>
                 </div>
 
                 <div class="input-field">     
-                    <select name="anio_ingreso" placeholder=" ">
-                        <option value="2025">2025</option>
-                        <option value="2026">2026</option>
+                    <select name="anio_ingreso">
+                        <option value="" selected disabled hidden></option>
                     </select>
-                    <label>Año de ingreso</label>
+                    <label>Año de ingreso <span class="rojo"></span></label>
                     <span class="error-msg" id="error-anio_ingreso"></span>
                 </div>
 
             </div>
         </section>
 
-        <!-- ================= BOTONES ================= -->
-        <div class="form-actions">
-            <a href="/alumnos/alumnos/" class="btn-secundario">Cancelar</a>
-            <button type="submit" class="btn-primario">Guardar</button>
+        <div style="display: flex; justify-content: space-around;">
+            <button  type="submit" class="button-predeterminado" id="btnGuardar"><img
+                src="{% static 'shared/assets/check.svg' %}">Guardar</button>
+            <button onclick="window.location.href='/alumnos/alumnos/'" type="button" id="btnCancelar" class="button-predeterminado"><img
+                src="{% static 'shared/assets/close.svg' %}">Cancelar</button>
         </div>
 
     </form>
 </div>
 
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'shared/js/alumnos-form.js' %}"></script>
 {% endblock %}

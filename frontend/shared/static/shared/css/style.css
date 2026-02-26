@@ -11,6 +11,7 @@
     --background-hover: #e1e9fd;
     --border-color: #E6E9ED;
     --verde:#aeeca8;
+    --color-success: #74C365;
 }
 /* ==== Reset ==== */
 * {
@@ -262,6 +263,22 @@ main {
 
 
 /* ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ NAV-BAR ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
+
+#btnGuardar {
+  border: 3px solid var(--color-success);
+}
+
+#btnGuardar:hover  {
+  background-color: var(--color-success);
+}
+
+#btnCancelar {
+  border: 3px solid #FF6347;
+}
+
+#btnCancelar:hover  {
+  background-color: #FF6347;
+}
 
 
 
@@ -825,3 +842,5 @@ td .chip-inactivo .dot {
 .hidden {
     display: none !important;
 }
+
+
