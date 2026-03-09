@@ -1,5 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
-
+  let dniTimeout = null;
+  let emailTimeout = null;
+  const PROVINCIA_DEFAULT = 14;      // ← cambiar por el real
+  const LOCALIDAD_DEFAULT = 3622;  // ← cambiar por el real
+  const provinciaSelect = document.getElementById("provincia");
+  const localidadSelect = document.getElementById("ciudad");
+  const API = "http://localhost:8000/api"
   const form = document.getElementById("alumnoForm");
   if (!form) return;
     form.querySelectorAll("input, select").forEach(input => {
@@ -85,6 +91,73 @@ function cargarAniosIngreso() {
   select.value = anioActual;
 }
 
+async function cargarProvincias() {
+  if (!provinciaSelect) return;
+
+  provinciaSelect.innerHTML =
+    `<option value="" selected disabled hidden></option>`;
+
+  try {
+    const response = await fetch(`${API}/provincias/`);
+    const provincias = await response.json();
+
+    provincias.forEach(prov => {
+      const option = document.createElement("option");
+      option.value = prov.id_prov;
+      option.textContent = prov.nombre;
+      provinciaSelect.appendChild(option);
+    });
+
+    provinciaSelect.value = PROVINCIA_DEFAULT;
+
+    await cargarLocalidades(PROVINCIA_DEFAULT);
+
+  } catch (error) {
+    console.error("Error cargando provincias:", error);
+  }
+}
+
+async function cargarLocalidades(provinciaId) {
+  if (!localidadSelect) return;
+
+  localidadSelect.innerHTML =
+    `<option value="" selected disabled hidden></option>`;
+
+  if (!provinciaId) return;
+
+  try {
+    const response = await fetch(`${API}/localidades/?provincia=${provinciaId}`)
+    const localidades = await response.json();
+
+    localidades.forEach(loc => {
+      const option = document.createElement("option");
+      option.value = loc.id_loc;
+      option.textContent = loc.nombre;
+      localidadSelect.appendChild(option);
+    });
+
+    if (parseInt(provinciaId) === PROVINCIA_DEFAULT) {
+        localidadSelect.value = LOCALIDAD_DEFAULT;
+      }
+
+  } catch (error) {
+    console.error("Error cargando localidades:", error);
+  }
+}
+
+provinciaSelect.addEventListener("change", (e) => {
+  const provinciaId = e.target.value;
+
+  cargarLocalidades(provinciaId);
+
+  // limpiar error si había
+  limpiarErrorCampo("provincia");
+});
+
+localidadSelect.addEventListener("change", () => {
+  limpiarErrorCampo("ciudad");
+});
+
 async function cargarCarreras() {
   const select = document.getElementById("id_carrera");
   if (!select) return;
@@ -92,7 +165,7 @@ async function cargarCarreras() {
   select.innerHTML = `<option value="" selected disabled hidden>Seleccionar</option>`;
 
   try {
-    const response = await fetch("http://localhost:8000/api/carreras/");
+    const response = await fetch(`${API}/carreras/`);
     const carreras = await response.json();
 
     carreras.forEach(carrera => {
@@ -134,6 +207,33 @@ function limpiarErrorCampo(name) {
 
   if (span) span.innerText = "";
   wrapper.classList.remove("has-error");
+}
+
+function mostrarFichaAlumno(alumno){
+
+  const modal = document.getElementById("dni-modal");
+  const info = document.getElementById("dni-alumno-info");
+
+  info.innerHTML = `
+    <p><b>Nombre:</b> ${alumno.nombre} ${alumno.apellido}</p>
+    <p><b>DNI:</b> ${alumno.dni}</p>
+    <p><b>Email:</b> ${alumno.email}</p>
+    <p><b>Legajo:</b> ${alumno.legajo}</p>
+  `;
+
+  document.getElementById("ver-ficha-btn").onclick = () => {
+    window.location.href = `/alumnos/${alumno.id_alumno}/`;
+  };
+
+  document.getElementById("agregar-carrera-btn").onclick = () => {
+    window.location.href = `/alumnos/${alumno.id_alumno}/agregar-carrera/`;
+  };
+
+  document.getElementById("cerrar-modal-btn").onclick = () => {
+    modal.classList.add("hidden");
+  };
+
+  modal.classList.remove("hidden");
 }
   // ===============================
   // VALIDACIÓN
@@ -206,20 +306,28 @@ function validar() {
   // SUBMIT
   // ===============================
   form.addEventListener("submit", async e => {
-    e.preventDefault();
-    if (isSubmitting) return;
-    isSubmitting = true;
+  e.preventDefault();
+  if (isSubmitting) return;
+  isSubmitting = true;
 
-    if (!validar()) {
-      isSubmitting = false;
-      return;
-    }
+  if (!validar()) {
+    isSubmitting = false;
+    return;
+  }
 
-    const data = Object.fromEntries(new FormData(form));
-    data.id_carrera = parseInt(data.id_carrera || "0");
-    data.id_estado = parseInt(data.id_estado || "0");
+  const data = Object.fromEntries(new FormData(form));
 
-    const response = await fetch("http://localhost:8000/api/alumnos/", {
+  if (data.id_carrera) {
+    data.id_carrera = parseInt(data.id_carrera);
+  }
+
+  // 👇 AGREGAR ACÁ
+  console.log("Datos enviados:", data);
+
+
+  try {
+
+    const response = await fetch(`${API}/alumnos/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
@@ -227,10 +335,77 @@ function validar() {
 
     if (response.ok) {
       window.location.href = "/alumnos/alumnos/";
+    } else {
+  const error = await response.json();
+
+  // EMAIL → error visual igual que los demás
+  if (error.email) {
+    setError("email", error.email[0]);
+  }
+
+}
+
+  } catch (err) {
+    console.error("Error de conexión:", err);
+  }
+
+  isSubmitting = false;
+});
+
+const emailInput = form.querySelector('[name="email"]');
+
+emailInput.addEventListener("input", () => {
+
+  const email = emailInput.value.trim();
+
+  clearTimeout(emailTimeout);
+
+  if (!/^\S+@\S+\.\S+$/.test(email)) return;
+
+  emailTimeout = setTimeout(async () => {
+
+    const response = await fetch(`${API}/alumnos/?email=${email}`);
+    const alumnos = await response.json();
+
+    if (alumnos.length > 0) {
+      setError("email", "Ya existe un alumno con este correo");
+    } else {
+      limpiarErrorCampo("email");
     }
 
-    isSubmitting = false;
-  });
+  }, 400);
+
+});
+
+dniInput.addEventListener("input", () => {
+
+  const dni = dniInput.value.trim();
+
+  clearTimeout(dniTimeout);
+
+  if (!/^[0-9]{8}$/.test(dni)) return;
+
+  dniTimeout = setTimeout(async () => {
+
+    const response = await fetch(`${API}/alumnos/?dni=${dni}`);
+    const alumnos = await response.json();
+
+    if (alumnos.length > 0) {
+
+      const alumno = alumnos[0];
+
+      mostrarFichaAlumno(alumno);
+
+    }
+
+  }, 400);
+
+});
+
+
+
   cargarCarreras();
 cargarAniosIngreso();
+cargarProvincias()
 });
+

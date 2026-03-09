@@ -1,65 +1,95 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
-# Importación de Alumno con manejo de contextos
-try:
-    from alumnos.models import Alumno
-except ImportError:
-    from backend.alumnos.models import Alumno
-
-# 1. MODELO ESTADO
 class Estado(models.Model):
+
     id_estado = models.AutoField(primary_key=True)
-    descripcion = models.CharField(max_length=50)
+
+    descripcion = models.CharField(
+        max_length=50
+    )
 
     class Meta:
-        db_table = 'carreras_estado'
+        db_table = "carreras_estado"
         verbose_name = "Estado"
         verbose_name_plural = "Estados"
 
     def __str__(self):
         return self.descripcion
 
-# 2. MODELO CARRERA
 class Carrera(models.Model):
+
     id_carrera = models.AutoField(primary_key=True)
-    descripcion = models.CharField(max_length=100)
-    color = models.CharField(max_length=7, default="#1E3A8A")
-    id_estado = models.ForeignKey(Estado, on_delete=models.CASCADE, default=1)
-    
+
+    descripcion = models.CharField(
+        max_length=100
+    )
+
+    color = models.CharField(
+        max_length=7,
+        default="#1E3A8A"
+    )
+
+    id_estado = models.ForeignKey(
+        Estado,
+        on_delete=models.CASCADE,
+        default=1,
+        related_name="carreras"
+    )
+
     class Meta:
-        db_table = 'carreras_carrera'
+        db_table = "carreras_carrera"
         verbose_name = "Carrera"
         verbose_name_plural = "Carreras"
 
     def __str__(self):
         return self.descripcion
 
-# 3. MODELO CURSADA (Solución al error 1054)
 class CarreraCursada(models.Model):
-    # TRUCO: Le ponemos primary_key=True a alumno. 
-    # Esto evita que Django busque la columna 'id' que no existe.
+
     alumno = models.ForeignKey(
-        Alumno, 
-        on_delete=models.CASCADE, 
-        related_name='carreras_cursadas',
-        primary_key=True 
+        "alumnos.Alumno",
+        on_delete=models.CASCADE,
+        related_name="carreras_cursadas",
+        db_column="alumno_id"
     )
-    
+
     carrera = models.ForeignKey(
-        Carrera, 
-        on_delete=models.CASCADE, 
+        Carrera,
+        on_delete=models.CASCADE,
+        related_name="alumnos_cursando",
+        db_column="carrera_id"
+    )
+
+    id_estado = models.ForeignKey(
+        Estado,
+        on_delete=models.CASCADE,
+        default=1,
+        db_column="id_estado_id",
         related_name="carreras_cursadas"
     )
-    
-    id_estado = models.ForeignKey(
-        Estado, 
-        on_delete=models.CASCADE, 
-        default=1
+
+    inscripcion = models.DateField(
+        auto_now_add=True
+    )
+
+    fecha_inscripcion = models.DateTimeField(
+        blank=True,
+        null=True
+    )
+
+    anio_ingreso = models.PositiveIntegerField(
+        validators=[
+            MinValueValidator(1900),
+            MaxValueValidator(2100)
+        ]
     )
 
     class Meta:
         db_table = "carreras_cursadas"
-        managed = False  # IMPORTANTE: Le decimos a Django que no toque la estructura de esta tabla
-        verbose_name = "Cursada"
-        verbose_name_plural = "Cursadas"
-        unique_together = (('alumno', 'carrera'),)
+        unique_together = [["alumno", "carrera"]]
+        verbose_name = "Carrera cursada"
+        verbose_name_plural = "Carreras cursadas"
+
+    def __str__(self):
+        return f"{self.alumno} - {self.carrera}"

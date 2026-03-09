@@ -74,6 +74,7 @@ urlpatterns = [
     # --- ALUMNOS ---
     path('api/alumnos/', AlumnoListCreate.as_view(), name='alumnos-lista'),
     path('api/alumnos/<int:pk>/', AlumnoDetail.as_view(), name='alumno-detalle'),
+    
 
     # --- CARRERAS Y ESTADOS ---
     path('api/carreras/', CarreraListCreate.as_view(), name='carrera-lista'),

@@ -1,0 +1,60 @@
+{% extends "shared/base.html" %}
+{% load static %}
+{% block title %}Inicio{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'shared/css/alumnos_ficha.css' %}">
+{% endblock %}
+{% block content %}
+
+<h2>Ficha del Alumno</h2>
+<div class="contenedor">
+    <div class="columna">     
+        <div class="card-body">
+            <h3>Informacion</h3>
+            <p><b>Nombre</b></p>
+            <p class="dato">{{ alumno.nombre }} {{ alumno.apellido }}</p>
+            <p><b>Fecha de nacimiento:</b></p>
+            <p class="dato">{{ alumno.fecha_nacimiento }}</p>
+            <p><b>Numero de documento:</b></p>
+            <p class="dato">{{ alumno.dni }}</p>
+        </div>
+        <div class="card-body">
+            <h3>Carreras</h3>
+            <table>
+                <tr>
+                    <th>Carrera</th>
+                    <th>Estado</th>
+                    <th>Inicio</th>
+                    <th>Fin</th>
+                </tr>
+
+                {% for c in carreras %}
+                <tr>
+                    <td>{{ c.carrera.descripcion }}</td>
+                    <td>{{ c.id_estado.descripcion }}</td>
+                    <td>{{ c.id_estado.descripcion }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+    <div class="columna">
+        <div class="card-body">
+            <h3>Contacto</h3>
+            <p><b>Correo</b></p>
+            <p class="dato">{{ alumno.email }}</p>
+            <p><b>Teléfono:</b></p>
+            <p class="dato">{{ alumno.prefijo }} {{ alumno.telefono }}</p>
+            <p><b>Dirección:</b></p>
+            <p class="dato">{{ alumno.direccion }} {{ alumno.numero }}</p>
+            <p><b>Ciudad:</b></p>
+            <p class="dato">{{ alumno.ciudad.nombre }} - {{ alumno.ciudad.departamento.provincia.nombre }}</p>
+        </div>
+    </div>
+
+</div>
+
+
+
+{% endblock %}

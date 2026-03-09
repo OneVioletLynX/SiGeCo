@@ -20,16 +20,19 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',    
     'django.contrib.humanize',
+
     'rest_framework',
-    'usuarios', 
-    'reportes',
-    'ctacte',
+    "corsheaders",
+
+    'geografia',
+    'alumnos',
     'carreras',
     'valores',
-    "corsheaders",
-    'alumnos',
+    'ctacte',
+
+    'usuarios',
     'mensajes',
-    'geografia',
+    'reportes',
 ]
 
 MIDDLEWARE = [

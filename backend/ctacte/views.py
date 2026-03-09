@@ -175,61 +175,45 @@ class PagoDetalleDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
     
 class RegistrarPago(APIView):
+
     def post(self, request):
-        try:
-            data = request.data
 
-            alumno_id = data.get("id_alumno")
-            metodo_id = data.get("id_metodo_pago")
-            meses_data = data.get("meses", [])
-            importe_total = float(data.get("importe_total"))
+        data = request.data
 
-            if not alumno_id or not metodo_id or not meses_data:
-                return Response({"error": "Faltan datos obligatorios"}, status=400)
+        alumno_id = data.get("id_alumno")
+        metodo_id = data.get("id_metodo_pago")
+        meses_data = data.get("meses", [])
 
+        if not alumno_id or not metodo_id or not meses_data:
+            return Response({"error": "Faltan datos obligatorios"}, status=400)
 
-            alumno = Alumno.objects.get(pk=alumno_id)
-            metodo = MetodoPago.objects.get(pk=metodo_id)
+        alumno = Alumno.objects.get(pk=alumno_id)
+        metodo = MetodoPago.objects.get(pk=metodo_id)
 
-            # Crear cabecera del pago
-            pago = Pago.objects.create(
-                id_alumno=alumno,
-                id_metodo_pago=metodo,
-                fecha_pago=timezone.now(),
-                importe_total=importe_total
+        pago = Pago.objects.create(
+            id_alumno=alumno,
+            id_metodo_pago=metodo,
+            fecha_pago=timezone.now(),
+            importe_total=data.get("importe_total")
+        )
+
+        for item in meses_data:
+
+            mes = MesPago.objects.get(pk=item["mes"])
+
+            PagoDetalle.objects.create(
+                pago=pago,
+                carrera_id=item["carrera"],
+                mes=mes,
+                anio_pago=item["anio"],
+                id_concepto_id=item.get("concepto", 1),
+                importe=item["importe"]
             )
 
-            # Calcular importe por mes (prorrateo)
-            importe_por_mes = round(importe_total / len(meses_data), 2)
-
-            # Crear cada detalle
-            for item in meses_data:
-                mes_id = item["mes"]
-                anio_pago = item["anio"]
-
-                mes = MesPago.objects.get(pk=mes_id)
-
-                # concepto_id: 1 cuota, 2 inscripción
-                concepto_id = 2 if mes.descripcion.lower().startswith("insc") else 1
-
-                PagoDetalle.objects.create(
-                    pago=pago,
-                    mes=mes,
-                    anio_pago=anio_pago,
-                    id_concepto_id=concepto_id,
-                    importe=importe_por_mes
-                )
-
-            return Response({
-                "success": True,
-                "id_pago": pago.id_pago,
-                "alumno": f"{alumno.apellido}, {alumno.nombre}",
-                "total": importe_total,
-                "cantidad_meses": len(meses_data)
-            }, status=201)
-
-        except Exception as e:
-            return Response({"error": str(e)}, status=400)
+        return Response({
+            "success": True,
+            "id_pago": pago.id_pago
+        }, status=201)
 
 
 class MesesPendientes(APIView):

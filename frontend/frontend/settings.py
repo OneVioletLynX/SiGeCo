@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'backend.usuarios',
     'backend.reportes',
     'backend.valores',
+    'backend.geografia',
 ]
 
 

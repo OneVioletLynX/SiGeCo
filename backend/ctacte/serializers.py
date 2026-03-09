@@ -32,7 +32,12 @@ class PagoDetalleLiteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PagoDetalle
-        fields = ["mes", "anio", "importe", "pago_id"]
+        fields = [
+            "carrera",
+            "mes",
+            "anio_pago",
+            "importe"
+        ]
 
 
 class PagoSerializer(serializers.ModelSerializer):

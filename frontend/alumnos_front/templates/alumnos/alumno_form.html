@@ -38,6 +38,12 @@
                     <span class="error-msg" id="error-dni"></span>
                 </div>
                 <div class="input-field">
+                    <input type="number" placeholder=" " name="cuit" maxlength="8" >
+                    <label>Número de CUIT <span class="rojo">*</span></label>
+                    <span class="text-helper">debe tener 10 dígitos</span>
+                    <span class="error-msg" id="error-cuit"></span>
+                </div>
+                <div class="input-field">
                     <input type="date" placeholder=" " name="fecha_nacimiento" >
                     <label>Fecha de nacimiento <span class="rojo">*</span></label>
                     <span class="error-msg" id="error-fecha_nacimiento"></span>
@@ -51,19 +57,19 @@
 
             <div class="grid-2">
                 <div class="input-field">
-                    <select name="provincia">
-                        <option value="1">Santa Fe</option>
-                        <option value="2">Cordoba</option>
+                    <select name="provincia" id="provincia">
+                        <option value="" selected disabled hidden></option>
                     </select>
-                    <label>Provincia</label>
+                    <label>Provincia <span class="rojo">*</span></label>
+                    <span class="error-msg" id="error-provincia"></span>
                 </div>
+
                 <div class="input-field">
-                    <select name="ciudad">
-                        <option value="1">Marcos Juarez</option>
-                        <option value="2">Leones</option>
-                        <option value="3">Inriville</option>
+                    <select name="ciudad" id="ciudad">
+                        <option value="" selected disabled hidden></option>
                     </select>
-                    <label>Localidad</label>
+                    <label>Localidad <span class="rojo">*</span></label>
+                    <span class="error-msg" id="error-ciudad"></span>
                 </div>
 
                 <div class="input-field">
@@ -75,6 +81,18 @@
                 <div class="input-field">
                     <input type="number" placeholder=" " name="numero"  >
                     <label>Altura <span class="rojo">*</span></label>
+                    <span class="error-msg" id="error-numero"></span>
+                </div>
+                
+                <div class="input-field">
+                    <input type="text" placeholder=" " name="direccion" >
+                    <label>Departamento <span class="rojo">*</span></label>
+                    <span class="error-msg" id="error-direccion"></span>
+                </div>
+
+                <div class="input-field">
+                    <input type="number" placeholder=" " name="numero"  >
+                    <label>Piso <span class="rojo">*</span></label>
                     <span class="error-msg" id="error-numero"></span>
                 </div>
 
@@ -113,11 +131,11 @@
                     <span class="error-msg" id="error-legajo"></span>
                 </div>
 
-                <div class="input-field">
+                <!-- <div class="input-field">
                     <select name="id_estado" id="id_estado"></select>
                     <label>Estado</label>
                     <span class="error-msg" id="error-id_estado"></span>
-                </div>
+                </div> -->
 
                 <div class="input-field">
                     <select name="id_carrera" id="id_carrera">
@@ -147,7 +165,31 @@
 
     </form>
 </div>
+<div id="dni-modal" class="modal hidden">
 
+  <div class="modal-content">
+
+    <h3>Alumno encontrado</h3>
+
+    <div id="dni-alumno-info"></div>
+
+    <div class="modal-buttons">
+
+      <button id="ver-ficha-btn">Ver ficha</button>
+
+      <button id="agregar-carrera-btn">
+        Agregar carrera
+      </button>
+
+      <button id="cerrar-modal-btn">
+        Cerrar
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
 {% endblock %}
 {% block extra_js %}
 <script src="{% static 'shared/js/alumnos-form.js' %}"></script>

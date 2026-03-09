@@ -126,8 +126,14 @@ class AlumnoSerializer(serializers.ModelSerializer):
     # ------------------------------------------------------------------
     @transaction.atomic
     def create(self, validated_data):
+
         carrera_id = validated_data.pop('id_carrera', None)
-        estado_id = validated_data.pop('id_estado', 1)  # 1 = Activo por defecto
+        estado_id = validated_data.pop('id_estado', None)
+
+        # si no llega estado o llega 0 → usar Activo (1)
+        if not estado_id:
+            estado_id = 1
+
         alumno = super().create(validated_data)
 
         if carrera_id:
@@ -135,6 +141,7 @@ class AlumnoSerializer(serializers.ModelSerializer):
                 alumno_id=alumno.id_alumno,
                 carrera_id=carrera_id
             ).first()
+
             if existente:
                 if existente.id_estado_id != estado_id:
                     existente.id_estado_id = estado_id
