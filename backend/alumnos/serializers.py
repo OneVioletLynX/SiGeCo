@@ -1,4 +1,3 @@
-# backend/alumnos/serializers.py
 from django.db import transaction
 from rest_framework import serializers
 from .models import Alumno
@@ -6,43 +5,42 @@ from carreras.models import CarreraCursada
 
 
 class AlumnoSerializer(serializers.ModelSerializer):
-    # Para ALTA / EDICIÓN (lo envía el form)
+
+    # --------- WRITE ONLY (desde el form) ----------
     id_carrera = serializers.IntegerField(write_only=True, required=False)
     id_estado = serializers.IntegerField(write_only=True, required=False)
-    carrera_color = serializers.SerializerMethodField(read_only=True)
-    # Solo lectura (para listar / detalle)
-    carrera_actual = serializers.SerializerMethodField(read_only=True)   # id de carrera
-    estado_actual = serializers.SerializerMethodField(read_only=True)    # id de estado
+    anio_ingreso = serializers.IntegerField(write_only=True, required=False)
 
-    carrera_nombre = serializers.SerializerMethodField(read_only=True)   # texto carrera
-    estado_nombre = serializers.SerializerMethodField(read_only=True)    # texto estado
+    # --------- READ ONLY ----------
+    carrera_actual = serializers.SerializerMethodField()
+    estado_actual = serializers.SerializerMethodField()
+    carrera_nombre = serializers.SerializerMethodField()
+    estado_nombre = serializers.SerializerMethodField()
+    carrera_color = serializers.SerializerMethodField()
 
     class Meta:
         model = Alumno
         fields = [
-            # ----- Campos reales del modelo Alumno -----
             'id_alumno',
             'legajo',
             'nombre',
             'apellido',
             'fecha_nacimiento',
             'dni',
+            'cuit',
             'ciudad',
             'direccion',
             'numero',
             'prefijo',
             'telefono',
             'email',
-            'inscripcion',
-            'fecha_inscripcion',
-            'anio_ingreso',
-            
 
-            # ----- Campos WRITE-ONLY para manejo de carrera/estado -----
+            # write
             'id_carrera',
             'id_estado',
+            'anio_ingreso',
 
-            # ----- Campos READ-ONLY -----
+            # read
             'carrera_actual',
             'estado_actual',
             'carrera_nombre',
@@ -50,172 +48,135 @@ class AlumnoSerializer(serializers.ModelSerializer):
             'carrera_color',
         ]
 
-    # ------------------------------------------------------------------
-    # Helpers de solo lectura
-    # ------------------------------------------------------------------
-    def _get_carrera_cursada(self, obj):
-        # Por ahora tomamos la PRIMERA carrera cursada
-        return obj.carreras_cursadas.select_related('carrera', 'id_estado').first()
+    # --------------------------------------------------
+    # Helper
+    # --------------------------------------------------
+
+    def _get_carrera(self, obj):
+        return obj.carreras_cursadas.select_related(
+            'carrera',
+            'id_estado'
+        ).first()
+
+    # --------------------------------------------------
+    # Campos calculados
+    # --------------------------------------------------
 
     def get_carrera_actual(self, obj):
-        cc = self._get_carrera_cursada(obj)
-        return cc.carrera.id_carrera if cc and cc.carrera else None
+        cc = self._get_carrera(obj)
+        return cc.carrera.id_carrera if cc else None
 
     def get_estado_actual(self, obj):
-        cc = self._get_carrera_cursada(obj)
-        return cc.id_estado.id_estado if cc and cc.id_estado else None
+        cc = self._get_carrera(obj)
+        return cc.id_estado.id_estado if cc else None
 
     def get_carrera_nombre(self, obj):
-        cc = self._get_carrera_cursada(obj)
-        return cc.carrera.descripcion if cc and cc.carrera else None
+        cc = self._get_carrera(obj)
+        return cc.carrera.descripcion if cc else None
 
     def get_estado_nombre(self, obj):
-        cc = self._get_carrera_cursada(obj)
-        return cc.id_estado.descripcion if cc and cc.id_estado else None
+        cc = self._get_carrera(obj)
+        return cc.id_estado.descripcion if cc else None
 
     def get_carrera_color(self, obj):
-        cc = self._get_carrera_cursada(obj)
-        if cc and cc.carrera and cc.carrera.color:
-            return cc.carrera.color
-        return None
-        # ------------------------------------------------------------------
-    # VALIDACIONES DE UNICIDAD (DNI, EMAIL, LEGAJO)
-    # ------------------------------------------------------------------
+        cc = self._get_carrera(obj)
+        return cc.carrera.color if cc else None
+
+    # --------------------------------------------------
+    # Validaciones únicas
+    # --------------------------------------------------
+
     def validate(self, data):
-        instance = self.instance  # None si es POST, objeto si es PUT
 
-        dni = data.get('dni')
-        email = data.get('email')
-        legajo = data.get('legajo')
+        instance = self.instance
 
-        # ----- DNI único -----
-        if dni is not None:
-            qs = Alumno.objects.filter(dni=dni)
+        def check_unique(field):
+            value = data.get(field)
+
+            if not value:
+                return
+
+            qs = Alumno.objects.filter(**{field: value})
+
             if instance:
                 qs = qs.exclude(id_alumno=instance.id_alumno)
+
             if qs.exists():
                 raise serializers.ValidationError({
-                    "dni": "Este DNI ya está registrado."
+                    field: f"Este {field} ya está registrado."
                 })
 
-        # ----- EMAIL único -----
-        if email:
-            qs = Alumno.objects.filter(email=email)
-            if instance:
-                qs = qs.exclude(id_alumno=instance.id_alumno)
-            if qs.exists():
-                raise serializers.ValidationError({
-                    "email": "Este email ya está registrado."
-                })
-
-        # ----- LEGAJO único (si no es null) -----
-        if legajo:
-            qs = Alumno.objects.filter(legajo=legajo)
-            if instance:
-                qs = qs.exclude(id_alumno=instance.id_alumno)
-            if qs.exists():
-                raise serializers.ValidationError({
-                    "legajo": "Este legajo ya está registrado."
-                })
+        check_unique("dni")
+        check_unique("email")
+        check_unique("legajo")
 
         return data
 
+    # --------------------------------------------------
+    # CREATE
+    # --------------------------------------------------
 
-    # ------------------------------------------------------------------
-    # create
-    # ------------------------------------------------------------------
     @transaction.atomic
     def create(self, validated_data):
 
-        carrera_id = validated_data.pop('id_carrera', None)
-        estado_id = validated_data.pop('id_estado', None)
+        carrera_id = validated_data.pop("id_carrera", None)
+        estado_id = validated_data.pop("id_estado", 1)
+        anio_ingreso = validated_data.pop("anio_ingreso", None)
 
-        # si no llega estado o llega 0 → usar Activo (1)
-        if not estado_id:
-            estado_id = 1
-
-        alumno = super().create(validated_data)
+        alumno = Alumno.objects.create(**validated_data)
 
         if carrera_id:
-            existente = CarreraCursada.objects.filter(
+            CarreraCursada.objects.create(
                 alumno_id=alumno.id_alumno,
-                carrera_id=carrera_id
-            ).first()
-
-            if existente:
-                if existente.id_estado_id != estado_id:
-                    existente.id_estado_id = estado_id
-                    existente.save()
-            else:
-                CarreraCursada.objects.create(
-                    alumno_id=alumno.id_alumno,
-                    carrera_id=carrera_id,
-                    id_estado_id=estado_id
-                )
+                carrera_id=carrera_id,
+                id_estado_id=estado_id or 1,
+                anio_ingreso=anio_ingreso
+            )
 
         return alumno
 
-    # ------------------------------------------------------------------
-    # update
-    # ------------------------------------------------------------------
+    # --------------------------------------------------
+    # UPDATE
+    # --------------------------------------------------
+
     @transaction.atomic
     def update(self, instance, validated_data):
-        nueva_carrera_id = validated_data.pop('id_carrera', None)
-        nuevo_estado_id = validated_data.pop('id_estado', None)
 
-        # Primero actualizamos los campos del alumno
+        carrera_id = validated_data.pop("id_carrera", None)
+        estado_id = validated_data.pop("id_estado", None)
+
         instance = super().update(instance, validated_data)
 
-        actual = CarreraCursada.objects.filter(alumno_id=instance.id_alumno).first()
+        carrera_actual = CarreraCursada.objects.filter(
+            alumno_id=instance.id_alumno
+        ).first()
 
-        # Si no hay fila actual y vino carrera, la creamos
-        if not actual:
-            if nueva_carrera_id:
-                CarreraCursada.objects.create(
-                    alumno_id=instance.id_alumno,
-                    carrera_id=nueva_carrera_id,
-                    id_estado_id=nuevo_estado_id or 1
-                )
-            return instance
+        if not carrera_actual and carrera_id:
 
-        # Hay fila actual
-        carrera_actual_id = actual.carrera_id
-        estado_actual_id = actual.id_estado_id
-
-        # Caso 1: solo quiero cambiar estado
-        if not nueva_carrera_id and nuevo_estado_id is not None:
-            actual.id_estado_id = nuevo_estado_id
-            actual.save()
-            return instance
-
-        # Caso 2: solo quiero cambiar carrera (opcionalmente estado)
-        if nueva_carrera_id and nueva_carrera_id == carrera_actual_id:
-            # Misma carrera, solo update de estado
-            if nuevo_estado_id is not None and nuevo_estado_id != estado_actual_id:
-                actual.id_estado_id = nuevo_estado_id
-                actual.save()
-            return instance
-
-        # Caso 3: cambiar carrera (y opcionalmente estado)
-        if nueva_carrera_id and nueva_carrera_id != carrera_actual_id:
-            destino = CarreraCursada.objects.filter(
+            CarreraCursada.objects.create(
                 alumno_id=instance.id_alumno,
-                carrera_id=nueva_carrera_id
-            ).first()
+                carrera_id=carrera_id,
+                id_estado_id=estado_id or 1
+            )
 
-            if destino:
-                if nuevo_estado_id is not None:
-                    if destino.id_estado_id != nuevo_estado_id:
-                        destino.id_estado_id = nuevo_estado_id
-                        destino.save()
-            else:
+            return instance
+
+        if carrera_actual:
+
+            if estado_id:
+                carrera_actual.id_estado_id = estado_id
+
+            if carrera_id and carrera_id != carrera_actual.carrera_id:
+
+                carrera_actual.delete()
+
                 CarreraCursada.objects.create(
                     alumno_id=instance.id_alumno,
-                    carrera_id=nueva_carrera_id,
-                    id_estado_id=(nuevo_estado_id if nuevo_estado_id is not None else estado_actual_id or 1)
+                    carrera_id=carrera_id,
+                    id_estado_id=estado_id or 1
                 )
-            # si querés mantener solo una fila por alumno, podés borrar la anterior:
-            if actual.pk != destino.pk if 'destino' in locals() and destino else True:
-                actual.delete()
+
+            else:
+                carrera_actual.save()
 
         return instance

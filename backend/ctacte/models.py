@@ -110,3 +110,59 @@ class PagoDetalle(models.Model):
 
     def __str__(self):
         return f"{self.carrera.descripcion} - {self.mes.descripcion} {self.anio_pago}"
+
+
+class EstadoCuota(models.Model):
+
+    id_estado = models.AutoField(primary_key=True)
+
+    descripcion = models.CharField(
+        max_length=30,
+        unique=True
+    )
+
+    class Meta:
+        db_table = "ctacte_estado_cuota"
+
+    def __str__(self):
+        return self.descripcion
+
+class Cuota(models.Model):
+
+    id_cuota = models.AutoField(primary_key=True)
+
+    alumno = models.ForeignKey(
+        "alumnos.Alumno",
+        on_delete=models.CASCADE,
+        related_name="cuotas"
+    )
+
+    carrera = models.ForeignKey(
+        "carreras.Carrera",
+        on_delete=models.CASCADE
+    )
+
+    mes = models.ForeignKey(
+        MesPago,
+        on_delete=models.PROTECT
+    )
+
+    anio = models.PositiveIntegerField()
+
+    estado = models.ForeignKey(
+        EstadoCuota,
+        on_delete=models.PROTECT
+    )
+
+    importe = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0
+    )
+
+    class Meta:
+        db_table = "ctacte_cuota"
+        unique_together = [["alumno", "carrera", "mes", "anio"]]
+
+    def __str__(self):
+        return f"{self.alumno} - {self.mes.descripcion} {self.anio}"

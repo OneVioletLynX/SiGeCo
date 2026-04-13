@@ -44,7 +44,7 @@
   background: #cbd5e1;
   border-radius: 6px;
 }
-.meses-container::-webkit-scrollbar-thumb:hover {
+.meses-container::-webkit-scrollbar-thumb:hover {                                                                                                                                                                                                                                                                                                                                                                                                  
   background: #94a3b8;
 }
 
@@ -143,6 +143,12 @@
   background-color: var(--color-success-light);
   border: 3px solid var(--color-success);
   color: var(--color-success);
+}
+
+.month.pendiente {
+  background-color: #ffe58a;
+  border: 1px solid #f0c419;
+  color: #8a6d00;
 }
 
 /* Check visual */
@@ -284,3 +290,4 @@ button.disabled,
 .month.vibrar {
   animation: vibrar 0.25s ease;
 }
+

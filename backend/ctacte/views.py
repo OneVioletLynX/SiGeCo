@@ -11,7 +11,8 @@ from rest_framework.decorators import api_view
 # Modelos
 from alumnos.models import Alumno
 from django.utils import timezone
-from .models import MesPago, MetodoPago, Pago, PagoDetalle
+from carreras.models import CarreraCursada
+from .models import MesPago, MetodoPago, Pago, PagoDetalle, Cuota
 
 # Serializers
 from .serializers import (
@@ -219,95 +220,44 @@ class RegistrarPago(APIView):
 class MesesPendientes(APIView):
 
     def get(self, request):
+
         alumno_id = request.query_params.get("alumno")
+
         if not alumno_id:
             return Response({"error": "Falta el parámetro alumno"}, status=400)
 
         alumno = get_object_or_404(Alumno, pk=alumno_id)
 
-        # 1️⃣ Año de ingreso
-        anio_ingreso = alumno.anio_ingreso or alumno.inscripcion.year
-
-        # 2️⃣ Último detalle pagado (año + mes)
-        ultimo_detalle = (
-            PagoDetalle.objects
-            .filter(
-                pago__id_alumno_id=alumno.id_alumno,
-                mes__isnull=False
-            )
-            .exclude(anio_pago__isnull=True)
-            .order_by("-anio_pago", "-mes_id")
-            .first()
+        cuotas = (
+            Cuota.objects
+            .filter(alumno=alumno)
+            .select_related("mes", "carrera", "estado")
+            .order_by("anio", "mes_id")
         )
 
-        ultimo_pagado = None
-        if ultimo_detalle:
-            ultimo_pagado = {
-                "anio": ultimo_detalle.anio_pago,
-                "mes": ultimo_detalle.mes_id
-            }
-            anio_final = max(anio_ingreso, ultimo_detalle.anio_pago + 1)
-        else:
-            anio_final = anio_ingreso + 1
-
-        # 3️⃣ Catálogo de meses
-        meses_catalogo = list(
-            MesPago.objects
-            .exclude(descripcion__icontains="insc")
-            .order_by("id_mes")
-            .values("id_mes", "descripcion")
-        )
-
-        # 4️⃣ Meses ya pagados
-        pagados = {
-            (detalle.anio_pago, detalle.mes_id): detalle.pago_id
-            for detalle in PagoDetalle.objects.filter(
-                pago__id_alumno_id=alumno.id_alumno,
-                mes__isnull=False
-            )
-        }
-
-        # 5️⃣ Inscripción
-        detalle_inscripcion = PagoDetalle.objects.filter(
-            pago__id_alumno_id=alumno.id_alumno,
-            id_concepto_id=2
-        ).first()
-
-        inscripcion_pagada = detalle_inscripcion is not None
-        pago_inscripcion = detalle_inscripcion.pago_id if detalle_inscripcion else None
-
-        # 6️⃣ Armar respuesta
         meses_por_anio = {}
 
-        for anio in range(anio_ingreso, anio_final + 1):
+        for cuota in cuotas:
 
-            disponibles = []
+            anio = str(cuota.anio)
 
-            if anio == anio_ingreso:
-                disponibles.append({
-                    "id_mes": 1,
-                    "descripcion": "Inscripción",
-                    "pagado": inscripcion_pagada,
-                    "id_pago": pago_inscripcion
-                })
+            if anio not in meses_por_anio:
+                meses_por_anio[anio] = []
 
-            for mes in meses_catalogo:
+            estado = cuota.estado.descripcion.lower()
 
-                pago_id = pagados.get((anio, mes["id_mes"]))
-
-                disponibles.append({
-                    "id_mes": mes["id_mes"],
-                    "descripcion": mes["descripcion"],
-                    "pagado": pago_id is not None,
-                    "id_pago": pago_id
-                })
-
-            meses_por_anio[str(anio)] = disponibles
+            meses_por_anio[anio].append({
+                "id_mes": cuota.mes_id,
+                "descripcion": cuota.mes.descripcion,
+                "estado": estado,
+                "pagado": estado == "pagado",
+                "id_pago": None
+            })
 
         return Response({
             "alumno": alumno.id_alumno,
-            "anio_ingreso": anio_ingreso,
-            "anio_final": anio_final,
-            "ultimo_pagado": ultimo_pagado,  # 🔥 IMPORTANTE
+            "anio_ingreso": cuotas.first().anio if cuotas else None,
+            "anio_final": cuotas.last().anio if cuotas else None,
+            "ultimo_pagado": None,
             "meses": meses_por_anio
         })

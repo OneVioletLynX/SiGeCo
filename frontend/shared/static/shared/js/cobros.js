@@ -290,11 +290,19 @@
 
             if (esInscripcion && parseInt(anio) !== data.anio_ingreso) return;
 
-            const clasePagado = m.pagado ? "pagado" : "";
+            let claseEstado = "";
+
+            if (m.estado === "pagado") {
+              claseEstado = "pagado";
+            }
+
+            if (m.estado === "pendiente") {
+              claseEstado = "pendiente";
+            }
             const dataPago = m.pagado ? `data-pago="${m.id_pago}"` : "";
 
             html += `
-              <div class="month ${clasePagado}"
+              <div class="month ${claseEstado}"
                   data-id_mes="${m.id_mes}"
                   data-anio="${anio}"
                   ${dataPago}>
