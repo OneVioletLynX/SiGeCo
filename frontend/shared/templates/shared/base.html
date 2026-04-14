@@ -20,38 +20,51 @@
                 <span class="name">Centro Universitario</span>
             </a>
         </div>
+
+        <div class="right">
+            <span id="headerNombreUsuario" style="font-size:0.9rem; color:var(--text-color); opacity:0.7;"></span>
+            <span id="headerRolUsuario"    style="font-size:0.78rem; color:var(--text-color); opacity:0.45; margin-left:-0.8rem;"></span>
+            <a href="#" id="btnLogout" title="Cerrar sesión" style="padding:0.3rem 0.6rem;">
+                <img src="{% static 'shared/assets/account.svg' %}" style="width:1.4rem; opacity:0.6;">
+            </a>
+        </div>
     </header>
 
     <div class="sidebar-" id="sidebar">
         <nav>
             <ul>
-                <li><a href="{% url 'carreras_front:carreras' %}">
+                <!-- Carreras — todos -->
+                <li data-seccion="carreras"><a href="{% url 'carreras_front:carreras' %}">
                     <img src="{% static 'shared/assets/school.svg' %}">
                     <span>Carreras</span></a>
                 </li>
 
-                <li><a href="{% url 'cobros_front:cobros' %}">
+                <!-- Cobros — ADMIN y SECRETARIA -->
+                <li data-seccion="cobros"><a href="{% url 'cobros_front:cobros' %}">
                     <img src="{% static 'shared/assets/payments.svg' %}">
                     <span>Cobros</span></a>
                 </li>
 
-                <li><a href="{% url 'alumnos_front:alumnos' %}">
+                <!-- Alumnos — todos -->
+                <li data-seccion="alumnos"><a href="{% url 'alumnos_front:alumnos' %}">
                     <img src="{% static 'shared/assets/group.svg' %}">
                     <span>Alumnos</span></a>
                 </li>
 
-                <li><a href="{% url 'mensajes_front:mensajes' %}">
+                <!-- Mensajería — todos -->
+                <li data-seccion="mensajes"><a href="{% url 'mensajes_front:mensajes' %}">
                     <img src="{% static 'shared/assets/mail.svg' %}">
                     <span>Mensajería</span></a>
                 </li>
 
-                <li><a href="{% url 'reportes:estadisticas' %}">
+                <!-- Estadísticas — todos -->
+                <li data-seccion="estadisticas"><a href="{% url 'reportes:estadisticas' %}">
                     <img src="{% static 'shared/assets/finance.svg' %}">
                     <span>Estadísticas</span></a>
                 </li>
 
-                <!-- Submenú -->
-                <li class="has-submenu">
+                <!-- Reportes — todos -->
+                <li class="has-submenu" data-seccion="reportes">
                     <a href="#" class="submenu-toggle">
                         <img src="{% static 'shared/assets/file_export.svg' %}">
                         <span>Reportes</span>
@@ -63,11 +76,9 @@
                         <li><a href="{% url 'reportes:reportes_bonos' %}">
                             <img src="{% static 'shared/assets/docs.svg' %}">
                             <span>Bonos pagados</span></a></li>
-
                         <li><a href="{% url 'reportes:reportes_alumnos' %}">
                             <img src="{% static 'shared/assets/docs.svg' %}">
                             <span>Listado alumnos</span></a></li>
-
                         <li><a href="#">
                             <img src="{% static 'shared/assets/docs.svg' %}">
                             <span>Recaudación</span></a></li>
@@ -81,7 +92,7 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- 🔹 MODAL GLOBAL DE CONFIRMACIÓN -->
+    <!-- MODAL GLOBAL DE CONFIRMACIÓN -->
     <div id="confirmModal" class="confirm-overlay hidden">
         <div class="confirm-box">
             <h3 id="confirmTitle">Confirmación</h3>
@@ -93,7 +104,7 @@
         </div>
     </div>
 
-    <!-- 🔹 ALERTA GLOBAL -->
+    <!-- ALERTA GLOBAL -->
     <div id="customAlert" class="custom-alert hidden">
         <div class="custom-alert-content">
             <span id="customAlertMessage"></span>
@@ -103,6 +114,65 @@
     <!-- JS global -->
     <script src="{% static 'shared/js/script.js' %}"></script>
 
+    <!-- Protección de rutas + control de acceso por rol -->
+    <script>
+    (function () {
+        const token    = localStorage.getItem("sigeco_access");
+        const nombre   = localStorage.getItem("sigeco_nombre");
+        const rol      = localStorage.getItem("sigeco_rol");
+        const permisos = JSON.parse(localStorage.getItem("sigeco_permisos") || "[]");
+
+        // 1. Sin token → login
+        if (!token) {
+            window.location.href = "http://127.0.0.1:8001/";
+            return;
+        }
+
+        // 2. Mostrar nombre y rol en el header
+        const spanNombre = document.getElementById("headerNombreUsuario");
+        const spanRol    = document.getElementById("headerRolUsuario");
+        if (spanNombre && nombre) spanNombre.textContent = nombre;
+        if (spanRol    && rol)    spanRol.textContent    = rol.charAt(0) + rol.slice(1).toLowerCase();
+
+        // 3. Ocultar secciones del sidebar según permisos
+        document.querySelectorAll("[data-seccion]").forEach(li => {
+            const seccion = li.getAttribute("data-seccion");
+            if (!permisos.includes(seccion)) {
+                li.style.display = "none";
+            }
+        });
+
+        // 4. Si la página actual es una sección sin permiso → redirigir a inicio
+        const rutaActual = window.location.pathname;
+        const mapaSecciones = {
+            "/cobros/":      "cobros",
+            "/alumnos/":     "alumnos",
+            "/carreras/":    "carreras",
+            "/mensajes/":    "mensajes",
+            "/reportes/":    "reportes",
+            "/estadisticas/": "estadisticas",
+        };
+
+        for (const [prefijo, seccion] of Object.entries(mapaSecciones)) {
+            if (rutaActual.startsWith(prefijo) && !permisos.includes(seccion)) {
+                window.location.href = "/inicio/";
+                return;
+            }
+        }
+
+        // 5. Botón logout
+        document.getElementById("btnLogout").addEventListener("click", function (e) {
+            e.preventDefault();
+            localStorage.removeItem("sigeco_access");
+            localStorage.removeItem("sigeco_refresh");
+            localStorage.removeItem("sigeco_rol");
+            localStorage.removeItem("sigeco_nombre");
+            localStorage.removeItem("sigeco_permisos");
+            document.cookie = "sigeco_access=; path=/; max-age=0";
+            window.location.href = "http://127.0.0.1:8001/";
+        });
+    })();
+    </script>
 
     {% block extra_js %}{% endblock %}
 </body>

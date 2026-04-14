@@ -3,64 +3,87 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+from django.core.cache import cache
 from rest_framework_simplejwt.tokens import RefreshToken
 import json
 
-from .models import Usuario
+from .models import Usuario, ROLES
+from backend.permisos import get_permisos
+
+# Intentos máximos de login por IP antes de bloquear
+MAX_INTENTOS  = 5
+BLOQUEO_SEG   = 300  # 5 minutos
 
 
 # ========================================================
-# API LOGIN — devuelve token JWT
+# API LOGIN con rate limiting por IP
 # ========================================================
 @csrf_exempt
 def api_login(request):
     if request.method != "POST":
         return JsonResponse({"error": "Método no permitido"}, status=405)
 
+    ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', 'unknown'))
+    cache_key = f"login_intentos_{ip}"
+    intentos  = cache.get(cache_key, 0)
+
+    if intentos >= MAX_INTENTOS:
+        return JsonResponse(
+            {"error": "Demasiados intentos fallidos. Intentá en 5 minutos."},
+            status=429
+        )
+
     try:
         data     = json.loads(request.body)
-        email    = data.get("email", "").strip()
+        username = data.get("username", "").strip()
         password = data.get("password", "")
     except Exception:
         return JsonResponse({"error": "JSON inválido"}, status=400)
 
+    if not username or not password:
+        return JsonResponse({"error": "Usuario y contraseña requeridos"}, status=400)
+
     try:
-        usuario = Usuario.objects.get(email__iexact=email)
+        usuario = Usuario.objects.get(username__iexact=username)
     except Usuario.DoesNotExist:
-        return JsonResponse({"error": "Usuario no encontrado"}, status=404)
+        # Incrementar intentos aunque el usuario no exista
+        cache.set(cache_key, intentos + 1, BLOQUEO_SEG)
+        return JsonResponse({"error": "Usuario o contraseña incorrectos"}, status=401)
 
     raw_pass = usuario.password_hash
-
-    # Soporta contraseñas en texto plano (migración) y hasheadas
     if raw_pass.startswith("pbkdf2_"):
         valido = check_password(password, raw_pass)
     else:
         valido = (password == raw_pass)
         if valido:
-            # Migrar a hash seguro automáticamente
             usuario.password_hash = make_password(password)
             usuario.save(update_fields=["password_hash"])
 
     if not valido:
-        return JsonResponse({"error": "Contraseña incorrecta"}, status=401)
+        cache.set(cache_key, intentos + 1, BLOQUEO_SEG)
+        return JsonResponse({"error": "Usuario o contraseña incorrectos"}, status=401)
 
-    # Generar JWT con datos del usuario custom
-    rol = "ADMIN" if usuario.token == "ADMIN" else "NORMAL"
+    # Login exitoso → limpiar contador de intentos
+    cache.delete(cache_key)
+
     refresh = RefreshToken()
-    refresh["usuario_id"] = usuario.id
+    refresh["usuario_id"]     = usuario.id
     refresh["usuario_nombre"] = usuario.nombre
-    refresh["rol"] = rol
+    refresh["rol"]            = usuario.rol
+    refresh["permisos"]       = get_permisos(usuario.rol)
 
     return JsonResponse({
-        "status":  "ok",
-        "rol":     rol,
-        "access":  str(refresh.access_token),
-        "refresh": str(refresh),
+        "status":   "ok",
+        "rol":      usuario.rol,
+        "nombre":   usuario.nombre,
+        "permisos": get_permisos(usuario.rol),
+        "access":   str(refresh.access_token),
+        "refresh":  str(refresh),
     })
 
 
 # ========================================================
-# LOGIN HTML (solo para el admin del backend en :8000)
+# LOGIN HTML (admin backend :8000)
 # ========================================================
 def login_view(request):
     if request.session.get("usuario_id"):
@@ -69,23 +92,20 @@ def login_view(request):
         return redirect("mensajes:index")
 
     if request.method == "POST":
-        email    = request.POST.get("email", "").strip()
+        username = request.POST.get("username", "").strip()
         password = request.POST.get("password")
 
         try:
-            usuario = Usuario.objects.get(email__iexact=email)
+            usuario = Usuario.objects.get(username__iexact=username)
             if check_password(password, usuario.password_hash):
                 request.session["usuario_id"]     = usuario.id
                 request.session["usuario_nombre"] = usuario.nombre
-                request.session["rol"]            = "ADMIN" if usuario.token == "ADMIN" else "NORMAL"
-
-                if usuario.token == "ADMIN":
+                request.session["rol"]            = usuario.rol
+                if usuario.rol == "ADMIN":
                     return redirect("usuarios:admin_dashboard")
                 else:
                     return redirect("http://127.0.0.1:8001/inicio")
-
             messages.error(request, "Contraseña incorrecta")
-
         except Usuario.DoesNotExist:
             messages.error(request, "Usuario no encontrado")
 
@@ -101,7 +121,7 @@ def logout_view(request):
 
 
 # ========================================================
-# ADMIN DASHBOARD — gestión de usuarios
+# ADMIN DASHBOARD
 # ========================================================
 def admin_dashboard(request):
     if request.session.get("rol") != "ADMIN":
@@ -113,32 +133,34 @@ def admin_dashboard(request):
         if accion == "crear":
             nombre   = request.POST.get("nombre")
             apellido = request.POST.get("apellido")
-            email    = request.POST.get("email", "").strip()
+            username = request.POST.get("username", "").strip().lower()
             password = request.POST.get("password")
+            rol      = request.POST.get("rol", "SECRETARIA")
 
-            if Usuario.objects.filter(email__iexact=email).exists():
-                messages.error(request, "El email ya está registrado.")
+            if Usuario.objects.filter(username__iexact=username).exists():
+                messages.error(request, f"El usuario '{username}' ya existe.")
             else:
                 Usuario.objects.create(
                     nombre=nombre,
                     apellido=apellido,
-                    email=email,
+                    username=username,
                     password_hash=make_password(password),
-                    token=f"user_{email}",
+                    rol=rol,
                 )
-                messages.success(request, "Usuario creado exitosamente.")
+                messages.success(request, f"Usuario '{username}' creado como {rol}.")
 
         elif accion == "editar":
             user_id  = request.POST.get("user_id")
             usuario  = get_object_or_404(Usuario, pk=user_id)
             usuario.nombre   = request.POST.get("nombre")
             usuario.apellido = request.POST.get("apellido")
-            usuario.email    = request.POST.get("email", "").strip()
+            usuario.username = request.POST.get("username", "").strip().lower()
+            usuario.rol      = request.POST.get("rol", usuario.rol)
             new_pass = request.POST.get("password")
             if new_pass:
                 usuario.password_hash = make_password(new_pass)
             usuario.save()
-            messages.success(request, "Usuario actualizado correctamente.")
+            messages.success(request, "Usuario actualizado.")
 
         elif accion == "eliminar":
             user_id = request.POST.get("user_id")
@@ -148,5 +170,8 @@ def admin_dashboard(request):
 
         return redirect("usuarios:admin_dashboard")
 
-    usuarios = Usuario.objects.exclude(token="ADMIN").order_by("-creado")
-    return render(request, "usuarios/admin_dashboard.html", {"usuarios": usuarios})
+    usuarios = Usuario.objects.exclude(rol="ADMIN").order_by("-creado")
+    return render(request, "usuarios/admin_dashboard.html", {
+        "usuarios": usuarios,
+        "roles":    ROLES,
+    })

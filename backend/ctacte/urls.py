@@ -8,6 +8,8 @@ from .views import (
     PagoDetalleListCreate, PagoDetalleDetail,
     RegistrarPago,
     MesesPendientes,
+    GenerarCuotasMes, ResumenMesActual
+    
 )
 
 app_name = 'ctacte'
@@ -36,4 +38,8 @@ urlpatterns = [
 
     # Cuotas pendientes / historial de un alumno
     path('pendientes/', MesesPendientes.as_view(), name='ctacte-pendientes'),
+
+
+    path('generar-cuotas/', GenerarCuotasMes.as_view(), name='generar-cuotas'),
+    path('resumen-mes/',    ResumenMesActual.as_view(),  name='resumen-mes'),
 ]

@@ -1,7 +1,252 @@
 {% extends "shared/base.html" %}
+{% load static %}
 
 {% block title %}Inicio{% endblock %}
 
-{% block content %}
+{% block extra_css %}
+<style>
+  .home-container {
+    max-width: 700px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+  }
 
+  .mes-card {
+    background: var(--background-color, #fff);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 12px;
+    padding: 1.8rem 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .mes-titulo {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #888;
+    margin-bottom: 0.3rem;
+  }
+
+  .mes-nombre {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--text-title-color, #111);
+    margin-bottom: 1.5rem;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-box {
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .stat-box .stat-num {
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+
+  .stat-box .stat-label {
+    font-size: 0.78rem;
+    color: #888;
+    font-weight: 500;
+  }
+
+  .stat-box.total   .stat-num { color: #374151; }
+  .stat-box.pagadas .stat-num { color: #16a34a; }
+  .stat-box.pendientes .stat-num { color: #dc2626; }
+
+  .btn-generar {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: #1a237e;
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 0.7rem 1.6rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-generar:hover { background: #303f9f; transform: translateY(-1px); }
+  .btn-generar:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .btn-generar.ya-generadas { background: #6b7280; cursor: default; }
+
+  .tag-generadas {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #dcfce7;
+    color: #166534;
+    border-radius: 20px;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  .tag-pendiente {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #fef9c3;
+    color: #854d0e;
+    border-radius: 20px;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  .solo-secretaria { display: none; }
+
+  #mensajeResultado {
+    margin-top: 0.8rem;
+    font-size: 0.9rem;
+    min-height: 1.2rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="home-container">
+
+  <div class="mes-card" id="cardMes">
+    <div class="mes-titulo">Mes en curso</div>
+    <div class="mes-nombre" id="mesNombre">Cargando...</div>
+
+    <div class="stats-grid" id="statsGrid" style="display:none">
+      <div class="stat-box total">
+        <div class="stat-num" id="statTotal">—</div>
+        <div class="stat-label">Cuotas totales</div>
+      </div>
+      <div class="stat-box pagadas">
+        <div class="stat-num" id="statPagadas">—</div>
+        <div class="stat-label">Pagadas</div>
+      </div>
+      <div class="stat-box pendientes">
+        <div class="stat-num" id="statPendientes">—</div>
+        <div class="stat-label">Pendientes</div>
+      </div>
+    </div>
+
+    <div id="estadoGeneracion" style="margin-bottom:1rem;"></div>
+
+    <!-- Solo visible para ADMIN y SECRETARIA -->
+    <div class="solo-secretaria" id="seccionGenerar">
+      <button class="btn-generar" id="btnGenerar">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
+        </svg>
+        Generar cuotas del mes
+      </button>
+      <div id="mensajeResultado"></div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const API_BASE = "http://127.0.0.1:8000";
+
+  function getToken() {
+    return localStorage.getItem("sigeco_access") || "";
+  }
+
+  async function authFetch(url, options = {}) {
+    const token = getToken();
+    const headers = { ...(options.headers || {}), "Authorization": `Bearer ${token}` };
+    const resp = await fetch(url, { ...options, headers });
+    if (resp.status === 401) { logout(); return; }
+    return resp;
+  }
+
+  const rol      = localStorage.getItem("sigeco_rol") || "";
+  const permisos = JSON.parse(localStorage.getItem("sigeco_permisos") || "[]");
+
+  // Mostrar sección de generar cuotas solo a ADMIN y SECRETARIA
+  if (rol === "ADMIN" || rol === "SECRETARIA") {
+    document.getElementById("seccionGenerar").style.display = "block";
+  }
+
+  async function cargarResumen() {
+    try {
+      const resp = await authFetch(`${API_BASE}/ctacte/resumen-mes/`);
+      if (!resp) return;
+      const data = await resp.json();
+
+      document.getElementById("mesNombre").textContent = `${data.mes} ${data.anio}`;
+
+      document.getElementById("statTotal").textContent     = data.cuotas_total;
+      document.getElementById("statPagadas").textContent   = data.cuotas_pagadas;
+      document.getElementById("statPendientes").textContent = data.cuotas_pendientes;
+      document.getElementById("statsGrid").style.display   = data.ya_generadas ? "grid" : "none";
+
+      const estadoDiv = document.getElementById("estadoGeneracion");
+      const btnGenerar = document.getElementById("btnGenerar");
+
+      if (data.ya_generadas) {
+        estadoDiv.innerHTML = `<span class="tag-generadas">✓ Cuotas generadas</span>`;
+        if (btnGenerar) {
+          btnGenerar.textContent = "Regenerar cuotas";
+          btnGenerar.classList.add("ya-generadas");
+        }
+      } else {
+        estadoDiv.innerHTML = `<span class="tag-pendiente">⚠ Cuotas no generadas aún</span>`;
+      }
+
+    } catch (err) {
+      console.error("Error cargando resumen:", err);
+    }
+  }
+
+  const btnGenerar = document.getElementById("btnGenerar");
+  if (btnGenerar) {
+    btnGenerar.addEventListener("click", async () => {
+      btnGenerar.disabled = true;
+      btnGenerar.textContent = "Generando...";
+      const msg = document.getElementById("mensajeResultado");
+
+      try {
+        const resp = await authFetch(`${API_BASE}/ctacte/generar-cuotas/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!resp) return;
+        const data = await resp.json();
+
+        if (data.warning) {
+          msg.innerHTML = `<span style="color:#854d0e;">⚠ ${data.warning}</span>`;
+        } else {
+          msg.innerHTML = `<span style="color:#16a34a;">✓ ${data.generadas} cuotas generadas correctamente.</span>`;
+          await cargarResumen();
+        }
+
+      } catch (err) {
+        msg.innerHTML = `<span style="color:#dc2626;">Error al generar cuotas.</span>`;
+      } finally {
+        btnGenerar.disabled = false;
+        btnGenerar.textContent = "Regenerar cuotas";
+      }
+    });
+  }
+
+  cargarResumen();
+})();
+</script>
 {% endblock %}

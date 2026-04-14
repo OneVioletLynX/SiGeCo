@@ -1,39 +1,42 @@
 from pathlib import Path
 import sys
+import os
+from dotenv import load_dotenv
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv()
+
+BASE_DIR        = Path(__file__).resolve().parent.parent
 SIGECO_ROOT_DIR = BASE_DIR.parent
 
-# Asegura que el backend sea importable desde el frontend
 if str(SIGECO_ROOT_DIR) not in sys.path:
     sys.path.append(str(SIGECO_ROOT_DIR))
 
-SECRET_KEY = 'django-insecure-(#iu=-*y4nendy35hp(36@4f_%cjtxq7w!bn4%oaomsbnx)zn&'
-DEBUG = True
+# =====================================================
+# SEGURIDAD
+# =====================================================
+SECRET_KEY = os.environ.get('SECRET_KEY')
+DEBUG       = os.environ.get('DEBUG', 'False') == 'True'
+
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 # =====================================================
 # APLICACIONES INSTALADAS
 # =====================================================
 INSTALLED_APPS = [
-    # Django apps básicas
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    # Terceros
     'corsheaders',
 
-    # Apps del frontend (HTML, vistas, templates)
     'cobros_front',
     'alumnos_front',
     'carreras_front',
     'usuarios_front',
     'mensajes_front',
-    # Apps del backend (lógica, modelos, API)
+
     'backend.ctacte',
     'backend.alumnos',
     'backend.carreras',
@@ -43,9 +46,8 @@ INSTALLED_APPS = [
     'backend.geografia',
 ]
 
-
 # =====================================================
-# MIDDLEWARE
+# MIDDLEWARE — incluye protección de rutas por token
 # =====================================================
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -56,13 +58,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'frontend.middleware.TokenCookieMiddleware',  # protección server-side
 ]
 
 ROOT_URLCONF = 'frontend.urls'
 
-# =====================================================
-# TEMPLATES
-# =====================================================
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -82,39 +82,42 @@ TEMPLATES = [
 WSGI_APPLICATION = 'frontend.wsgi.application'
 
 # =====================================================
-# BASE DE DATOS LOCAL (solo para desarrollo)
+# BASE DE DATOS
 # =====================================================
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'SiGeCoDB',
-        'USER': 'backend_user',
-        'PASSWORD': '34745',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
-        'OPTIONS': {'charset': 'utf8mb4'},
+        'ENGINE':   'django.db.backends.mysql',
+        'NAME':     os.environ.get('DB_NAME',     'SiGeCoDB'),
+        'USER':     os.environ.get('DB_USER',     'backend_user'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+        'HOST':     os.environ.get('DB_HOST',     '127.0.0.1'),
+        'PORT':     os.environ.get('DB_PORT',     '3306'),
+        'OPTIONS':  {'charset': 'utf8mb4'},
     }
 }
 
 # =====================================================
 # ARCHIVOS ESTÁTICOS
 # =====================================================
-STATIC_URL = '/static/'
+STATIC_URL  = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'shared' / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # =====================================================
-# CORS
+# CORS — solo acepta requests internos
 # =====================================================
-CORS_ALLOW_ALL_ORIGINS = True  # Solo desarrollo
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
 CORS_ALLOW_CREDENTIALS = True
 
 # =====================================================
 # LOCALIZACIÓN
 # =====================================================
 LANGUAGE_CODE = 'es-ar'
-TIME_ZONE = 'America/Argentina/Buenos_Aires'
+TIME_ZONE     = 'America/Argentina/Buenos_Aires'
 USE_I18N = True
-USE_TZ = True
+USE_TZ   = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

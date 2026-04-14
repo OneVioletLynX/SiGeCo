@@ -7,6 +7,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 from django.utils import timezone
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from backend.permissions import TienePermisoRol
+from datetime import date as fecha_hoy
+
 
 from alumnos.models import Alumno
 from carreras.models import CarreraCursada
@@ -390,4 +395,63 @@ class MesesPendientes(APIView):
             "anio_final":    cuotas.last().anio  if cuotas.exists() else None,
             "ultimo_pagado": ultimo_pagado,
             "meses":         meses_por_anio,
+        })
+
+        # -------------------------------------------------------
+
+
+class GenerarCuotasMes(APIView):
+    """
+    POST /ctacte/generar-cuotas/
+    Genera las cuotas del mes actual para todos los alumnos activos.
+    Solo accesible para ADMIN y SECRETARIA.
+    """
+
+    def post(self, request):
+        from .services import generar_cuotas_mes
+        from datetime import date
+
+        hoy    = date.today()
+        resultado = generar_cuotas_mes(anio=hoy.year, mes=hoy.month)
+
+        if "motivo" in resultado:
+            return Response({"warning": resultado["motivo"]}, status=200)
+
+        return Response({
+            "generadas": resultado["generadas"],
+            "mes":       hoy.month,
+            "anio":      hoy.year,
+        }, status=200)
+
+
+class ResumenMesActual(APIView):
+    """
+    GET /ctacte/resumen-mes/
+    Devuelve un resumen del estado de las cuotas del mes actual.
+    """
+
+    def get(self, request):
+        from .models import Cuota, MesPago, EstadoCuota
+        from datetime import date
+
+        hoy    = date.today()
+        mes_id = hoy.month
+        anio   = hoy.year
+
+        mes_obj = MesPago.objects.filter(id_mes=mes_id).first()
+
+        cuotas_total    = Cuota.objects.filter(mes=mes_obj, anio=anio).count()         if mes_obj else 0
+        cuotas_pagadas  = Cuota.objects.filter(mes=mes_obj, anio=anio, estado__descripcion__iexact="pagada").count()  if mes_obj else 0
+        cuotas_pendientes = cuotas_total - cuotas_pagadas
+
+        ya_generadas = cuotas_total > 0
+
+        return Response({
+            "mes":              mes_obj.descripcion if mes_obj else "—",
+            "mes_id":           mes_id,
+            "anio":             anio,
+            "ya_generadas":     ya_generadas,
+            "cuotas_total":     cuotas_total,
+            "cuotas_pagadas":   cuotas_pagadas,
+            "cuotas_pendientes": cuotas_pendientes,
         })
