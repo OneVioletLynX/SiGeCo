@@ -7,15 +7,13 @@ from .views import (
     PagoListCreate, PagoDetail,
     PagoDetalleListCreate, PagoDetalleDetail,
     RegistrarPago,
-    MesesPendientes,  
+    MesesPendientes,
 )
 
 app_name = 'ctacte'
 
 urlpatterns = [
     path('', ctacte_api_root, name='ctacte-root'),
-
-    # --- API ENDPOINTS ---
 
     # Meses de Pago
     path('meses/', MesPagoListCreate.as_view(), name='mespago-list'),
@@ -29,16 +27,13 @@ urlpatterns = [
     path('pagos/', PagoListCreate.as_view(), name='pago-list'),
     path('pagos/<int:pk>/', PagoDetail.as_view(), name='pago-detail'),
 
-    # Detalles de Pagos (Items dentro del pago)
+    # Detalles de Pago
     path('pagos-detalle/', PagoDetalleListCreate.as_view(), name='pagodetalle-list'),
     path('pagos-detalle/<int:pk>/', PagoDetalleDetail.as_view(), name='pagodetalle-detail'),
 
-    # --- FUNCIONALIDADES EXTRAS ---
-    
-    # Registrar un cobro completo (Lógica de negocio compleja)
+    # Registrar un cobro completo (cabecera + meses en una sola operación)
     path('registrar-pago/', RegistrarPago.as_view(), name='registrar-pago'),
-    
-    # Consultar deudas o pendientes
-    path('pendientes/', MesesPendientes.as_view(), name='ctacte-pendientes'),
 
+    # Cuotas pendientes / historial de un alumno
+    path('pendientes/', MesesPendientes.as_view(), name='ctacte-pendientes'),
 ]

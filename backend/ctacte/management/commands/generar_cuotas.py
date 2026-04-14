@@ -1,53 +1,41 @@
 from django.core.management.base import BaseCommand
-from datetime import date
-
-from carreras.models import CarreraCursada
-from ctacte.models import Cuota, MesPago, EstadoCuota
+from ctacte.services import generar_cuotas_mes, MESES_CICLO
 
 
 class Command(BaseCommand):
 
-    help = "Genera las cuotas del mes actual para todos los alumnos activos"
+    help = "Genera las cuotas del mes actual (o del mes/año indicado) para todos los alumnos activos"
 
-    def handle(self, *args, **kwargs):
-
-        hoy = date.today()
-
-        anio = hoy.year
-        mes = hoy.month
-
-        # Solo generar cuotas marzo-diciembre
-        if mes < 3:
-            self.stdout.write("Mes fuera del ciclo académico")
-            return
-
-        mes_obj = MesPago.objects.filter(id_mes=mes).first()
-
-        if not mes_obj:
-            self.stdout.write("Mes no configurado en MesPago")
-            return
-
-        estado_pendiente = EstadoCuota.objects.get(descripcion="Pendiente")
-
-        carreras = CarreraCursada.objects.filter(id_estado=1)
-
-        generadas = 0
-
-        for cc in carreras:
-
-            _, created = Cuota.objects.get_or_create(
-                alumno=cc.alumno,
-                carrera=cc.carrera,
-                mes=mes_obj,
-                anio=anio,
-                defaults={
-                    "estado": estado_pendiente
-                }
-            )
-
-            if created:
-                generadas += 1
-
-        self.stdout.write(
-            f"Cuotas generadas: {generadas}"
+    def add_arguments(self, parser):
+        # CORRECCIÓN: permite generar cuotas de meses anteriores o futuros
+        # para correcciones manuales. Uso: py manage.py generar_cuotas --mes 3 --anio 2025
+        parser.add_argument(
+            '--mes',
+            type=int,
+            help='Número de mes a generar (3-12). Por defecto: mes actual.',
         )
+        parser.add_argument(
+            '--anio',
+            type=int,
+            help='Año a generar. Por defecto: año actual.',
+        )
+
+    def handle(self, *args, **options):
+
+        mes  = options.get('mes')
+        anio = options.get('anio')
+
+        if mes and mes not in MESES_CICLO:
+            self.stdout.write(
+                self.style.ERROR(f"El mes {mes} está fuera del ciclo académico (marzo=3 a diciembre=12).")
+            )
+            return
+
+        resultado = generar_cuotas_mes(anio=anio, mes=mes)
+
+        if "motivo" in resultado:
+            self.stdout.write(self.style.WARNING(resultado["motivo"]))
+        else:
+            self.stdout.write(
+                self.style.SUCCESS(f"Cuotas generadas: {resultado['generadas']}")
+            )

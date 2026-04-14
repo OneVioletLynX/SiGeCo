@@ -1,63 +1,85 @@
 from rest_framework import serializers
-from django.contrib.auth.hashers import make_password
-from .models import MesPago,MetodoPago, Pago, PagoDetalle 
+from .models import MesPago, MetodoPago, Pago, PagoDetalle
 
-#1
 
 class MesPagoSerializer(serializers.ModelSerializer):
     class Meta:
         model = MesPago
-        fields = ['id_mes', 'descripcion']   # solo los campos reales
-        read_only_fields = ['id_mes'] 
-                
-#2
-        
+        fields = ['id_mes', 'descripcion']
+        read_only_fields = ['id_mes']
+
+
 class MetodoPagoSerializer(serializers.ModelSerializer):
     class Meta:
         model = MetodoPago
         fields = ['id_metodo_pago', 'descripcion']
         read_only_fields = ['id_metodo_pago']
 
-#3
-
-class PagoDetalleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PagoDetalle
-        fields = ['mes', 'importe']
 
 class PagoDetalleLiteSerializer(serializers.ModelSerializer):
-    mes = serializers.CharField(source="mes.descripcion")
-    anio = serializers.IntegerField(source="anio_pago")
-    pago_id = serializers.IntegerField(source="pago.id_pago")
+    """Solo lectura — se usa para mostrar detalles dentro de un Pago (GET)."""
+    mes_nombre     = serializers.CharField(source="mes.descripcion")
+    carrera_nombre = serializers.CharField(source="carrera.descripcion")
 
     class Meta:
         model = PagoDetalle
         fields = [
+            "id_detalle",
             "carrera",
+            "carrera_nombre",
             "mes",
+            "mes_nombre",
             "anio_pago",
-            "importe"
+            "id_concepto",
+            "importe",
         ]
 
 
-class PagoSerializer(serializers.ModelSerializer):
-    metodo = serializers.CharField(source="id_metodo_pago.descripcion")
-    detalles = PagoDetalleLiteSerializer(many=True, read_only=True)
+class PagoDetalleSerializer(serializers.ModelSerializer):
+    """Escritura — para crear/editar detalles de pago individualmente."""
+    class Meta:
+        model = PagoDetalle
+        fields = ['id_detalle', 'pago', 'carrera', 'mes', 'anio_pago', 'id_concepto', 'importe']
+        read_only_fields = ['id_detalle']
+
+
+class PagoReadSerializer(serializers.ModelSerializer):
+    """
+    Solo lectura — para GET de pagos.
+    Muestra el nombre del método y los detalles anidados.
+    """
+    metodo       = serializers.CharField(source="id_metodo_pago.descripcion")
+    alumno_nombre = serializers.SerializerMethodField()
+    detalles     = PagoDetalleLiteSerializer(many=True, read_only=True)
 
     class Meta:
         model = Pago
         fields = [
             "id_pago",
+            "id_alumno",
+            "alumno_nombre",
             "fecha_pago",
             "importe_total",
             "metodo",
             "detalles",
         ]
 
+    def get_alumno_nombre(self, obj):
+        return str(obj.id_alumno) if obj.id_alumno else ""
 
-    def create(self, validated_data):
-        detalles_data = validated_data.pop('detalles', [])
-        pago = Pago.objects.create(**validated_data)
-        for detalle_data in detalles_data:
-            PagoDetalle.objects.create(pago=pago, **detalle_data)
-        return pago
+
+class PagoWriteSerializer(serializers.ModelSerializer):
+    """
+    Escritura — para POST/PUT de la cabecera de un pago.
+    Los detalles se crean por separado en RegistrarPago.
+    """
+    class Meta:
+        model = Pago
+        fields = [
+            "id_pago",
+            "id_alumno",
+            "fecha_pago",
+            "importe_total",
+            "id_metodo_pago",
+        ]
+        read_only_fields = ["id_pago"]

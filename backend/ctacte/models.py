@@ -104,7 +104,10 @@ class PagoDetalle(models.Model):
 
     class Meta:
         db_table = "pago_detalle"
-        unique_together = [["carrera", "mes", "anio_pago"]]
+        # La unicidad es por pago (que pertenece a un alumno), carrera, mes y año.
+        # Esto impide duplicar el mismo mes/carrera/año dentro del mismo pago,
+        # y la validación en RegistrarPago impide duplicarlo entre pagos distintos.
+        unique_together = [["pago", "carrera", "mes", "anio_pago"]]
         verbose_name = "Detalle de Pago"
         verbose_name_plural = "Detalles de Pago"
 
@@ -126,6 +129,7 @@ class EstadoCuota(models.Model):
 
     def __str__(self):
         return self.descripcion
+
 
 class Cuota(models.Model):
 

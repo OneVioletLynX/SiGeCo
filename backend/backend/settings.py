@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -90,10 +91,30 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    # CAMBIO: AllowAny → IsAuthenticated
+    # Todas las vistas de la API requieren token JWT válido.
+    # Las vistas públicas (login) usan @csrf_exempt sin pasar por DRF.
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.AllowAny',
-    )
+        'rest_framework.permissions.IsAuthenticated',
+    ),
 }
+
+
+ 
+SIMPLE_JWT = {
+    # El access token dura 8 horas (una jornada laboral)
+    'ACCESS_TOKEN_LIFETIME':  timedelta(hours=8),
+    # El refresh token dura 7 días
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    # Permite renovar el refresh token en cada uso
+    'ROTATE_REFRESH_TOKENS':  True,
+    # Invalida el refresh anterior al rotar
+    'BLACKLIST_AFTER_ROTATION': False,
+    # Campos extra que se incluyen en el payload del token
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'usuario_id',
+}
+ 
 
 # =====================================================
 # CORS

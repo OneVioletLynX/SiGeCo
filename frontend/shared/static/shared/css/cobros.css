@@ -291,3 +291,13 @@ button.disabled,
   animation: vibrar 0.25s ease;
 }
 
+/* Mes pendiente seleccionado para pagar → azul fuerte encima del amarillo */
+.month.pendiente.selected {
+  background-color: var(--color-primary);
+  border: 3px solid var(--color-primary-dark);
+  color: #fff;
+}
+
+.month.pendiente.selected span {
+  color: #fff;
+}
