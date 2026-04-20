@@ -85,20 +85,23 @@ class AlumnoDetail(APIView):
 
     def patch(self, request, pk):
         alumno = get_object_or_404(Alumno, pk=pk)
-        nuevo_estado = request.data.get('id_estado')
 
-        if not nuevo_estado:
-            return Response({"error": "Debe indicar un id_estado"}, status=status.HTTP_400_BAD_REQUEST)
+        # Si solo viene id_estado → cambiar estado de la carrera
+        if list(request.data.keys()) == ['id_estado']:
+            nuevo_estado = request.data.get('id_estado')
+            carrera = alumno.carreras_cursadas.first()
+            if not carrera:
+                return Response({"error": "El alumno no tiene carrera asociada"}, status=400)
+            carrera.id_estado_id = nuevo_estado
+            carrera.save()
+            return Response({"status": "estado actualizado"})
 
-        # OJO AQUÍ: Asegúrate que 'carreras_cursadas' sea el related_name correcto en models.py
-        carrera = alumno.carreras_cursadas.first() 
-        
-        if not carrera:
-            return Response({"error": "El alumno no tiene carrera cursada asociada"}, status=status.HTTP_400_BAD_REQUEST)
-
-        carrera.id_estado_id = nuevo_estado
-        carrera.save()
-        return Response({"status": "estado actualizado", "nuevo_estado": nuevo_estado}, status=status.HTTP_200_OK)
+        # Si vienen otros campos → editar datos del alumno
+        serializer = AlumnoSerializer(alumno, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
         alumno = get_object_or_404(Alumno, pk=pk)

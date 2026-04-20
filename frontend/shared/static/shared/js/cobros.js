@@ -10,57 +10,38 @@
   let carreraSeleccionadaId = null;
   let pagoSeleccionado      = null;
 
-  const CONCEPTO_CUOTA_ID        = 1;
-  const CONCEPTO_INSCRIPCION_ID  = 2;
+  const CONCEPTO_CUOTA_ID       = 1;
+  const CONCEPTO_INSCRIPCION_ID = 2;
 
   // ===========================
-  // TOKEN JWT — helper central
-  // Todos los fetch usan authFetch en lugar de fetch directo.
-  // Si el token expiró, redirige al login.
+  // AUTH
   // ===========================
   function getToken() {
     return localStorage.getItem("sigeco_access") || "";
   }
 
+  function logout() {
+    localStorage.removeItem("sigeco_access");
+    localStorage.removeItem("sigeco_refresh");
+    localStorage.removeItem("sigeco_rol");
+    localStorage.removeItem("sigeco_nombre");
+    localStorage.removeItem("sigeco_permisos");
+    document.cookie = "sigeco_access=; path=/; max-age=0";
+    window.location.href = "http://127.0.0.1:8001/";
+  }
+
   async function authFetch(url, options = {}) {
     const token = getToken();
-    if (!token) {
-      window.location.href = "http://127.0.0.1:8001/";
-      return;
-    }
-
-    const headers = {
-      ...(options.headers || {}),
-      "Authorization": `Bearer ${token}`,
-    };
-
+    if (!token) { logout(); return; }
+    const headers = { ...(options.headers || {}), "Authorization": `Bearer ${token}` };
     const resp = await fetch(url, { ...options, headers });
-
-    // Token expirado → redirigir al login
-    if (resp.status === 401) {
-      localStorage.removeItem("sigeco_access");
-      localStorage.removeItem("sigeco_refresh");
-      localStorage.removeItem("sigeco_rol");
-      window.location.href = "http://127.0.0.1:8001/";
-      return;
-    }
-
+    if (resp.status === 401) { logout(); return; }
     return resp;
   }
 
   document.addEventListener("DOMContentLoaded", () => {
 
-    // Si no hay token, redirigir al login antes de cargar nada
-    if (!getToken()) {
-      window.location.href = "http://127.0.0.1:8001/";
-      return;
-    }
-
-    function formatearFecha(fechaISO) {
-      if (!fechaISO) return "";
-      const f = new Date(fechaISO);
-      return `${String(f.getDate()).padStart(2, "0")}/${String(f.getMonth() + 1).padStart(2, "0")}/${f.getFullYear()} ${String(f.getHours()).padStart(2, "0")}:${String(f.getMinutes()).padStart(2, "0")}`;
-    }
+    if (!getToken()) { logout(); return; }
 
     const buscador         = document.getElementById("buscador");
     const sugerencias      = document.getElementById("sugerencias");
@@ -80,20 +61,16 @@
 
     function recalcularBloqueos() {
       document.querySelectorAll(".month").forEach(m => m.classList.remove("bloqueado"));
-
       const seleccionados = document.querySelectorAll(".month.selected");
 
       if (seleccionados.length === 0) {
         const proximo = obtenerProximoMesPermitido();
         if (!proximo) return;
-
         document.querySelectorAll(".month").forEach(m => {
           if (m.classList.contains("pagado")) return;
           const anio = parseInt(m.dataset.anio);
           const mes  = parseInt(m.dataset.id_mes);
-          if (anio !== proximo.anio || mes !== proximo.mes) {
-            m.classList.add("bloqueado");
-          }
+          if (anio !== proximo.anio || mes !== proximo.mes) m.classList.add("bloqueado");
         });
         return;
       }
@@ -116,9 +93,7 @@
         if (m.classList.contains("selected")) return;
         const anio = parseInt(m.dataset.anio);
         const mes  = parseInt(m.dataset.id_mes);
-        if (anio !== siguienteAnio || mes !== siguienteMes) {
-          m.classList.add("bloqueado");
-        }
+        if (anio !== siguienteAnio || mes !== siguienteMes) m.classList.add("bloqueado");
       });
     }
 
@@ -156,9 +131,8 @@
     }
 
     // ===========================
-    // IMPRIMIR PAGO
+    // IMPRIMIR
     // ===========================
-
     if (btnImprimir) {
       btnImprimir.addEventListener("click", () => {
         if (!pagoSeleccionado) return;
@@ -169,7 +143,6 @@
     // ===========================
     // MÉTODO DE PAGO
     // ===========================
-
     metodoSelect.addEventListener("change", function () {
       campoComprobante.classList.add("hidden");
       campoTarjeta.classList.add("hidden");
@@ -180,17 +153,10 @@
     // ===========================
     // BUSCADOR ALUMNOS
     // ===========================
-
     buscador.addEventListener("input", () => {
       const q = buscador.value.trim();
-      if (q.length === 0) {
-        document.querySelector(".search-container")?.classList.remove("shifted");
-      }
-      if (q.length < 2) {
-        sugerencias.innerHTML = "";
-        sugerencias.style.display = "none";
-        return;
-      }
+      if (q.length === 0) document.querySelector(".search-container")?.classList.remove("shifted");
+      if (q.length < 2) { sugerencias.innerHTML = ""; sugerencias.style.display = "none"; return; }
       buscarAlumnos(q);
     });
 
@@ -199,7 +165,7 @@
         const resp = await authFetch(`${API_BASE}/api/alumnos/?search=${encodeURIComponent(q)}`);
         if (!resp) return;
         const data    = await resp.json();
-        const alumnos = data.results || data || [];
+        const alumnos = Array.isArray(data) ? data : (data.results || []);
 
         sugerencias.innerHTML = "";
         if (!alumnos.length) {
@@ -208,7 +174,7 @@
           return;
         }
 
-        alumnos.forEach((al) => {
+        alumnos.forEach(al => {
           const item = document.createElement("div");
           item.classList.add("suggestion-item");
           item.textContent = `${al.apellido}, ${al.nombre}`;
@@ -227,19 +193,94 @@
       sugerencias.innerHTML = "";
       sugerencias.style.display = "none";
 
-      alumnoSeleccionado    = alumno;
-      carreraSeleccionadaId = alumno.carrera_actual;
+      alumnoSeleccionado = alumno;
 
       document.querySelector(".toolbar")?.classList.add("cobros-activo");
       document.querySelector(".cobro-layout")?.classList.add("cobros-activo");
 
-      await cargarMesesPendientes();
+      const carreras = alumno.carreras || [];
+
+      if (carreras.length === 0) {
+        contenedorMeses.innerHTML = `<h2>Meses</h2><p style="color:#888; margin-top:1rem;">El alumno no tiene carreras activas.</p>`;
+        return;
+      }
+
+      if (carreras.length === 1) {
+        // Una sola carrera → cargar directo
+        carreraSeleccionadaId = carreras[0].id_carrera;
+        await cargarMesesPendientes();
+      } else {
+        // Varias carreras → mostrar selector
+        mostrarSelectorCarreras(carreras);
+      }
+    }
+
+    // ===========================
+    // SELECTOR DE CARRERA
+    // ===========================
+    function mostrarSelectorCarreras(carreras) {
+      carreraSeleccionadaId = null;
+      ultimoPagadoGlobal    = null;
+
+      let html = `
+        <h2>Meses</h2>
+        <div style="margin-bottom: 1.2rem;">
+          <p style="font-size:0.9rem; color:#888; margin-bottom:0.8rem;">El alumno cursa varias carreras. Seleccioná una para ver sus cuotas:</p>
+          <div style="display:flex; flex-direction:column; gap:0.6rem;">
+      `;
+
+      carreras.forEach(c => {
+        const fondoClaro = aclararColor(c.color || "#1E3A8A", 150);
+        html += `
+          <button
+            class="btn-seleccionar-carrera"
+            data-id="${c.id_carrera}"
+            style="
+              display:flex; align-items:center; gap:0.8rem;
+              background:${fondoClaro}; border:2px solid ${c.color || '#1E3A8A'};
+              border-radius:10px; padding:0.7rem 1rem;
+              cursor:pointer; text-align:left; width:100%;
+              font-size:0.95rem; font-weight:600; color:${c.color || '#1E3A8A'};
+              transition: all 0.15s ease;
+            "
+          >
+            <span style="width:10px; height:10px; border-radius:50%; background:${c.color || '#1E3A8A'}; flex-shrink:0;"></span>
+            ${c.descripcion}
+            <span style="margin-left:auto; font-size:0.78rem; font-weight:400; opacity:0.7;">${c.estado}</span>
+          </button>
+        `;
+      });
+
+      html += `</div></div>`;
+      contenedorMeses.innerHTML = html;
+
+      document.querySelectorAll(".btn-seleccionar-carrera").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          carreraSeleccionadaId = parseInt(btn.dataset.id);
+
+          // Marcar seleccionada visualmente
+          document.querySelectorAll(".btn-seleccionar-carrera").forEach(b => {
+            b.style.opacity = "0.5";
+          });
+          btn.style.opacity = "1";
+          btn.style.transform = "scale(1.02)";
+
+          await cargarMesesPendientes();
+        });
+      });
+    }
+
+    function aclararColor(hex, factor) {
+      hex = hex.replace("#", "");
+      const r = Math.min(255, parseInt(hex.substring(0, 2), 16) + factor);
+      const g = Math.min(255, parseInt(hex.substring(2, 4), 16) + factor);
+      const b = Math.min(255, parseInt(hex.substring(4, 6), 16) + factor);
+      return `rgb(${r},${g},${b})`;
     }
 
     // ===========================
     // CANCELAR
     // ===========================
-
     document.getElementById("btnCancelar").addEventListener("click", () => {
       form.reset();
       document.querySelectorAll(".month.selected").forEach(m => m.classList.remove("selected"));
@@ -249,26 +290,51 @@
     // ===========================
     // CARGAR MESES PENDIENTES
     // ===========================
-
     async function cargarMesesPendientes() {
       try {
         const resp = await authFetch(`${API_BASE}/ctacte/pendientes/?alumno=${alumnoSeleccionado.id_alumno}`);
         if (!resp) return;
         const data = await resp.json();
 
-        ultimoPagadoGlobal    = data.ultimo_pagado;
-        contenedorMeses.innerHTML = `<h2>Meses</h2>`;
+        ultimoPagadoGlobal = data.ultimo_pagado;
 
-        for (const anio in data.meses) {
-          const meses = data.meses[anio];
+        // Obtener nombre de la carrera seleccionada
+        const carreraObj = (alumnoSeleccionado.carreras || []).find(c => c.id_carrera === carreraSeleccionadaId);
+        const nombreCarrera = carreraObj ? carreraObj.descripcion : "";
+        const colorCarrera  = carreraObj ? carreraObj.color : "#1E3A8A";
 
-          let html = `
-            <div class="year-group">
-              <h3>${anio}</h3>
-              <div class="months-grid">
+        // Si hay varias carreras, mostrar botón para volver al selector
+        let headerHtml = `<h2>Meses</h2>`;
+        if ((alumnoSeleccionado.carreras || []).length > 1) {
+          headerHtml += `
+            <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:1rem;">
+              <button id="btnVolverCarreras" style="
+                background:none; border:none; cursor:pointer;
+                color:#888; font-size:0.85rem; display:flex; align-items:center; gap:0.3rem;
+              ">
+                ← Cambiar carrera
+              </button>
+              <span style="
+                background:${aclararColor(colorCarrera, 150)};
+                color:${colorCarrera};
+                border:1px solid ${colorCarrera};
+                border-radius:20px; padding:2px 10px;
+                font-size:0.82rem; font-weight:600;
+              ">${nombreCarrera}</span>
+            </div>
           `;
+        }
 
-          meses.forEach((m) => {
+        contenedorMeses.innerHTML = headerHtml;
+
+        // Filtrar meses por carrera seleccionada
+        for (const anio in data.meses) {
+          const meses = data.meses[anio].filter(m => m.carrera === carreraSeleccionadaId);
+          if (!meses.length) continue;
+
+          let html = `<div class="year-group"><h3>${anio}</h3><div class="months-grid">`;
+
+          meses.forEach(m => {
             const esInscripcion = m.id_mes == 1;
             if (esInscripcion && parseInt(anio) !== data.anio_ingreso) return;
 
@@ -294,15 +360,26 @@
 
         recalcularBloqueos();
 
-        document.querySelectorAll(".month").forEach((mes) => {
+        document.querySelectorAll(".month").forEach(mes => {
           mes.addEventListener("click", () => onClickMes(mes));
         });
+
+        // Botón volver al selector de carreras
+        const btnVolver = document.getElementById("btnVolverCarreras");
+        if (btnVolver) {
+          btnVolver.addEventListener("click", () => {
+            mostrarSelectorCarreras(alumnoSeleccionado.carreras || []);
+          });
+        }
 
       } catch (err) {
         console.error("Error cargando meses pendientes:", err);
       }
     }
 
+    // ===========================
+    // CLICK EN MES
+    // ===========================
     function onClickMes(mes) {
       const esPagado = mes.classList.contains("pagado");
 
@@ -359,15 +436,12 @@
     // ===========================
     // ELIMINAR PAGO
     // ===========================
-
     if (btnEliminar) {
       btnEliminar.addEventListener("click", async () => {
         if (!pagoSeleccionado) return;
         if (!confirm("¿Eliminar el pago completo?")) return;
 
-        const resp = await authFetch(`${API_BASE}/ctacte/pagos/${pagoSeleccionado}/`, {
-          method: "DELETE",
-        });
+        const resp = await authFetch(`${API_BASE}/ctacte/pagos/${pagoSeleccionado}/`, { method: "DELETE" });
 
         if (resp && resp.ok) {
           pagoSeleccionado = null;
@@ -381,17 +455,12 @@
     }
 
     // ===========================
-    // SUMAR IMPORTES AUTOMÁTICAMENTE
+    // SUMAR IMPORTES
     // ===========================
-
     async function actualizarImporteAuto() {
       try {
         const seleccionados = document.querySelectorAll(".month.selected");
-
-        if (!seleccionados.length) {
-          document.getElementById("importe").value = "";
-          return;
-        }
+        if (!seleccionados.length) { document.getElementById("importe").value = ""; return; }
 
         let total = 0;
 
@@ -406,7 +475,6 @@
           const resp = await authFetch(
             `${API_BASE}/api/valores/vigente/?carrera=${carreraSeleccionadaId}&concepto=${concepto}&fecha=${fechaRef}`
           );
-
           if (!resp || !resp.ok) continue;
 
           const data = await resp.json();
@@ -414,7 +482,6 @@
         }
 
         document.getElementById("importe").value = total.toFixed(2);
-
       } catch (err) {
         console.error("Error sumando importes:", err);
       }
@@ -423,22 +490,17 @@
     // ===========================
     // REGISTRAR PAGO
     // ===========================
-
     if (form) {
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
         const mesesMarcados = document.querySelectorAll(".month.selected");
-        if (!mesesMarcados.length) {
-          showAlert("Seleccioná al menos un mes.", "warning");
-          return;
-        }
+        if (!mesesMarcados.length) { showAlert("Seleccioná al menos un mes.", "warning"); return; }
 
         const metodo = metodoSelect.value;
-        if (!metodo) {
-          showAlert("Seleccioná un método de pago.", "warning");
-          return;
-        }
+        if (!metodo) { showAlert("Seleccioná un método de pago.", "warning"); return; }
+
+        if (!carreraSeleccionadaId) { showAlert("Seleccioná una carrera primero.", "warning"); return; }
 
         const meses = [];
 
@@ -480,7 +542,7 @@
         const payload = {
           id_alumno:      alumnoSeleccionado.id_alumno,
           id_metodo_pago: parseInt(metodo),
-          meses:          meses,
+          meses,
           importe_total:  importeTotal,
         };
 
@@ -503,9 +565,7 @@
           form.reset();
           await cargarMesesPendientes();
 
-          if (data.id_pago) {
-            window.open(`/cobros/comprobante/${data.id_pago}/`, "_blank");
-          }
+          if (data.id_pago) window.open(`/cobros/comprobante/${data.id_pago}/`, "_blank");
 
         } catch (err) {
           console.error("Error registrando pago:", err);
@@ -513,6 +573,44 @@
         }
       });
     }
+// ===========================
+    // PRESELECCIÓN POR URL
+    // ===========================
+    const params    = new URLSearchParams(window.location.search);
+    const alumnoId  = params.get("alumno");
+    const carreraId = params.get("carrera");
 
+    if (alumnoId) {
+      authFetch(`${API_BASE}/api/alumnos/${alumnoId}/`).then(async resp => {
+        if (!resp) return;
+        const alumno = await resp.json();
+        const carreras = alumno.carreras || [];
+
+        // Llenar el buscador
+        buscador.value = `${alumno.apellido}, ${alumno.nombre}`;
+        alumnoSeleccionado = alumno;
+
+        document.querySelector(".toolbar")?.classList.add("cobros-activo");
+        document.querySelector(".cobro-layout")?.classList.add("cobros-activo");
+
+        if (carreras.length === 0) return;
+
+        if (carreras.length === 1 || !carreraId) {
+          // Una sola carrera → cargar directo
+          carreraSeleccionadaId = carreras[0].id_carrera;
+          await cargarMesesPendientes();
+        } else {
+          // Varias carreras → mostrar selector y hacer click en la correcta
+          mostrarSelectorCarreras(carreras);
+          const carreraIdInt = parseInt(carreraId);
+          setTimeout(() => {
+            const btn = document.querySelector(
+              `.btn-seleccionar-carrera[data-id="${carreraIdInt}"]`
+            );
+            if (btn) btn.click();
+          }, 200);
+        }
+      });
+    }
   });
 })();

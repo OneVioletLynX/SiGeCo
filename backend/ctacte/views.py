@@ -329,12 +329,17 @@ class RegistrarPago(APIView):
 # GET /ctacte/pendientes/?alumno=<id>
 
 class MesesPendientes(APIView):
+    """
+    GET /ctacte/pendientes/?alumno=ID
+    Devuelve todas las cuotas del alumno agrupadas por año,
+    con el campo carrera, estado correcto, id_pago y ultimo_pagado.
+    """
 
     def get(self, request):
-        alumno_id = request.query_params.get("alumno")
 
+        alumno_id = request.query_params.get("alumno")
         if not alumno_id:
-            return Response({"error": "Falta el parámetro 'alumno'."}, status=400)
+            return Response({"error": "Falta el parámetro alumno"}, status=400)
 
         alumno = get_object_or_404(Alumno, pk=alumno_id)
 
@@ -345,60 +350,54 @@ class MesesPendientes(APIView):
             .order_by("anio", "mes_id")
         )
 
-        ultima_pagada = (
-            cuotas
-            .filter(estado__descripcion__iexact="pagada")
-            .order_by("-anio", "-mes_id")
-            .first()
-        )
-        ultimo_pagado = (
-            {"mes": ultima_pagada.mes_id, "anio": ultima_pagada.anio}
-            if ultima_pagada else None
-        )
-
-        # Armar dict (carrera_id, mes_id, anio) → id_pago para cuotas pagadas
-        pagos_del_alumno = (
-            PagoDetalle.objects
-            .filter(pago__id_alumno=alumno)
-            .values("carrera_id", "mes_id", "anio_pago", "pago__id_pago")
-        )
-        pago_lookup = {
-            (p["carrera_id"], p["mes_id"], p["anio_pago"]): p["pago__id_pago"]
-            for p in pagos_del_alumno
-        }
+        # Mapear cuota → id_pago buscando en PagoDetalle
+        # Buscar pagos del alumno y sus detalles
+        pago_por_cuota = {}
+        pagos_alumno = Pago.objects.filter(id_alumno=alumno).values_list("id_pago", flat=True)
+        detalles = PagoDetalle.objects.filter(
+            pago__in=pagos_alumno
+        ).select_related("pago")
+        for detalle in detalles:
+            clave = (detalle.carrera_id, detalle.mes_id, detalle.anio_pago)
+            pago_por_cuota[clave] = detalle.pago.id_pago
 
         meses_por_anio = {}
+        ultimo_pagado  = None
+
         for cuota in cuotas:
-            anio = str(cuota.anio)
+            anio   = str(cuota.anio)
+            estado = cuota.estado.descripcion.lower()  # "pagada" o "pendiente"
+            id_pago = pago_por_cuota.get((cuota.carrera_id, cuota.mes_id, cuota.anio))
+
             if anio not in meses_por_anio:
                 meses_por_anio[anio] = []
 
-            estado    = cuota.estado.descripcion.lower()
-            es_pagada = estado == "pagada"
-            id_pago   = pago_lookup.get((cuota.carrera_id, cuota.mes_id, cuota.anio)) if es_pagada else None
-
             meses_por_anio[anio].append({
-                "id_cuota":       cuota.id_cuota,
-                "id_mes":         cuota.mes_id,
-                "descripcion":    cuota.mes.descripcion,
-                "carrera":        cuota.carrera_id,
-                "carrera_nombre": cuota.carrera.descripcion,
-                "estado":         estado,
-                "pagado":         es_pagada,
-                "id_pago":        id_pago,
-                "importe":        cuota.importe,
+                "id_mes":      cuota.mes_id,
+                "descripcion": cuota.mes.descripcion,
+                "carrera":     cuota.carrera.id_carrera,
+                "estado":      estado,
+                "pagado":      estado == "pagada",
+                "id_pago":     id_pago,
             })
+
+            # Rastrear el último mes pagado para calcular bloqueos
+            if estado == "pagada":
+                ultimo_pagado = {
+                    "mes":  cuota.mes_id,
+                    "anio": cuota.anio,
+                }
+
+        # Año de ingreso: el año de la cuota de inscripcion (mes_id=1)
+        cuota_inscripcion = cuotas.filter(mes_id=1).first()
+        anio_ingreso = cuota_inscripcion.anio if cuota_inscripcion else (cuotas.first().anio if cuotas else None)
 
         return Response({
             "alumno":        alumno.id_alumno,
-            "anio_ingreso":  cuotas.first().anio if cuotas.exists() else None,
-            "anio_final":    cuotas.last().anio  if cuotas.exists() else None,
+            "anio_ingreso":  anio_ingreso,
             "ultimo_pagado": ultimo_pagado,
             "meses":         meses_por_anio,
         })
-
-        # -------------------------------------------------------
-
 
 class GenerarCuotasMes(APIView):
     """

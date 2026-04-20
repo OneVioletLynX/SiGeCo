@@ -1,11 +1,108 @@
 {% extends "shared/base.html" %}
 {% load static %}
-{% block title %}Inicio{% endblock %}
+{% block title %}Nuevo Alumno{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'shared/css/alumnos.css' %}">
-{% endblock %}
-{% block content %}
+<style>
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  .modal.hidden { display: none; }
 
+  .modal-content {
+    background: #fff;
+    border-radius: 14px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  }
+  .modal-content h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.3rem; color: #111; }
+  .modal-subtitulo { font-size: 0.85rem; color: #888; margin-bottom: 1.2rem; }
+
+  .alumno-info-card {
+    background: #f9fafb; border-radius: 10px;
+    padding: 1rem 1.2rem; margin-bottom: 1.2rem;
+    display: flex; flex-direction: column; gap: 0.3rem;
+  }
+  .alumno-info-card .nombre-alumno { font-size: 1.05rem; font-weight: 700; color: #111; }
+  .alumno-info-card .dato-alumno   { font-size: 0.85rem; color: #666; }
+
+  .carreras-actuales { margin-bottom: 1.2rem; }
+  .carreras-actuales h4 {
+    font-size: 0.8rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.05em; color: #888; margin-bottom: 0.6rem;
+  }
+
+  .carrera-chip {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    border-radius: 20px; padding: 4px 12px;
+    font-size: 0.82rem; font-weight: 600;
+    margin: 0.2rem 0.2rem 0.2rem 0;
+  }
+  .carrera-chip .dot { width: 7px; height: 7px; border-radius: 50%; }
+
+  .agregar-carrera-section {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 1.2rem; margin-top: 0.5rem;
+  }
+  .agregar-carrera-section h4 { font-size: 0.85rem; font-weight: 600; color: #374151; margin-bottom: 0.8rem; }
+
+  .agregar-carrera-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0.6rem; margin-bottom: 0.8rem;
+  }
+  .agregar-carrera-row select {
+    padding: 0.5rem 0.8rem; border: 1px solid #d1d5db;
+    border-radius: 8px; font-size: 0.9rem; width: 100%; background: #fff;
+  }
+
+  .modal-buttons {
+    display: flex; gap: 0.6rem;
+    justify-content: flex-end; margin-top: 1rem;
+  }
+
+  .btn-modal-primario {
+    background: #1a237e; color: #fff; border: none;
+    border-radius: 8px; padding: 0.55rem 1.2rem;
+    font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.2s;
+  }
+  .btn-modal-primario:hover     { background: #303f9f; }
+  .btn-modal-primario:disabled  { opacity: 0.6; cursor: not-allowed; }
+
+  .btn-modal-secundario {
+    background: #f3f4f6; color: #374151; border: none;
+    border-radius: 8px; padding: 0.55rem 1.2rem;
+    font-size: 0.9rem; font-weight: 500; cursor: pointer;
+  }
+  .btn-modal-secundario:hover { background: #e5e7eb; }
+
+  .btn-modal-link {
+    background: none; border: none; color: #6b7280;
+    font-size: 0.85rem; cursor: pointer;
+    padding: 0.55rem 0.5rem; text-decoration: underline;
+  }
+
+  /* Modal inscripcion */
+  .inscripcion-icon {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #dbeafe; display: flex;
+    align-items: center; justify-content: center;
+    margin-bottom: 1rem;
+  }
+  .inscripcion-icon svg { color: #1a237e; }
+
+  #msgAgregarCarrera { font-size: 0.85rem; margin-top: 0.4rem; min-height: 1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
 <div class="form-page">
 
     <div class="form-header">
@@ -16,45 +113,43 @@
     <form id="alumnoForm" class="form-card">
         {% csrf_token %}
 
-        <!-- ================= DATOS PERSONALES ================= -->
+        <!-- DATOS PERSONALES -->
         <section class="form-section">
             <h2>Datos personales</h2>
-
             <div class="grid-2">
                 <div class="input-field">
-                    <input type="text" placeholder=" " name="nombre" >
+                    <input type="text" placeholder=" " name="nombre">
                     <label>Nombre <span class="rojo">*</span></label>
                     <span class="error-msg" id="error-nombre"></span>
                 </div>
                 <div class="input-field">
-                    <input type="text" placeholder=" " name="apellido" >
+                    <input type="text" placeholder=" " name="apellido">
                     <label>Apellido <span class="rojo">*</span></label>
                     <span class="error-msg" id="error-apellido"></span>
                 </div>
                 <div class="input-field">
-                    <input type="number" placeholder=" " name="dni" maxlength="8" >
+                    <input type="number" placeholder=" " name="dni" maxlength="8">
                     <label>Número de documento <span class="rojo">*</span></label>
                     <span class="text-helper">debe tener 8 dígitos</span>
                     <span class="error-msg" id="error-dni"></span>
                 </div>
                 <div class="input-field">
-                    <input type="number" placeholder=" " name="cuit" maxlength="11" >
-                    <label>Número de CUIT <span class="rojo">*</span></label>
+                    <input type="number" placeholder=" " name="cuit" maxlength="11">
+                    <label>Número de CUIT</label>
                     <span class="text-helper">debe tener 11 dígitos</span>
                     <span class="error-msg" id="error-cuit"></span>
                 </div>
                 <div class="input-field">
-                    <input type="date" placeholder=" " name="fecha_nacimiento" >
+                    <input type="date" placeholder=" " name="fecha_nacimiento">
                     <label>Fecha de nacimiento <span class="rojo">*</span></label>
                     <span class="error-msg" id="error-fecha_nacimiento"></span>
                 </div>
             </div>
         </section>
 
-        <!-- ================= CONTACTO ================= -->
+        <!-- CONTACTO -->
         <section class="form-section">
             <h2>Datos de contacto</h2>
-
             <div class="grid-2">
                 <div class="input-field">
                     <select name="provincia" id="provincia">
@@ -63,7 +158,6 @@
                     <label>Provincia <span class="rojo">*</span></label>
                     <span class="error-msg" id="error-provincia"></span>
                 </div>
-
                 <div class="input-field">
                     <select name="ciudad" id="ciudad">
                         <option value="" selected disabled hidden></option>
@@ -71,72 +165,56 @@
                     <label>Localidad <span class="rojo">*</span></label>
                     <span class="error-msg" id="error-ciudad"></span>
                 </div>
-
                 <div class="input-field">
-                    <input type="text" placeholder=" " name="direccion" >
+                    <input type="text" placeholder=" " name="direccion">
                     <label>Dirección <span class="rojo">*</span></label>
                     <span class="error-msg" id="error-direccion"></span>
                 </div>
-
                 <div class="input-field">
-                    <input type="number" placeholder=" " name="numero"  >
+                    <input type="number" placeholder=" " name="numero">
                     <label>Altura <span class="rojo">*</span></label>
                     <span class="error-msg" id="error-numero"></span>
                 </div>
-                
                 <div class="input-field">
-                    <input type="text" placeholder=" " name="departamento" >
-                    <label>Departamento <span class="rojo">*</span></label>
+                    <input type="text" placeholder=" " name="departamento">
+                    <label>Departamento</label>
                     <span class="error-msg" id="error-departamento"></span>
                 </div>
-
                 <div class="input-field">
-                    <input type="number" placeholder=" " name="piso"  >
-                    <label>Piso <span class="rojo">*</span></label>
+                    <input type="number" placeholder=" " name="piso">
+                    <label>Piso</label>
                     <span class="error-msg" id="error-piso"></span>
                 </div>
-
                 <div class="input-field" style="grid-row: 3;">
-                    <input type="number" placeholder=" " name="prefijo" >
+                    <input type="number" placeholder=" " name="prefijo">
                     <label>Prefijo <span class="rojo">*</span></label>
                     <span class="text-helper">ejemplo: 3467</span>
                     <span class="error-msg" id="error-prefijo"></span>
                 </div>
                 <div class="input-field" style="grid-row: 3;">
-                    <input type="number" placeholder=" " name="telefono" >
+                    <input type="number" placeholder=" " name="telefono">
                     <label>Celular <span class="rojo">*</span></label>
                     <span class="text-helper">ejemplo: 641684</span>
                     <span class="error-msg" id="error-telefono"></span>
                 </div>
-
                 <div class="input-field" style="grid-column: span 2;">
-                    <input type="email" placeholder=" " name="email"    >
+                    <input type="email" placeholder=" " name="email">
                     <label>Correo <span class="rojo">*</span></label>
                     <span class="text-helper">ejemplo: alumno@gmail.com</span>
                     <span class="error-msg" id="error-email"></span>
                 </div>
-
             </div>
         </section>
 
-        <!-- ================= ACADÉMICO ================= -->
+        <!-- ACADÉMICO -->
         <section class="form-section">
             <h2>Datos académicos</h2>
-
             <div class="grid-2">
-
                 <div class="input-field">
-                    <input type="text" name="legajo" placeholder=" " >
+                    <input type="text" name="legajo" placeholder=" ">
                     <label>Legajo</label>
                     <span class="error-msg" id="error-legajo"></span>
                 </div>
-
-                <!-- <div class="input-field">
-                    <select name="id_estado" id="id_estado"></select>
-                    <label>Estado</label>
-                    <span class="error-msg" id="error-id_estado"></span>
-                </div> -->
-
                 <div class="input-field">
                     <select name="id_carrera" id="id_carrera">
                         <option value="" selected disabled hidden>Seleccionar</option>
@@ -144,53 +222,99 @@
                     <label>Carrera <span class="rojo">*</span></label>
                     <span class="error-msg" id="error-id_carrera"></span>
                 </div>
-
-                <div class="input-field">     
+                <div class="input-field">
                     <select name="anio_ingreso">
                         <option value="" selected disabled hidden></option>
                     </select>
-                    <label>Año de ingreso <span class="rojo"></span></label>
+                    <label>Año de ingreso</label>
                     <span class="error-msg" id="error-anio_ingreso"></span>
                 </div>
-
             </div>
         </section>
 
         <div style="display: flex; justify-content: space-around;">
-            <button  type="submit" class="button-predeterminado" id="btnGuardar"><img
-                src="{% static 'shared/assets/check.svg' %}">Guardar</button>
-            <button onclick="window.location.href='/alumnos/alumnos/'" type="button" id="btnCancelar" class="button-predeterminado"><img
-                src="{% static 'shared/assets/close.svg' %}">Cancelar</button>
+            <button type="submit" class="button-predeterminado" id="btnGuardar">
+                <img src="{% static 'shared/assets/check.svg' %}">Guardar
+            </button>
+            <button onclick="window.location.href='/alumnos/alumnos/'" type="button" class="button-predeterminado">
+                <img src="{% static 'shared/assets/close.svg' %}">Cancelar
+            </button>
         </div>
-
     </form>
 </div>
+
+<!-- MODAL DNI — alumno ya existe -->
 <div id="dni-modal" class="modal hidden">
-
   <div class="modal-content">
-
-    <h3>Alumno encontrado</h3>
-
-    <div id="dni-alumno-info"></div>
-
+    <h3>Alumno ya registrado</h3>
+    <p class="modal-subtitulo">Este DNI ya existe en el sistema.</p>
+    <div class="alumno-info-card" id="dni-alumno-info"></div>
+    <div class="carreras-actuales" id="carreras-actuales-container">
+      <h4>Carreras actuales</h4>
+      <div id="carreras-actuales-lista"></div>
+    </div>
+    <div class="agregar-carrera-section">
+      <h4>Agregar una carrera nueva</h4>
+      <div class="agregar-carrera-row">
+        <select id="nueva-carrera-select">
+          <option value="" disabled selected>Seleccionar carrera</option>
+        </select>
+        <select id="nueva-carrera-anio">
+          <option value="" disabled selected>Año de ingreso</option>
+        </select>
+      </div>
+      <div id="msgAgregarCarrera"></div>
+    </div>
     <div class="modal-buttons">
+      <button class="btn-modal-link" id="cerrar-modal-btn">Cerrar</button>
+      <button class="btn-modal-secundario" id="ver-ficha-btn">Ver ficha</button>
+      <button class="btn-modal-primario" id="agregar-carrera-btn">Agregar carrera</button>
+    </div>
+  </div>
+</div>
 
-      <button id="ver-ficha-btn">Ver ficha</button>
+<!-- MODAL INSCRIPCIÓN — alumno nuevo guardado -->
+<div id="inscripcion-modal" class="modal hidden">
+  <div class="modal-content" style="max-width: 420px; text-align: center;">
 
-      <button id="agregar-carrera-btn">
-        Agregar carrera
+    <div class="inscripcion-icon" style="margin: 0 auto 1rem;">
+      <svg width="28" height="28" fill="none" stroke="#1a237e" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+    </div>
+
+    <h3 style="margin-bottom: 0.5rem;">¡Alumno registrado!</h3>
+    <p style="color:#555; font-size:0.95rem; margin-bottom: 0.3rem;">
+      <strong id="inscripcion-alumno-nombre"></strong>
+    </p>
+    <p style="color:#888; font-size:0.88rem; margin-bottom: 1.5rem;">
+      Carrera: <strong id="inscripcion-carrera-nombre"></strong>
+    </p>
+
+    <div style="
+      background: #fef9c3; border: 1px solid #fde68a;
+      border-radius: 10px; padding: 1rem; margin-bottom: 1.5rem;
+      font-size: 0.9rem; color: #92400e; text-align: left;
+    ">
+      <strong>💰 Inscripción pendiente</strong><br>
+      Se generó la cuota de inscripción como pendiente.
+      ¿Deseás registrar el pago ahora?
+    </div>
+
+    <div class="modal-buttons" style="justify-content: center; gap: 0.8rem;">
+      <button class="btn-modal-secundario" id="inscripcion-despues-btn">
+        Después
       </button>
-
-      <button id="cerrar-modal-btn">
-        Cerrar
+      <button class="btn-modal-primario" id="inscripcion-pagar-btn">
+        💳 Pagar ahora
       </button>
-
     </div>
 
   </div>
-
 </div>
+
 {% endblock %}
+
 {% block extra_js %}
 <script src="{% static 'shared/js/alumnos-form.js' %}"></script>
 {% endblock %}

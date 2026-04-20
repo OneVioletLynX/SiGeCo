@@ -83,9 +83,10 @@
     <script>
     document.addEventListener("DOMContentLoaded", () => {
 
-        // Si ya hay token, redirigir directo
+        // Si ya hay token, renovar cookie y redirigir directo
         const tokenGuardado = localStorage.getItem("sigeco_access");
         if (tokenGuardado) {
+            document.cookie = `sigeco_access=${tokenGuardado}; path=/; SameSite=Lax`;
             const rol = localStorage.getItem("sigeco_rol");
             window.location.href = rol === "ADMIN"
                 ? "http://127.0.0.1:8000/usuarios/admin/dashboard/"

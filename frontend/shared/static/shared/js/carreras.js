@@ -147,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // -------------------------------------------------------
   async function cargarCarreras() {
     try {
-      const response = await authFetch("http://localhost:8000/api/carreras/");
+      const response = await authFetch("http://127.0.0.1:8000/api/carreras/");
       if (!response) return;
       let carreras = await response.json();
       carreras = carreras.results || carreras;
@@ -203,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // -------------------------------------------------------
   async function abrirModalEditar(id) {
     try {
-      const response = await authFetch(`http://localhost:8000/api/carreras/${id}/`);
+      const response = await authFetch(`http://127.0.0.1:8000/api/carreras/${id}/`);
       if (!response) return;
       const carrera = await response.json();
 
@@ -242,7 +242,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!ok) return;
 
     try {
-      const response = await authFetch(`http://localhost:8000/api/carreras/${id}/`, {
+      const response = await authFetch(`http://127.0.0.1:8000/api/carreras/${id}/`, {
         method:  "PATCH",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ id_estado: nuevoEstado }),
@@ -289,7 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
       color:       document.getElementById("colorCarrera").value,
     };
     const method = id ? "PUT"  : "POST";
-    const url    = id ? `http://localhost:8000/api/carreras/${id}/` : "http://localhost:8000/api/carreras/";
+    const url    = id ? `http://127.0.0.1:8000/api/carreras/${id}/` : "http://127.0.0.1:8000/api/carreras/";
 
     try {
       const response = await authFetch(url, {
@@ -333,8 +333,22 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btn.classList.contains("btn-baja"))   eliminarCarrera(id, btn.dataset.estado);
   });
 
+// -------------------------------------------------------
+  // Botón Alta
+  // -------------------------------------------------------
+  document.querySelectorAll(".action-button").forEach(btn => {
+    const text = btn.querySelector(".text")?.innerText.trim();
+    if (text === "Alta") {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        abrirModalNueva();
+      });
+    }
+  });
+
   // -------------------------------------------------------
   // Inicializar
   // -------------------------------------------------------
+  cargarCarreras();
   cargarCarreras();
 });

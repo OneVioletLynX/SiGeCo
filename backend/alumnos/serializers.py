@@ -7,16 +7,20 @@ from carreras.models import CarreraCursada
 class AlumnoSerializer(serializers.ModelSerializer):
 
     # --------- WRITE ONLY (desde el form) ----------
-    id_carrera = serializers.IntegerField(write_only=True, required=False)
-    id_estado = serializers.IntegerField(write_only=True, required=False)
+    id_carrera   = serializers.IntegerField(write_only=True, required=False)
+    id_estado    = serializers.IntegerField(write_only=True, required=False)
     anio_ingreso = serializers.IntegerField(write_only=True, required=False)
 
     # --------- READ ONLY ----------
+    # Campos legacy (primera carrera) — se mantienen para no romper otras vistas
     carrera_actual = serializers.SerializerMethodField()
-    estado_actual = serializers.SerializerMethodField()
+    estado_actual  = serializers.SerializerMethodField()
     carrera_nombre = serializers.SerializerMethodField()
-    estado_nombre = serializers.SerializerMethodField()
-    carrera_color = serializers.SerializerMethodField()
+    estado_nombre  = serializers.SerializerMethodField()
+    carrera_color  = serializers.SerializerMethodField()
+
+    # NUEVO: lista completa de carreras del alumno
+    carreras = serializers.SerializerMethodField()
 
     class Meta:
         model = Alumno
@@ -40,26 +44,26 @@ class AlumnoSerializer(serializers.ModelSerializer):
             'id_estado',
             'anio_ingreso',
 
-            # read
+            # read — primera carrera (legacy)
             'carrera_actual',
             'estado_actual',
             'carrera_nombre',
             'estado_nombre',
             'carrera_color',
+
+            # read — todas las carreras
+            'carreras',
         ]
 
     # --------------------------------------------------
-    # Helper
+    # Helper — primera carrera (para campos legacy)
     # --------------------------------------------------
 
     def _get_carrera(self, obj):
-        return obj.carreras_cursadas.select_related(
-            'carrera',
-            'id_estado'
-        ).first()
+        return obj.carreras_cursadas.select_related('carrera', 'id_estado').first()
 
     # --------------------------------------------------
-    # Campos calculados
+    # Campos calculados — legacy (primera carrera)
     # --------------------------------------------------
 
     def get_carrera_actual(self, obj):
@@ -83,24 +87,41 @@ class AlumnoSerializer(serializers.ModelSerializer):
         return cc.carrera.color if cc else None
 
     # --------------------------------------------------
+    # NUEVO: todas las carreras del alumno
+    # --------------------------------------------------
+
+    def get_carreras(self, obj):
+        carreras_cursadas = obj.carreras_cursadas.select_related(
+            'carrera', 'id_estado'
+        ).all()
+
+        return [
+            {
+                "id_carrera":   cc.carrera.id_carrera,
+                "descripcion":  cc.carrera.descripcion,
+                "color":        cc.carrera.color,
+                "estado_id":    cc.id_estado.id_estado,
+                "estado":       cc.id_estado.descripcion,
+                "anio_ingreso": cc.anio_ingreso,
+                "activa":       cc.id_estado.id_estado == 1,
+            }
+            for cc in carreras_cursadas
+        ]
+
+    # --------------------------------------------------
     # Validaciones únicas
     # --------------------------------------------------
 
     def validate(self, data):
-
         instance = self.instance
 
         def check_unique(field):
             value = data.get(field)
-
             if not value:
                 return
-
             qs = Alumno.objects.filter(**{field: value})
-
             if instance:
                 qs = qs.exclude(id_alumno=instance.id_alumno)
-
             if qs.exists():
                 raise serializers.ValidationError({
                     field: f"Este {field} ya está registrado."
@@ -118,9 +139,8 @@ class AlumnoSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-
-        carrera_id = validated_data.pop("id_carrera", None)
-        estado_id = validated_data.pop("id_estado", 1)
+        carrera_id   = validated_data.pop("id_carrera",   None)
+        estado_id    = validated_data.pop("id_estado",    1)
         anio_ingreso = validated_data.pop("anio_ingreso", None)
 
         alumno = Alumno.objects.create(**validated_data)
@@ -130,7 +150,7 @@ class AlumnoSerializer(serializers.ModelSerializer):
                 alumno_id=alumno.id_alumno,
                 carrera_id=carrera_id,
                 id_estado_id=estado_id or 1,
-                anio_ingreso=anio_ingreso
+                anio_ingreso=anio_ingreso,
             )
 
         return alumno
@@ -141,9 +161,8 @@ class AlumnoSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
-
         carrera_id = validated_data.pop("id_carrera", None)
-        estado_id = validated_data.pop("id_estado", None)
+        estado_id  = validated_data.pop("id_estado",  None)
 
         instance = super().update(instance, validated_data)
 
@@ -152,30 +171,24 @@ class AlumnoSerializer(serializers.ModelSerializer):
         ).first()
 
         if not carrera_actual and carrera_id:
-
             CarreraCursada.objects.create(
                 alumno_id=instance.id_alumno,
                 carrera_id=carrera_id,
-                id_estado_id=estado_id or 1
+                id_estado_id=estado_id or 1,
             )
-
             return instance
 
         if carrera_actual:
-
             if estado_id:
                 carrera_actual.id_estado_id = estado_id
 
             if carrera_id and carrera_id != carrera_actual.carrera_id:
-
                 carrera_actual.delete()
-
                 CarreraCursada.objects.create(
                     alumno_id=instance.id_alumno,
                     carrera_id=carrera_id,
-                    id_estado_id=estado_id or 1
+                    id_estado_id=estado_id or 1,
                 )
-
             else:
                 carrera_actual.save()
 

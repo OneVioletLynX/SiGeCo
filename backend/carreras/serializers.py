@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Carrera, CarreraCursada, Estado
 from valores.models import Valor, Concepto
 from django.utils import timezone
+from alumnos.models import Alumno
 
 
 
@@ -132,13 +133,32 @@ class CarreraSerializer(serializers.ModelSerializer):
 
 
 class CarrerasCursadasSerializer(serializers.ModelSerializer):
-    alumno_id = serializers.IntegerField(source="alumno.id_alumno", read_only=True)
-    carrera_id = serializers.IntegerField(source="carrera.id_carrera", read_only=True)
-    estado_id = serializers.IntegerField(source="id_estado.id_estado", read_only=True)
+
+    # Lectura
+    alumno_id  = serializers.IntegerField(source="alumno.id_alumno",    read_only=True)
+    carrera_id = serializers.IntegerField(source="carrera.id_carrera",  read_only=True)
+    estado_id  = serializers.IntegerField(source="id_estado.id_estado", read_only=True)
+
+    # Escritura
+    alumno       = serializers.PrimaryKeyRelatedField(queryset=Alumno.objects.all(),   write_only=True)
+    carrera      = serializers.PrimaryKeyRelatedField(queryset=Carrera.objects.all(),  write_only=True)
+    id_estado    = serializers.PrimaryKeyRelatedField(queryset=Estado.objects.all(),   write_only=True, required=False)
+    anio_ingreso = serializers.IntegerField(write_only=True, required=False)
 
     class Meta:
-        model = CarreraCursada
-        fields = ["alumno_id", "carrera_id", "estado_id"]
+        model  = CarreraCursada
+        fields = ["alumno_id", "carrera_id", "estado_id", "alumno", "carrera", "id_estado", "anio_ingreso"]
+
+    def create(self, validated_data):
+        anio_ingreso = validated_data.pop("anio_ingreso", None)
+        estado       = validated_data.pop("id_estado",    None) or Estado.objects.get(id_estado=1)
+
+        return CarreraCursada.objects.create(
+            alumno=validated_data["alumno"],
+            carrera=validated_data["carrera"],
+            id_estado=estado,
+            anio_ingreso=anio_ingreso,
+        )
     
 class EstadoSerializer(serializers.ModelSerializer):
     class Meta:

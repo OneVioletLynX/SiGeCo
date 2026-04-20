@@ -209,3 +209,25 @@ td.acciones-col .acciones {
   display:flex;
   gap:10px;
 }
+
+/* Menú tres puntos — dropdown visible fuera de la tabla */
+#tablaAlumnos tbody tr {
+  position: relative;
+}
+
+td.acciones-col {
+  overflow: visible !important;
+  position: relative;
+}
+
+#tablaAlumnos tbody {
+  overflow: visible !important;
+}
+
+.table-wrapper {
+  overflow: visible !important;
+}
+
+.dropdown-menu-alumno {
+  position: fixed !important;
+}
