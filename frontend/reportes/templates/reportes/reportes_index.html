@@ -1,0 +1,130 @@
+{% extends "shared/base.html" %}
+{% load static %}
+
+{% block title %}Reportes{% endblock %}
+
+{% block content %}
+<div class="table-wrapper">
+
+    <div class="form-header">
+        <h1>Reportes</h1>
+    </div>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:1.25rem; margin-top:0.5rem;">
+
+        <!-- Listado de Alumnos -->
+        <a href="{% url 'reportes:reportes_alumnos' %}" class="reporte-card">
+            <div class="reporte-card-icon" style="background:#ede9fe; color:#7c3aed;">
+                <span class="material-icons">group</span>
+            </div>
+            <div class="reporte-card-body">
+                <h2>Listado de Alumnos</h2>
+                <p>Padrón filtrado por estado y carrera. Exportable a PDF.</p>
+            </div>
+            <span class="material-icons reporte-card-arrow">chevron_right</span>
+        </a>
+
+        <!-- Bonos Cooperadores -->
+        <a href="{% url 'reportes:reportes_bonos' %}" class="reporte-card">
+            <div class="reporte-card-icon" style="background:#dcfce7; color:#16a34a;">
+                <span class="material-icons">receipt_long</span>
+            </div>
+            <div class="reporte-card-body">
+                <h2>Bonos Cooperadores</h2>
+                <p>Bonos cobrados por carrera en un período. Incluye vencidos e inscripciones.</p>
+            </div>
+            <span class="material-icons reporte-card-arrow">chevron_right</span>
+        </a>
+
+        <!-- Recaudación (próximamente) -->
+        <div class="reporte-card reporte-card--disabled">
+            <div class="reporte-card-icon" style="background:#f3f4f6; color:#9ca3af;">
+                <span class="material-icons">savings</span>
+            </div>
+            <div class="reporte-card-body">
+                <h2>Recaudación</h2>
+                <p>Resumen de ingresos por período y método de pago.</p>
+            </div>
+            <span class="reporte-card-badge">Próximamente</span>
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+.reporte-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.25rem 1rem;
+    text-decoration: none;
+    color: var(--text-color);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    transition: box-shadow 0.15s, border-color 0.15s, transform 0.15s;
+    cursor: pointer;
+}
+.reporte-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    color: var(--text-color);
+    text-decoration: none;
+}
+.reporte-card--disabled {
+    cursor: default;
+    opacity: 0.65;
+}
+.reporte-card--disabled:hover {
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    border-color: var(--border-color);
+    transform: none;
+}
+.reporte-card-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.reporte-card-icon .material-icons {
+    font-size: 1.6rem;
+}
+.reporte-card-body {
+    flex: 1;
+    min-width: 0;
+}
+.reporte-card-body h2 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0 0 0.2rem;
+    color: var(--text-title-color);
+}
+.reporte-card-body p {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.4;
+}
+.reporte-card-arrow {
+    color: var(--text-muted);
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+.reporte-card-badge {
+    flex-shrink: 0;
+    background: #f3f4f6;
+    color: #6b7280;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 20px;
+}
+</style>
+
+{% endblock %}

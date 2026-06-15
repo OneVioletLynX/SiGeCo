@@ -1,28 +1,4 @@
-// ===========================
-// AUTH
-// ===========================
-function getToken() {
-  return localStorage.getItem("sigeco_access") || "";
-}
-
-function logout() {
-  localStorage.removeItem("sigeco_access");
-  localStorage.removeItem("sigeco_refresh");
-  localStorage.removeItem("sigeco_rol");
-  localStorage.removeItem("sigeco_nombre");
-  localStorage.removeItem("sigeco_permisos");
-  document.cookie = "sigeco_access=; path=/; max-age=0";
-  window.location.href = "http://127.0.0.1:8001/";
-}
-
-async function authFetch(url, options = {}) {
-  const token = getToken();
-  if (!token) { logout(); return; }
-  const headers = { ...(options.headers || {}), "Authorization": `Bearer ${token}` };
-  const resp = await fetch(url, { ...options, headers });
-  if (resp.status === 401) { logout(); return; }
-  return resp;
-}
+// Auth global desde auth.js (cargado en base.html)
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -79,6 +55,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const POR_PAGINA = 10;
 
   async function cargarAlumnos() {
+    const tbody = document.querySelector("#tablaAlumnos tbody");
+    if (tbody) tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--text-muted);">Cargando...</td></tr>`;
+
     let url = `${API}/alumnos/?`;
     if (filtroEstado  !== "all") url += `estado=${filtroEstado}&`;
     if (filtroCarrera !== "all") url += `carrera=${filtroCarrera}&`;
@@ -101,6 +80,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const inicio = (paginaActual - 1) * POR_PAGINA;
     const pag    = alumnosData.slice(inicio, inicio + POR_PAGINA);
+
+    if (!pag.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" style="text-align:center;padding:3rem;color:var(--text-muted);">
+            <span class="material-icons" style="font-size:2.5rem;display:block;margin-bottom:0.5rem;opacity:0.4;">person_off</span>
+            Sin alumnos para mostrar.
+          </td>
+        </tr>`;
+      mostrarPaginador();
+      return;
+    }
 
     pag.forEach(alumno => {
       const tr = document.createElement("tr");
@@ -172,7 +163,6 @@ document.addEventListener("DOMContentLoaded", () => {
       tbody.appendChild(tr);
     });
 
-    // Estilos de items del menú
     document.querySelectorAll(".menu-item").forEach(item => {
       item.style.cssText = `
         display:flex; align-items:center; gap:0.7rem;
@@ -191,15 +181,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // ===============================
   // MENÚ TRES PUNTOS
   // ===============================
-
-  // Cerrar al hacer click fuera
   document.addEventListener("click", e => {
     if (!e.target.closest(".btn-menu") && !e.target.closest(".dropdown-menu-alumno")) {
       document.querySelectorAll(".dropdown-menu-alumno").forEach(m => m.classList.add("hidden"));
     }
   });
 
-  // Abrir/cerrar menú
   document.addEventListener("click", e => {
     const btnMenu = e.target.closest(".btn-menu");
     if (!btnMenu) return;
@@ -218,7 +205,6 @@ document.addEventListener("DOMContentLoaded", () => {
       dropdown.style.left = `${rect.right - dropdown.offsetWidth + window.scrollX}px`;
       dropdown.classList.remove("hidden");
 
-      // Recalcular si se sale de la pantalla
       requestAnimationFrame(() => {
         const dr = dropdown.getBoundingClientRect();
         if (dr.right > window.innerWidth) {
@@ -233,35 +219,30 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Ver ficha
   document.addEventListener("click", e => {
     const btn = e.target.closest(".btn-ver-ficha");
     if (!btn) return;
     window.location.href = `/alumnos/${btn.dataset.id}/`;
   });
 
-  // Ir a cobros
   document.addEventListener("click", e => {
     const btn = e.target.closest(".btn-cobros");
     if (!btn) return;
     window.location.href = `/cobros/cobros/?alumno=${btn.dataset.id}`;
   });
 
-  // Editar datos
   document.addEventListener("click", e => {
     const btn = e.target.closest(".btn-editar");
     if (!btn) return;
     window.location.href = `/alumnos/alumnos/nuevo/?editar=${btn.dataset.id}`;
   });
 
-  // Agregar carrera
   document.addEventListener("click", e => {
     const btn = e.target.closest(".btn-agregar-carrera");
     if (!btn) return;
     window.location.href = `/alumnos/alumnos/nuevo/?agregar_carrera=${btn.dataset.id}`;
   });
 
-  // Cambiar estado
   document.addEventListener("click", async e => {
     const btn = e.target.closest(".btn-cambiar-estado");
     if (!btn) return;

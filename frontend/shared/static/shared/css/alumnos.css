@@ -29,7 +29,7 @@
 }
 
 #tablaAlumnos tbody tr:hover {
-  background-color: #dceafc;
+  background-color: var(--background-hover);
 }
 
 #tablaAlumnos tbody {

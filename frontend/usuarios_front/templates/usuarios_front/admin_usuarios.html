@@ -1,0 +1,394 @@
+{% extends "shared/base.html" %}
+{% load static %}
+
+{% block title %}Gestión de Usuarios — SiGeCo{% endblock %}
+
+{% block extra_css %}
+<style>
+  .admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  .admin-header h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-title-color, #053D4E);
+    margin: 0;
+  }
+  .admin-header p {
+    color: #6c757d;
+    margin: 0.15rem 0 0;
+    font-size: 0.9rem;
+  }
+
+  .card-table {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    overflow: hidden;
+  }
+  .table-usuarios {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .table-usuarios th {
+    background: #f8f9fa;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: #6c757d;
+    padding: 0.85rem 1.1rem;
+    border-bottom: 1px solid #e9ecef;
+    text-align: left;
+  }
+  .table-usuarios td {
+    padding: 0.85rem 1.1rem;
+    border-bottom: 1px solid #f1f3f5;
+    font-size: 0.92rem;
+    vertical-align: middle;
+  }
+  .table-usuarios tr:last-child td { border-bottom: none; }
+  .table-usuarios tbody tr:hover { background: #f8f9fa; }
+
+  .avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: #e9ecef;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.85rem; color: #495057;
+    margin-right: 0.6rem;
+  }
+  .badge-rol {
+    font-size: 0.75rem; padding: 3px 10px;
+    border-radius: 20px; font-weight: 600;
+  }
+  .badge-ADMIN       { background:#dbeafe; color:#1e40af; }
+  .badge-SECRETARIA  { background:#dcfce7; color:#166534; }
+  .badge-COORDINADOR { background:#fef9c3; color:#854d0e; }
+
+  .btn-icon {
+    width: 30px; height: 30px; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 6px; border: 1px solid;
+    cursor: pointer; background: transparent; font-size: 0.85rem;
+  }
+  .btn-edit   { border-color: #0d6efd; color: #0d6efd; }
+  .btn-edit:hover { background: #0d6efd; color: #fff; }
+  .btn-del    { border-color: #dc3545; color: #dc3545; }
+  .btn-del:hover  { background: #dc3545; color: #fff; }
+
+  .empty-state {
+    text-align: center; padding: 3rem 1rem; color: #adb5bd;
+  }
+  .empty-state i { font-size: 3rem; display: block; margin-bottom: 0.75rem; }
+
+  /* Modal */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45); z-index: 1000;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-box {
+    background: #fff; border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    width: 100%; max-width: 460px; padding: 0;
+    overflow: hidden;
+  }
+  .modal-head {
+    padding: 1rem 1.4rem; display: flex;
+    justify-content: space-between; align-items: center;
+  }
+  .modal-head h3 { margin: 0; font-size: 1rem; font-weight: 700; color: #fff; }
+  .modal-head .close-btn {
+    background: none; border: none; color: #fff;
+    font-size: 1.3rem; cursor: pointer; line-height: 1;
+  }
+  .modal-body  { padding: 1.4rem; }
+  .modal-foot  { padding: 1rem 1.4rem; background: #f8f9fa; display: flex; justify-content: flex-end; gap: 0.5rem; }
+
+  .form-group { margin-bottom: 1rem; }
+  .form-group label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.3rem; }
+  .form-group input,
+  .form-group select {
+    width: 100%; box-sizing: border-box;
+    border: 1px solid #ced4da; border-radius: 6px;
+    padding: 0.45rem 0.7rem; font-size: 0.92rem;
+  }
+  .form-group input:focus,
+  .form-group select:focus { outline: none; border-color: var(--color-primary, #053D4E); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+  .btn-primary-custom {
+    background: var(--color-primary, #053D4E); color: #fff;
+    border: none; border-radius: 6px; padding: 0.45rem 1.2rem;
+    font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  }
+  .btn-primary-custom:hover { opacity: 0.88; }
+  .btn-secondary-custom {
+    background: none; border: none; color: #6c757d;
+    font-size: 0.9rem; cursor: pointer; padding: 0.45rem 0.8rem;
+  }
+  .btn-danger-custom {
+    background: #dc3545; color: #fff;
+    border: none; border-radius: 6px; padding: 0.45rem 1.2rem;
+    font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  }
+
+  .alert-msg {
+    padding: 0.6rem 1rem; border-radius: 6px;
+    font-size: 0.88rem; margin-bottom: 1rem;
+  }
+  .alert-success { background: #d1e7dd; color: #0a3622; }
+  .alert-error   { background: #f8d7da; color: #58151c; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+  <div>
+    <h2>Gestión de Usuarios</h2>
+    <p>Administrá el acceso al sistema</p>
+  </div>
+  <button class="btn-primary-custom" onclick="abrirModalCrear()">
+    + Nuevo Usuario
+  </button>
+</div>
+
+<div id="alertaGlobal" class="alert-msg" style="display:none;"></div>
+
+<div class="card-table">
+  <table class="table-usuarios">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Usuario</th>
+        <th>Rol</th>
+        <th>Registro</th>
+        <th style="text-align:right;">Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="tablaUsuarios">
+      <tr><td colspan="5" class="empty-state">Cargando...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal Crear / Editar -->
+<div class="modal-overlay" id="modalForm">
+  <div class="modal-box">
+    <div class="modal-head" id="modalFormHead" style="background: var(--color-primary, #053D4E);">
+      <h3 id="modalFormTitle">Nuevo Usuario</h3>
+      <button class="close-btn" onclick="cerrarModal('modalForm')">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="formUserId">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nombre</label>
+          <input type="text" id="formNombre" required>
+        </div>
+        <div class="form-group">
+          <label>Apellido</label>
+          <input type="text" id="formApellido" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Usuario</label>
+          <input type="text" id="formUsername" placeholder="ej: juan" required>
+        </div>
+        <div class="form-group">
+          <label>Rol</label>
+          <select id="formRol">
+            <option value="SECRETARIA">Secretaria</option>
+            <option value="COORDINADOR">Coordinador</option>
+            <option value="ADMIN">Administrador</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label id="labelPassword">Contraseña</label>
+        <input type="password" id="formPassword" placeholder="">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-secondary-custom" onclick="cerrarModal('modalForm')">Cancelar</button>
+      <button class="btn-primary-custom" onclick="guardarUsuario()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Eliminar -->
+<div class="modal-overlay" id="modalEliminar">
+  <div class="modal-box" style="max-width:360px;">
+    <div class="modal-head" style="background:#dc3545;">
+      <h3>Confirmar eliminación</h3>
+      <button class="close-btn" onclick="cerrarModal('modalEliminar')">&#x2715;</button>
+    </div>
+    <div class="modal-body" style="text-align:center;">
+      <p style="font-size:2rem;">&#9888;</p>
+      <p>Estás a punto de eliminar a <strong id="deleteNombre"></strong>.<br>Esta acción no se puede deshacer.</p>
+      <input type="hidden" id="deleteId">
+    </div>
+    <div class="modal-foot" style="justify-content:center; gap:1rem;">
+      <button class="btn-secondary-custom" onclick="cerrarModal('modalEliminar')">Cancelar</button>
+      <button class="btn-danger-custom" onclick="confirmarEliminar()">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const API = "http://127.0.0.1:8000/usuarios/api/usuarios/";
+
+  function getToken() {
+    return localStorage.getItem("sigeco_access") || "";
+  }
+
+  function authHeaders() {
+    return {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + getToken(),
+    };
+  }
+
+  function mostrarAlerta(msg, tipo) {
+    const el = document.getElementById("alertaGlobal");
+    el.textContent = msg;
+    el.className = "alert-msg " + (tipo === "error" ? "alert-error" : "alert-success");
+    el.style.display = "block";
+    setTimeout(() => { el.style.display = "none"; }, 4000);
+  }
+
+  async function cargarUsuarios() {
+    const tbody = document.getElementById("tablaUsuarios");
+    try {
+      const resp = await fetch(API, { headers: authHeaders() });
+      if (resp.status === 403) {
+        tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Sin permiso.</td></tr>`;
+        return;
+      }
+      const usuarios = await resp.json();
+      if (!usuarios.length) {
+        tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><i class="material-icons">group</i>No hay usuarios registrados.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = usuarios.map(u => `
+        <tr>
+          <td>
+            <span class="avatar">${u.nombre[0]}${u.apellido[0]}</span>
+            <strong>${u.nombre} ${u.apellido}</strong>
+          </td>
+          <td><code>${u.username}</code></td>
+          <td><span class="badge-rol badge-${u.rol}">${rolDisplay(u.rol)}</span></td>
+          <td>${u.creado}</td>
+          <td style="text-align:right;">
+            <button class="btn-icon btn-edit" onclick='abrirEditar(${JSON.stringify(u)})' title="Editar">&#9998;</button>
+            <button class="btn-icon btn-del" onclick='abrirEliminar(${u.id},"${u.nombre} ${u.apellido}")' title="Eliminar">&#128465;</button>
+          </td>
+        </tr>
+      `).join("");
+    } catch {
+      tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Error al cargar usuarios.</td></tr>`;
+    }
+  }
+
+  function rolDisplay(rol) {
+    return { ADMIN: "Administrador", SECRETARIA: "Secretaria", COORDINADOR: "Coordinador" }[rol] || rol;
+  }
+
+  window.abrirModalCrear = function () {
+    document.getElementById("formUserId").value  = "";
+    document.getElementById("formNombre").value   = "";
+    document.getElementById("formApellido").value = "";
+    document.getElementById("formUsername").value = "";
+    document.getElementById("formRol").value      = "SECRETARIA";
+    document.getElementById("formPassword").value = "";
+    document.getElementById("formPassword").required = true;
+    document.getElementById("labelPassword").textContent = "Contraseña";
+    document.getElementById("modalFormTitle").textContent = "Nuevo Usuario";
+    document.getElementById("modalForm").classList.add("active");
+  };
+
+  window.abrirEditar = function (u) {
+    document.getElementById("formUserId").value   = u.id;
+    document.getElementById("formNombre").value   = u.nombre;
+    document.getElementById("formApellido").value = u.apellido;
+    document.getElementById("formUsername").value = u.username;
+    document.getElementById("formRol").value      = u.rol;
+    document.getElementById("formPassword").value = "";
+    document.getElementById("formPassword").required = false;
+    document.getElementById("labelPassword").textContent = "Nueva Contraseña (opcional)";
+    document.getElementById("modalFormTitle").textContent = "Editar Usuario";
+    document.getElementById("modalForm").classList.add("active");
+  };
+
+  window.cerrarModal = function (id) {
+    document.getElementById(id).classList.remove("active");
+  };
+
+  window.guardarUsuario = async function () {
+    const id       = document.getElementById("formUserId").value;
+    const nombre   = document.getElementById("formNombre").value.trim();
+    const apellido = document.getElementById("formApellido").value.trim();
+    const username = document.getElementById("formUsername").value.trim();
+    const rol      = document.getElementById("formRol").value;
+    const password = document.getElementById("formPassword").value;
+
+    if (!nombre || !apellido || !username) {
+      mostrarAlerta("Completá nombre, apellido y usuario.", "error"); return;
+    }
+    if (!id && !password) {
+      mostrarAlerta("La contraseña es obligatoria para usuarios nuevos.", "error"); return;
+    }
+
+    const body = { nombre, apellido, username, rol };
+    if (password) body.password = password;
+
+    const url    = id ? API + id + "/" : API;
+    const method = id ? "PUT" : "POST";
+
+    try {
+      const resp = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(body) });
+      const data = await resp.json();
+      if (!resp.ok) { mostrarAlerta(data.error || "Error al guardar.", "error"); return; }
+      cerrarModal("modalForm");
+      mostrarAlerta(data.mensaje || "Guardado.", "success");
+      cargarUsuarios();
+    } catch {
+      mostrarAlerta("Error de conexión.", "error");
+    }
+  };
+
+  window.abrirEliminar = function (id, nombre) {
+    document.getElementById("deleteId").value         = id;
+    document.getElementById("deleteNombre").textContent = nombre;
+    document.getElementById("modalEliminar").classList.add("active");
+  };
+
+  window.confirmarEliminar = async function () {
+    const id = document.getElementById("deleteId").value;
+    try {
+      const resp = await fetch(API + id + "/", { method: "DELETE", headers: authHeaders() });
+      cerrarModal("modalEliminar");
+      if (resp.status === 204 || resp.ok) {
+        mostrarAlerta("Usuario eliminado.", "success");
+      } else {
+        const data = await resp.json();
+        mostrarAlerta(data.error || "Error al eliminar.", "error");
+      }
+      cargarUsuarios();
+    } catch {
+      mostrarAlerta("Error de conexión.", "error");
+    }
+  };
+
+  cargarUsuarios();
+})();
+</script>
+{% endblock %}

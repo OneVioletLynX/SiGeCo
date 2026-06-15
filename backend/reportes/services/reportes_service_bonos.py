@@ -30,16 +30,16 @@ def bonos_por_carrera_data(fecha_desde, fecha_hasta):
     
     # Pre-cargar solo las relaciones de carrera y alumno necesarias
     carreras_existentes = Carrera.objects.all().order_by('descripcion').prefetch_related(
-        'carreras_cursadas__alumno'
+        'alumnos_cursando__alumno'
     )
     final_report = []
 
     for carrera in carreras_existentes:
         carrera_desc = carrera.descripcion
         carrera_id = carrera.id_carrera
-        
+
         # Obtenemos los IDs de los alumnos activos de esta carrera
-        alumnos_de_la_carrera = carrera.carreras_cursadas.filter(id_estado__pk=1).values_list('alumno_id', flat=True)
+        alumnos_de_la_carrera = carrera.alumnos_cursando.filter(id_estado__pk=1).values_list('alumno_id', flat=True)
         
         # 🟢 CORRECCIÓN: Evitamos select_related y uniones complejas
         # El queryset base solo filtra por pago y alumno

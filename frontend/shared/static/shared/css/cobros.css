@@ -1,23 +1,10 @@
 /* =====================================================
-   Variables globales cambiar colores acá
+   Cobros — usa las variables globales de style.css.
    ===================================================== */
 
 :root {
-  --color-primary: #6CB4EE;
-  --color-primary-dark: #6CB4EE;
-
-  --color-success: #74C365;
-  --color-success-light: #fff;
-  --color-success-dark: #74C365;
-
-  --color-text: #6b5353;
-  --color-text-muted: #444;
-
-  --color-border: #ccc;
-  --color-bg: #ffffff;
-
-  --shadow-soft: 0 2px 6px rgba(0, 0, 0, 0.08);
-  --shadow-hover: 0 4px 10px rgba(0, 0, 0, 0.12);
+  --mes-seleccionado:      #6CB4EE;
+  --mes-seleccionado-dark: #4a9fd4;
 }
 
 /* =====================================================
@@ -30,31 +17,23 @@
   padding-right: 25px;
 
   font-family: "Inter", sans-serif;
-  color: var(--color-text);
+  color: var(--text-color);
 
   max-height: 70vh;
   overflow-y: auto;
 }
 
 /* Scroll */
-.meses-container::-webkit-scrollbar {
-  width: 8px;
-}
-.meses-container::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 6px;
-}
-.meses-container::-webkit-scrollbar-thumb:hover {                                                                                                                                                                                                                                                                                                                                                                                                  
-  background: #94a3b8;
-}
+.meses-container::-webkit-scrollbar       { width: 8px; }
+.meses-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
+.meses-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
 /* Título fijo */
 .meses-container h2 {
   position: sticky;
   top: 0;
   z-index: 10;
-
-  background: var(--color-bg);
+  background: var(--background-color);
   padding-bottom: 10px;
   margin-bottom: 15px;
   text-align: center;
@@ -64,9 +43,7 @@
    Año
    ===================================================== */
 
-.year-group {
-  margin-bottom: 1.8rem;
-}
+.year-group { margin-bottom: 1.8rem; }
 
 /* =====================================================
    Grilla
@@ -76,7 +53,6 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 15px;
-
   margin-bottom: 20px;
   padding: 10px;
 }
@@ -90,15 +66,14 @@
   justify-content: space-between;
   align-items: center;
 
-  background: var(--color-bg);
+  background: var(--background-color);
   padding: 10px 14px;
   border-radius: 10px;
-  border: 3px solid #fff;
+  border: 2px solid transparent;
 
   box-shadow: var(--shadow-soft);
   transition: all 0.15s ease;
   cursor: pointer;
-
   user-select: none;
   -webkit-user-select: none;
 }
@@ -106,7 +81,7 @@
 .month:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-hover);
-  border-color: var(--color-primary);
+  border-color: var(--mes-seleccionado);
 }
 
 .month span {
@@ -115,7 +90,6 @@
   font-weight: 600;
 }
 
-/* Icono */
 .month img.icono-mes {
   width: 18px;
   height: 18px;
@@ -123,61 +97,58 @@
 }
 
 /* =====================================================
-   Estados
+   Estados de mes
    ===================================================== */
 
-/* Selección para pagar (azul) */
+/* Seleccionado para pagar (azul) */
 .month.selected {
-  background-color: var(--color-primary);
-  border: 3px solid var(--color-primary);
+  background-color: var(--mes-seleccionado);
+  border: 2px solid var(--mes-seleccionado-dark);
 }
 
-
-.month.selected img.icono-mes {
-  filter: invert(1);
-  transform: scale(1.1);
-}
+.month.selected span        { color: #fff; }
+.month.selected img.icono-mes { filter: invert(1); transform: scale(1.1); }
 
 /* Pagado (verde claro) */
 .month.pagado {
-  background-color: var(--color-success-light);
-  border: 3px solid var(--color-success);
-  color: var(--color-success);
+  background-color: var(--background-color);
+  border: 2px solid var(--color-success);
 }
 
+/* Pendiente (amarillo) */
 .month.pendiente {
-  background-color: #ffe58a;
-  border: 1px solid #f0c419;
+  background-color: #fffbeb;
+  border: 2px solid #f0c419;
   color: #8a6d00;
 }
 
-/* Check visual */
-/* .month.pagado::after {
-  content: "✓";
-  font-weight: bold;
-  margin-left: 6px;
-} */
+/* Pendiente seleccionado → azul sobre amarillo */
+.month.pendiente.selected {
+  background-color: var(--mes-seleccionado);
+  border: 2px solid var(--mes-seleccionado-dark);
+  color: #fff;
+}
+.month.pendiente.selected span { color: #fff; }
 
-/* Selección de pago completo (verde fuerte) */
+/* Selección de pago pagado (verde) */
 .month.selected-pago {
   background: var(--color-success);
   color: #fff;
-  /* border: 1px solid var(--color-success-dark); */
 }
 
 /* =====================================================
-   Encabezados
+   Encabezados del panel de detalle
    ===================================================== */
 
-.modal-content h2 {
-  text-align: center;
-  margin-bottom: 20px;
-}
+.modal-content h2 { text-align: center; margin-bottom: 20px; }
 
 .modal-content h3 {
-  font-weight: 800;
-  margin-bottom: 0.8rem;
-  color: var(--color-text-muted);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
 }
 
 /* =====================================================
@@ -194,34 +165,135 @@
 .form-group {
   display: flex;
   flex-direction: column;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .form-group label {
-  color: var(--color-text-muted);
-  margin-bottom: 5px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
 }
 
 .form-group input,
 .form-group select {
-  padding: 8px 10px;
-  border: 1px solid var(--color-border);
+  padding: 9px 12px;
+  border: 1.5px solid var(--border-color);
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 0.9rem;
   outline: none;
   width: 100%;
+  transition: border-color 0.15s;
+  background: var(--background-color);
+  color: var(--text-color);
 }
 
-/* Ocultos */
-.hidden {
-  display: none;
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--color-primary);
 }
 
-/* Recargo */
+.hidden { display: none; }
+
+/* =====================================================
+   Toggle switch (Recargo)
+   ===================================================== */
+
 .recargo {
+  margin-bottom: 14px;
+}
+
+.toggle-label {
   display: flex;
-  gap: 6px;
-  font-size: 14px;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: #d1d5db;
+  border-radius: 24px;
+  transition: background 0.2s ease;
+}
+
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--color-primary);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(18px);
+}
+
+/* =====================================================
+   Botones de toolbar (Imprimir / Eliminar)
+   ===================================================== */
+
+#btnImprimirPago,
+#btnEliminarPago {
+  background: var(--background-color);
+  border: 1.5px solid var(--border-color);
+  color: var(--text-muted);
+  box-shadow: none;
+}
+
+#btnImprimirPago:not(.disabled):hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--background-hover);
+}
+
+#btnEliminarPago:not(.disabled):hover {
+  border-color: #dc2626;
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+#btnImprimirPago img,
+#btnEliminarPago img {
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+
+#btnImprimirPago:not(.disabled):hover img,
+#btnEliminarPago:not(.disabled):hover img {
+  opacity: 1;
 }
 
 /* =====================================================
@@ -230,53 +302,61 @@
 
 button.disabled,
 .action-button.disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   pointer-events: none;
 }
 
-#btnImprimirPago {
-  border: 3px solid #FCF75E;
+/* =====================================================
+   Botón Cancelar (ghost)
+   ===================================================== */
+
+.btn-ghost-cobro {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1.1rem;
+  background: none;
+  border: 1.5px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  font-family: inherit;
 }
 
-#btnImprimirPago:hover {
-  background-color: #FCF75E;
+.btn-ghost-cobro img {
+  width: 16px;
+  height: 16px;
+  opacity: 0.5;
 }
 
-#btnImprimirPago.disabled {
-  border-color: #fff;
+.btn-ghost-cobro:hover {
+  background: var(--background-hover);
+  border-color: #9ca3af;
+  color: var(--text-color);
 }
 
-#btnEliminarPago.disabled {
-  border-color: #fff;
-}
+/* =====================================================
+   Estado inicial oculto / activo
+   ===================================================== */
 
-#btnEliminarPago {
-  border: 3px solid #FF6347;
-}
-
-#btnEliminarPago:hover {
-  background-color: #FF6347;
-}
-
-
-
-/* Estado inicial oculto */
 .toolbar,
 .cobro-layout {
   opacity: 0;
-  pointer-events: none; /* evita que se pueda hacer click */
+  pointer-events: none;
   transition: opacity 0.35s ease;
 }
 
-/* Estado activo */
 .cobros-activo {
   opacity: 1 !important;
   pointer-events: auto !important;
 }
 
-/* ===============================
-   🚨 Vibración error selección
-   =============================== */
+/* =====================================================
+   Vibración error selección
+   ===================================================== */
 
 @keyframes vibrar {
   0%   { transform: translateX(0); }
@@ -287,17 +367,15 @@ button.disabled,
   100% { transform: translateX(0); }
 }
 
-.month.vibrar {
-  animation: vibrar 0.25s ease;
-}
+.month.vibrar { animation: vibrar 0.25s ease; }
 
-/* Mes pendiente seleccionado para pagar → azul fuerte encima del amarillo */
-.month.pendiente.selected {
-  background-color: var(--color-primary);
-  border: 3px solid var(--color-primary-dark);
-  color: #fff;
+/* Bloqueado */
+.month.bloqueado {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
-
-.month.pendiente.selected span {
-  color: #fff;
+.month.bloqueado:hover {
+  transform: none;
+  box-shadow: var(--shadow-soft);
+  border-color: transparent;
 }

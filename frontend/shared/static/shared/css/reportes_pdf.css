@@ -1,12 +1,3 @@
-.filter-container {
-    display: grid;
-    grid-template-columns: auto auto auto;
-    align-items: start;
-    gap: 30px;
-    margin-bottom: 20px;
-    width: fit-content;
-}
-
 .filtro-group {
     display: flex;
     flex-direction: column;
@@ -35,9 +26,6 @@
     align-items: end;
 }
 
-/* asegurar que padding y borders no rompan anchos */
-* { box-sizing: border-box; }
-
 /* solo este contenedor debe scrollear */
 .table-content-area {
     width: 100%;
@@ -52,7 +40,8 @@
 }
 
 /* tabla coherente */
-#tabla-alumnos {
+#tabla-alumnos,
+#tabla-bonos {
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
@@ -61,7 +50,9 @@
 
 /* apariencia */
 #tabla-alumnos th,
-#tabla-alumnos td {
+#tabla-alumnos td,
+#tabla-bonos th,
+#tabla-bonos td {
     padding: 14px 12px;
     text-align: left;
     white-space: nowrap;

@@ -1,9 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const links = document.querySelectorAll(".sidebar nav a");
+    const links = document.querySelectorAll("#sidebar nav a");
     const current = window.location.pathname;
 
     links.forEach(link => {
-        if (link.getAttribute("href") === current) {
+        const href = link.getAttribute("href");
+        if (href && href !== "#" && current.startsWith(href)) {
             link.classList.add("selected");
         }
     });

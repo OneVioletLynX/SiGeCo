@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'usuarios',
     'mensajes',
     'reportes',
+    'config',
+    'auditoria',
 ]
 
 MIDDLEWARE = [

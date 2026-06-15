@@ -1,60 +1,57 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import redirect
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-# --- IMPORTACIONES ---
-
-# 1. Usuarios (CORREGIDO: Importamos el módulo completo)
-from usuarios import views as usuarios_views
-
-# 2. Alumnos
+# Alumnos
 from alumnos.views import AlumnoListCreate, AlumnoDetail
 
-# 3. Carreras
+# Carreras
 from carreras.views import (
-    CarreraListCreate, CarreraDetail, 
-    EstadoListCreate, EstadoDetail, 
+    CarreraListCreate, CarreraDetail,
+    EstadoListCreate, EstadoDetail,
     CarreraCursadasListCreate, CarreraCursadasDetail
 )
 
-# 4. Valores
+# Valores
 from valores.views import (
-    ValoresListCreate, ValoresDetail, 
-    ConceptoListCreate, ConceptoDetail, 
+    ValoresListCreate, ValoresDetail,
+    ConceptoListCreate, ConceptoDetail,
     ValorVigenteView
 )
 
-# 5. Cta Cte (Pagos)
+# Cta Cte (Pagos)
 from ctacte.views import (
-    MesPagoListCreate, MesPagoDetail, 
-    MetodoPagoListCreate, MetodoPagoDetail, 
-    PagoListCreate, PagoDetail, 
+    MesPagoListCreate, MesPagoDetail,
+    MetodoPagoListCreate, MetodoPagoDetail,
+    PagoListCreate, PagoDetail,
     PagoDetalleListCreate, PagoDetalleDetail
 )
+
 # Mensajes
 from mensajes.views import MensajeListCreate, MensajeDetail
-from mensajes.views import MensajeListCreate 
-from reportes.views import seccion_contabilidad, seccion_alumnos, seccion_admin, generar_pdf_alumnos, generar_pdf_bonos_por_carrera
-from django.shortcuts import render
 
-def home(request):
-    return render(request, "shared/base.html")
+# Reportes
+from reportes.views import seccion_contabilidad, seccion_alumnos, seccion_admin, generar_pdf_alumnos, generar_pdf_bonos_por_carrera, preview_bonos_por_carrera, bonos_matriz_view
 
-# 6. Reportes
-from reportes.views import seccion_contabilidad, seccion_alumnos, seccion_admin
+# Auditoría
+from auditoria.views import lista_auditoria
+
+
+def redirigir_al_frontend(request):
+    return redirect("http://127.0.0.1:8001/")
 
 
 urlpatterns = [
     # -------------------------------------------------------
-    # 1. LOGIN Y ADMIN
+    # Raíz y rutas HTML del backend → redirigen al frontend
     # -------------------------------------------------------
-    # Al entrar a http://127.0.0.1:8001/ se abre el LOGIN
-    path('', usuarios_views.login_view, name='home'),
-    
-    # Rutas internas de la app usuarios (logout, dashboard)
+    path('', redirigir_al_frontend, name='home'),
+
+    # Solo se mantiene la API de login y los endpoints REST de usuarios
     path('usuarios/', include('usuarios.urls')),
-    
-    # Admin de Django
+
+    # Admin de Django (solo para emergencias / superusuario de Django)
     path('admin/', admin.site.urls),
 
 
@@ -116,6 +113,11 @@ urlpatterns = [
     # Reportes
     path('api/generar_pdf_alumnos/', generar_pdf_alumnos, name='generar_pdf_alumnos'),
     path('api/generar_pdf_bonos/', generar_pdf_bonos_por_carrera, name='generar_pdf_bonos'),
+    path('api/preview_bonos/', preview_bonos_por_carrera, name='preview_bonos'),
+    path('api/bonos_matriz/', bonos_matriz_view, name='bonos_matriz'),
+
+    # Auditoría
+    path('api/auditoria/', lista_auditoria, name='auditoria-lista'),
     # Mensajes
     path('api/mensajes/', MensajeListCreate.as_view(), name='api-mensajes'),
     path('api/mensajes/<int:pk>/', MensajeDetail.as_view(), name='api-mensajes-detail'),
@@ -124,4 +126,6 @@ urlpatterns = [
 
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    path('config/', include('config.urls')),
 ]

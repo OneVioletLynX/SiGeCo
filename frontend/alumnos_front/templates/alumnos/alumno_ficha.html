@@ -17,6 +17,8 @@
             <p class="dato">{{ alumno.fecha_nacimiento }}</p>
             <p><b>Numero de documento:</b></p>
             <p class="dato">{{ alumno.dni }}</p>
+            <p><b>CUIT:</b></p>
+            <p class="dato">{{ alumno.cuit|default:"—" }}</p>
         </div>
         <div class="card-body">
             <h3>Carreras</h3>
@@ -24,15 +26,13 @@
                 <tr>
                     <th>Carrera</th>
                     <th>Estado</th>
-                    <th>Inicio</th>
-                    <th>Fin</th>
+                    <th>Año de ingreso</th>
                 </tr>
-
                 {% for c in carreras %}
                 <tr>
                     <td>{{ c.carrera.descripcion }}</td>
                     <td>{{ c.id_estado.descripcion }}</td>
-                    <td>{{ c.id_estado.descripcion }}</td>
+                    <td>{{ c.anio_ingreso|default:"—" }}</td>
                 </tr>
                 {% endfor %}
             </table>
@@ -48,13 +48,16 @@
             <p class="dato">{{ alumno.prefijo }} {{ alumno.telefono }}</p>
             <p><b>Dirección:</b></p>
             <p class="dato">{{ alumno.direccion }} {{ alumno.numero }}</p>
+            {% if alumno.piso %}
+            <p class="dato">Piso {{ alumno.piso }}{% if alumno.departamento %} — Dpto. {{ alumno.departamento }}{% endif %}</p>
+            {% elif alumno.departamento %}
+            <p class="dato">Dpto. {{ alumno.departamento }}</p>
+            {% endif %}
             <p><b>Ciudad:</b></p>
             <p class="dato">{{ alumno.ciudad.nombre }} - {{ alumno.ciudad.departamento.provincia.nombre }}</p>
         </div>
     </div>
 
 </div>
-
-
 
 {% endblock %}

@@ -1,97 +1,225 @@
 /* ===============================
-   FORMULARIO CARRERA
+   FORM INLINE
+   =============================== */
+
+.carrera-form-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.75rem;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  max-width: 540px;
+}
+
+.carrera-form-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.carrera-form-header h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-title-color);
+  margin: 0;
+}
+
+.carrera-form-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+/* ===============================
+   MODAL — header y footer propios (legacy, no usado)
+   =============================== */
+
+.modal-header-custom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.modal-header-custom h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-title-color);
+  margin: 0;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0 0.25rem;
+  transition: color 0.15s;
+}
+.modal-close-btn:hover { color: var(--color-danger); }
+
+.modal-footer-custom {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.btn-cancelar {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  padding: 0.5rem 1.2rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.btn-cancelar:hover { background: var(--background-hover); }
+
+.btn-guardar-modal {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 0.5rem 1.4rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s;
+}
+.btn-guardar-modal:hover { opacity: 0.88; }
+
+/* ===============================
+   FORMULARIO dentro del modal
    =============================== */
 
 #formCarrera {
   display: flex;
   flex-direction: column;
+  gap: 1rem;
 }
 
-/* --- Grupo general --- */
-.form-group {
+.form-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.3rem;
 }
 
-.form-group label {
+.form-field label {
   font-weight: 600;
-  font-size: 16px;
-  color: #555;
+  font-size: 0.85rem;
+  color: var(--text-color);
 }
 
-/* --- Inputs más suaves --- */
-#formCarrera input {
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-#formCarrera input:focus {
-  border-color: var(--text-selected-color);
-  box-shadow: 0 0 0 3px rgba(53, 92, 192, 0.15);
+.form-field input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  font-size: 0.93rem;
   outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s;
 }
 
-/* --- Sección valores en 2 columnas --- */
-.valores-grid {
+.form-field input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(5, 61, 78, 0.1);
+}
+
+.form-field input.has-error { border-color: var(--color-danger); }
+
+.form-row-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 0.75rem;
 }
 
-/* --- Selector de color --- */
+/* ===============================
+   COLOR PICKER
+   =============================== */
+
 .color-picker {
   display: flex;
-  justify-content: space-evenly;
-  gap: 12px;
-  margin-top: 6px;
-  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0.25rem 0;
 }
 
 .color-option {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   cursor: pointer;
   border: 3px solid transparent;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.15s, border-color 0.15s;
 }
+.color-option:hover    { transform: scale(1.15); }
+.color-option.selected { border-color: var(--text-color); transform: scale(1.15); }
 
-.color-option:hover {
-  transform: scale(1.1);
-}
-
-.color-option.selected {
-  border: 3px solid #111;
-  transform: scale(1.15);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-}
-
-/* --- Preview del chip --- */
 .chip-preview {
-  display: flex;
-  justify-content: center;
+  margin-top: 0.4rem;
 }
 
 .chip-demo {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 16px;
+  gap: 6px;
+  padding: 4px 12px;
   border-radius: 20px;
+  font-size: 0.82rem;
   font-weight: 600;
-  font-size: 14px;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
 }
 
 .chip-demo .dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
+  flex-shrink: 0;
 }
 
-/* --- Botón alineado derecha --- */
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 12px;
+/* ===============================
+   MENÚ ⋮ DE ACCIONES
+   =============================== */
+
+.dropdown-menu-carrera {
+  position: fixed;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  min-width: 170px;
+  z-index: 1000;
+  overflow: hidden;
+  padding: 4px 0;
 }
+
+.menu-item-carrera {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.55rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: #374151;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.menu-item-carrera:hover { background: #f3f4f6; }
+.menu-item-carrera.danger { color: var(--color-danger); }

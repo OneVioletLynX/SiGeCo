@@ -6,11 +6,11 @@
     (metaApi ? metaApi.content.trim() : "") ||
     "http://127.0.0.1:8000";
 
-  let alumnoSeleccionado    = null;
+  let alumnoSeleccionado = null;
   let carreraSeleccionadaId = null;
-  let pagoSeleccionado      = null;
+  let pagoSeleccionado = null;
 
-  const CONCEPTO_CUOTA_ID       = 1;
+  const CONCEPTO_CUOTA_ID = 1;
   const CONCEPTO_INSCRIPCION_ID = 2;
 
   // ===========================
@@ -43,15 +43,15 @@
 
     if (!getToken()) { logout(); return; }
 
-    const buscador         = document.getElementById("buscador");
-    const sugerencias      = document.getElementById("sugerencias");
-    const metodoSelect     = document.getElementById("metodo_pago");
+    const buscador = document.getElementById("buscador");
+    const sugerencias = document.getElementById("sugerencias");
+    const metodoSelect = document.getElementById("metodo_pago");
     const campoComprobante = document.getElementById("campo-comprobante");
-    const campoTarjeta     = document.getElementById("campo-tarjeta");
-    const form             = document.getElementById("cobroForm");
-    const contenedorMeses  = document.querySelector(".meses-container");
-    const btnImprimir      = document.getElementById("btnImprimirPago");
-    const btnEliminar      = document.getElementById("btnEliminarPago");
+    const campoTarjeta = document.getElementById("campo-tarjeta");
+    const form = document.getElementById("cobroForm");
+    const contenedorMeses = document.querySelector(".meses-container");
+    const btnImprimir = document.getElementById("btnImprimirPago");
+    const btnEliminar = document.getElementById("btnEliminarPago");
 
     let ultimoPagadoGlobal = null;
 
@@ -60,49 +60,68 @@
     // ===========================
 
     function recalcularBloqueos() {
+      document.querySelectorAll(".month")
       document.querySelectorAll(".month").forEach(m => m.classList.remove("bloqueado"));
       const seleccionados = document.querySelectorAll(".month.selected");
 
+      const todosPendientes = Array.from(document.querySelectorAll(".month:not(.pagado)"))
+        .map(m => parseInt(m.dataset.anio) * 100 + parseInt(m.dataset.id_mes))
+        .sort((a, b) => a - b);
+
+      if (!todosPendientes.length) return;
+
       if (seleccionados.length === 0) {
-        const proximo = obtenerProximoMesPermitido();
-        if (!proximo) return;
-        document.querySelectorAll(".month").forEach(m => {
-          if (m.classList.contains("pagado")) return;
-          const anio = parseInt(m.dataset.anio);
-          const mes  = parseInt(m.dataset.id_mes);
-          if (anio !== proximo.anio || mes !== proximo.mes) m.classList.add("bloqueado");
+        if (!ultimoPagadoGlobal) {
+          const primero = todosPendientes[0];
+          document.querySelectorAll(".month:not(.pagado)").forEach(m => {
+            const val = parseInt(m.dataset.anio) * 100 + parseInt(m.dataset.id_mes);
+            if (val !== primero) m.classList.add("bloqueado");
+          });
+          return;
+        }
+
+        const { anio, mes } = ultimoPagadoGlobal;
+        let sigAnio, sigMes;
+        if (mes === 1)       { sigAnio = anio;     sigMes = 2; }
+        else if (mes === 11) { sigAnio = anio + 1; sigMes = 2; }
+        else                 { sigAnio = anio;     sigMes = mes + 1; }
+
+        const sigVal = sigAnio * 100 + sigMes;
+        const habilitado = todosPendientes.includes(sigVal) ? sigVal : todosPendientes[0];
+
+
+        document.querySelectorAll(".month:not(.pagado)").forEach(m => {
+          const val = parseInt(m.dataset.anio) * 100 + parseInt(m.dataset.id_mes);
+          if (val !== habilitado) m.classList.add("bloqueado");
         });
         return;
       }
 
-      const valores = Array.from(seleccionados).map(m =>
-        parseInt(m.dataset.anio) * 100 + parseInt(m.dataset.id_mes)
-      );
-      valores.sort((a, b) => b - a);
+      // Con meses seleccionados
+      const valores = Array.from(seleccionados)
+        .map(m => parseInt(m.dataset.anio) * 100 + parseInt(m.dataset.id_mes))
+        .sort((a, b) => b - a);
 
       const anioUlt = Math.floor(valores[0] / 100);
       const mesUlt  = valores[0] % 100;
 
-      let siguienteAnio, siguienteMes;
-      if (mesUlt === 1)       { siguienteAnio = anioUlt;     siguienteMes = 2; }
-      else if (mesUlt === 11) { siguienteAnio = anioUlt + 1; siguienteMes = 2; }
-      else                    { siguienteAnio = anioUlt;     siguienteMes = mesUlt + 1; }
+      let sigAnio, sigMes;
+      if (mesUlt === 1)       { sigAnio = anioUlt;     sigMes = 2; }
+      else if (mesUlt === 11) { sigAnio = anioUlt + 1; sigMes = 2; }
+      else                    { sigAnio = anioUlt;     sigMes = mesUlt + 1; }
 
-      document.querySelectorAll(".month").forEach(m => {
-        if (m.classList.contains("pagado"))   return;
-        if (m.classList.contains("selected")) return;
-        const anio = parseInt(m.dataset.anio);
-        const mes  = parseInt(m.dataset.id_mes);
-        if (anio !== siguienteAnio || mes !== siguienteMes) m.classList.add("bloqueado");
-      });
-    }
+      const sigVal = sigAnio * 100 + sigMes;
 
-    function obtenerProximoMesPermitido() {
-      if (!ultimoPagadoGlobal) return null;
-      const { anio, mes } = ultimoPagadoGlobal;
-      if (mes === 1)  return { anio: anio,     mes: 2 };
-      if (mes === 11) return { anio: anio + 1, mes: 2 };
-      return { anio: anio, mes: mes + 1 };
+      const pendientesNoSel = Array.from(document.querySelectorAll(".month:not(.pagado):not(.selected)"))
+        .map(m => parseInt(m.dataset.anio) * 100 + parseInt(m.dataset.id_mes))
+        .sort((a, b) => a - b);
+
+      const habilitado = pendientesNoSel.includes(sigVal) ? sigVal : (pendientesNoSel[0] || null);
+
+    document.querySelectorAll(".month:not(.pagado)").forEach(m => {
+      const val = parseInt(m.dataset.anio) * 100 + parseInt(m.dataset.id_mes);
+      if (val !== habilitado) m.classList.add("bloqueado");
+    });
     }
 
     function seleccionConsecutivaValida() {
@@ -116,14 +135,14 @@
 
       for (let i = 1; i < valores.length; i++) {
         const anioAnt = Math.floor(valores[i - 1] / 100);
-        const mesAnt  = valores[i - 1] % 100;
+        const mesAnt = valores[i - 1] % 100;
         const anioAct = Math.floor(valores[i] / 100);
-        const mesAct  = valores[i] % 100;
+        const mesAct = valores[i] % 100;
 
         let expAnio, expMes;
-        if (mesAnt === 1)       { expAnio = anioAnt;     expMes = 2; }
+        if (mesAnt === 1) { expAnio = anioAnt; expMes = 2; }
         else if (mesAnt === 11) { expAnio = anioAnt + 1; expMes = 2; }
-        else                    { expAnio = anioAnt;     expMes = mesAnt + 1; }
+        else { expAnio = anioAnt; expMes = mesAnt + 1; }
 
         if (anioAct !== expAnio || mesAct !== expMes) return false;
       }
@@ -164,7 +183,7 @@
       try {
         const resp = await authFetch(`${API_BASE}/api/alumnos/?search=${encodeURIComponent(q)}`);
         if (!resp) return;
-        const data    = await resp.json();
+        const data = await resp.json();
         const alumnos = Array.isArray(data) ? data : (data.results || []);
 
         sugerencias.innerHTML = "";
@@ -220,7 +239,7 @@
     // ===========================
     function mostrarSelectorCarreras(carreras) {
       carreraSeleccionadaId = null;
-      ultimoPagadoGlobal    = null;
+      ultimoPagadoGlobal = null;
 
       let html = `
         <h2>Meses</h2>
@@ -301,7 +320,7 @@
         // Obtener nombre de la carrera seleccionada
         const carreraObj = (alumnoSeleccionado.carreras || []).find(c => c.id_carrera === carreraSeleccionadaId);
         const nombreCarrera = carreraObj ? carreraObj.descripcion : "";
-        const colorCarrera  = carreraObj ? carreraObj.color : "#1E3A8A";
+        const colorCarrera = carreraObj ? carreraObj.color : "#1E3A8A";
 
         // Si hay varias carreras, mostrar botón para volver al selector
         let headerHtml = `<h2>Meses</h2>`;
@@ -338,9 +357,9 @@
             const esInscripcion = m.id_mes == 1;
             if (esInscripcion && parseInt(anio) !== data.anio_ingreso) return;
 
-            const claseEstado = m.estado === "pagada"    ? "pagado"
-                              : m.estado === "pendiente" ? "pendiente"
-                              : "";
+            const claseEstado = m.estado === "pagada" ? "pagado"
+              : m.estado === "pendiente" ? "pendiente"
+                : "";
 
             const dataPago = m.pagado && m.id_pago ? `data-pago="${m.id_pago}"` : "";
 
@@ -358,7 +377,8 @@
           contenedorMeses.innerHTML += html;
         }
 
-        recalcularBloqueos();
+        setTimeout(() => recalcularBloqueos(), 0);
+
 
         document.querySelectorAll(".month").forEach(mes => {
           mes.addEventListener("click", () => onClickMes(mes));
@@ -384,6 +404,7 @@
       const esPagado = mes.classList.contains("pagado");
 
       if (mes.classList.contains("bloqueado")) {
+        console.log("bloqueado");
         mes.classList.add("vibrar");
         setTimeout(() => mes.classList.remove("vibrar"), 300);
         showAlert("Debes pagar los meses en orden consecutivo.", "warning");
@@ -399,6 +420,7 @@
         mes.classList.toggle("selected");
 
         if (!seleccionConsecutivaValida()) {
+          console.log("consecutiva invalida");
           mes.classList.toggle("selected");
           mes.classList.add("vibrar");
           setTimeout(() => mes.classList.remove("vibrar"), 300);
@@ -407,13 +429,15 @@
         }
 
         actualizarImporteAuto();
-        recalcularBloqueos();
+        setTimeout(() => recalcularBloqueos(), 0);
+
         return;
       }
 
       document.querySelectorAll(".month.selected").forEach(m => m.classList.remove("selected"));
       actualizarImporteAuto();
-      recalcularBloqueos();
+      setTimeout(() => recalcularBloqueos(), 0);
+
 
       const pagoId = mes.dataset.pago;
       if (!pagoId) return;
@@ -465,11 +489,11 @@
         let total = 0;
 
         for (const m of seleccionados) {
-          const anio  = parseInt(m.dataset.anio);
+          const anio = parseInt(m.dataset.anio);
           const idMes = parseInt(m.dataset.id_mes);
 
           const concepto = idMes === 1 ? CONCEPTO_INSCRIPCION_ID : CONCEPTO_CUOTA_ID;
-          const mesRef   = idMes >= 3 ? idMes : 1;
+          const mesRef = idMes >= 3 ? idMes : 1;
           const fechaRef = `${anio}-${String(mesRef).padStart(2, "0")}-01`;
 
           const resp = await authFetch(
@@ -506,10 +530,10 @@
 
         for (const m of mesesMarcados) {
           const idMes = parseInt(m.dataset.id_mes);
-          const anio  = parseInt(m.dataset.anio);
+          const anio = parseInt(m.dataset.anio);
 
           const concepto = idMes === 1 ? CONCEPTO_INSCRIPCION_ID : CONCEPTO_CUOTA_ID;
-          const mesRef   = idMes >= 3 ? idMes : 1;
+          const mesRef = idMes >= 3 ? idMes : 1;
           const fechaRef = `${anio}-${String(mesRef).padStart(2, "0")}-01`;
 
           let importeMes = 0;
@@ -521,14 +545,14 @@
               const v = await r.json();
               importeMes = parseFloat(v.importe) || 0;
             }
-          } catch (_) {}
+          } catch (_) { }
 
           meses.push({
-            carrera:  carreraSeleccionadaId,
-            mes:      idMes,
-            anio:     anio,
+            carrera: carreraSeleccionadaId,
+            mes: idMes,
+            anio: anio,
             concepto: concepto,
-            importe:  importeMes,
+            importe: importeMes,
           });
         }
 
@@ -540,17 +564,17 @@
         }
 
         const payload = {
-          id_alumno:      alumnoSeleccionado.id_alumno,
+          id_alumno: alumnoSeleccionado.id_alumno,
           id_metodo_pago: parseInt(metodo),
           meses,
-          importe_total:  importeTotal,
+          importe_total: importeTotal,
         };
 
         try {
           const resp = await authFetch(`${API_BASE}/ctacte/registrar-pago/`, {
-            method:  "POST",
+            method: "POST",
             headers: { "Content-Type": "application/json" },
-            body:    JSON.stringify(payload),
+            body: JSON.stringify(payload),
           });
 
           if (!resp) return;
@@ -573,11 +597,11 @@
         }
       });
     }
-// ===========================
+    // ===========================
     // PRESELECCIÓN POR URL
     // ===========================
-    const params    = new URLSearchParams(window.location.search);
-    const alumnoId  = params.get("alumno");
+    const params = new URLSearchParams(window.location.search);
+    const alumnoId = params.get("alumno");
     const carreraId = params.get("carrera");
 
     if (alumnoId) {

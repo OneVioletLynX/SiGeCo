@@ -1,4 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
+    if (!getToken()) { logout(); return; }
+
+    const API = "http://127.0.0.1:8000";
     const tabla = document.querySelector("#tabla-alumnos tbody");
     const downloadButton = document.getElementById('generar-pdf-btn');
     const filtroCarreraSelect = document.getElementById("filtroCarrera");
@@ -9,66 +12,69 @@ document.addEventListener("DOMContentLoaded", () => {
     let filtroCarrera = "all";
     let filtroEstado = "all";
 
-    // ----------------------------------------------------------
-    // 🔹 Cargar carreras
-    // ----------------------------------------------------------
+    function setLoading() {
+        if (tabla) tabla.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted);">Cargando...</td></tr>`;
+    }
+
+    function setEmpty() {
+        if (tabla) tabla.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align:center;padding:3rem;color:var(--text-muted);">
+                    <span class="material-icons" style="font-size:2.5rem;display:block;margin-bottom:0.5rem;opacity:0.4;">people</span>
+                    Sin alumnos para los filtros seleccionados.
+                </td>
+            </tr>`;
+    }
+
     async function cargarCarreras() {
-        const response = await fetch("http://localhost:8000/api/carreras/");
-        const carreras = await response.json();
-
+        const resp = await authFetch(`${API}/api/carreras/`);
+        if (!resp || !resp.ok) return;
+        const carreras = await resp.json();
         carreras.forEach(c => {
-            const id = String(c.id_carrera);
-            mapaCarreras[id] = c.descripcion;
-
+            mapaCarreras[String(c.id_carrera)] = c.descripcion;
             const opt = document.createElement("option");
-            opt.value = id;
+            opt.value = String(c.id_carrera);
             opt.textContent = c.descripcion;
             filtroCarreraSelect.appendChild(opt);
         });
     }
 
-    // ----------------------------------------------------------
-    // 🔹 Cargar estados (SELECT ÚNICO)
-    // ----------------------------------------------------------
     async function cargarEstados() {
-        const response = await fetch("http://localhost:8000/api/estados/");
-        const estados = await response.json();
-
+        const resp = await authFetch(`${API}/api/estados/`);
+        if (!resp || !resp.ok) return;
+        const estados = await resp.json();
         estados.forEach(e => {
-            const id = String(e.id_estado);
-            mapaEstados[id] = e.descripcion;
-
+            mapaEstados[String(e.id_estado)] = e.descripcion;
             const opt = document.createElement("option");
-            opt.value = id;
+            opt.value = String(e.id_estado);
             opt.textContent = e.descripcion;
             filtroEstadoSelect.appendChild(opt);
         });
     }
 
-    // ----------------------------------------------------------
-    // 🔹 Cargar alumnos (con filtros actualizados)
-    // ----------------------------------------------------------
     async function cargarAlumnos() {
-        let url = new URL("http://localhost:8000/api/alumnos/");
+        setLoading();
+        const url = new URL(`${API}/api/alumnos/`);
+        if (filtroEstado !== "all") url.searchParams.append('estado', filtroEstado);
+        if (filtroCarrera !== "all") url.searchParams.append('carrera', filtroCarrera);
 
-        if (filtroEstado !== "all") {
-            url.searchParams.append('estado', filtroEstado); 
+        const resp = await authFetch(url.toString());
+        if (!resp || !resp.ok) {
+            showAlert("No se pudieron cargar los alumnos.", "error");
+            setEmpty();
+            return;
         }
+        const alumnos = await resp.json();
 
-        if (filtroCarrera !== "all") {
-            url.searchParams.append('carrera', filtroCarrera); 
-        }
-
-        const response = await fetch(url.toString());
-        const alumnos = await response.json();
-
+        if (!tabla) return;
         tabla.innerHTML = "";
+
+        if (!alumnos.length) { setEmpty(); return; }
 
         alumnos.forEach(alumno => {
             const tr = document.createElement("tr");
             const estadoDesc = mapaEstados[String(alumno.estado_actual)] ?? "-";
             const carreraDesc = mapaCarreras[String(alumno.carrera_actual)] ?? "-";
-
             tr.innerHTML = `
                 <td>${alumno.legajo ?? '-'}</td>
                 <td>${alumno.apellido ?? '-'}, ${alumno.nombre ?? '-'}</td>
@@ -80,42 +86,23 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ----------------------------------------------------------
-    // 🔹 Eventos
-    // ----------------------------------------------------------
-    filtroEstadoSelect.addEventListener("change", async e => {
+    filtroEstadoSelect?.addEventListener("change", e => {
         filtroEstado = e.target.value;
-        await cargarAlumnos();
+        cargarAlumnos();
     });
 
-    filtroCarreraSelect.addEventListener("change", async e => {
+    filtroCarreraSelect?.addEventListener("change", e => {
         filtroCarrera = e.target.value;
-        await cargarAlumnos();
+        cargarAlumnos();
     });
 
-    // ----------------------------------------------------------
-    // 🔹 Generación de PDF
-    // ----------------------------------------------------------
-    if (downloadButton) {
-        // Descarga
-        downloadButton.addEventListener('click', function () {
-            let pdfUrl = new URL('http://127.0.0.1:8000/api/generar_pdf_alumnos');
+    downloadButton?.addEventListener('click', () => {
+        const pdfUrl = new URL(`${API}/api/generar_pdf_alumnos/`);
+        if (filtroEstado !== "all") pdfUrl.searchParams.append('estado', filtroEstado);
+        if (filtroCarrera !== "all") pdfUrl.searchParams.append('carrera', filtroCarrera);
+        window.open(pdfUrl.toString(), '_self');
+    });
 
-            // Filtros en la URL
-            if (filtroEstado !== "all") {
-                pdfUrl.searchParams.append('estado', filtroEstado); 
-            }
-
-            if (filtroCarrera !== "all") {
-                pdfUrl.searchParams.append('carrera', filtroCarrera);
-            }
-            window.open(pdfUrl.toString(), '_self'); 
-        });
-    }
-
-    // ----------------------------------------------------------
-    // 🔹 Inicialización
-    // ----------------------------------------------------------
     (async () => {
         await Promise.all([cargarCarreras(), cargarEstados()]);
         await cargarAlumnos();

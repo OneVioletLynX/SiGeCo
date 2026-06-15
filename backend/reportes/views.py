@@ -3,7 +3,7 @@ import datetime
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django.shortcuts import render
-from reportes.services import get_contabilidad_data, get_alumnos_data, get_admin_data, alumnos_filter_data, bonos_por_carrera_data
+from reportes.services import get_contabilidad_data, get_alumnos_data, get_admin_data, alumnos_filter_data, bonos_por_carrera_data, bonos_matriz_data
 from xhtml2pdf import pisa
 from carreras.models import Estado, Carrera
 from django.templatetags.static import static
@@ -85,6 +85,40 @@ def generar_pdf_alumnos(request):
         return HttpResponse('<h1>Error al generar el PDF</h1>' + html_string, status=500)
 
     return response
+
+def bonos_matriz_view(request):
+    carrera_id = request.GET.get('carrera')
+    anio_raw   = request.GET.get('anio')
+    ingresantes = request.GET.get('ingresantes', 'true').lower() == 'true'
+
+    if not carrera_id or not str(carrera_id).isdigit():
+        return JsonResponse({'error': 'Carrera requerida'}, status=400)
+
+    try:
+        anio = int(anio_raw)
+    except (ValueError, TypeError):
+        anio = datetime.date.today().year
+
+    data = bonos_matriz_data(int(carrera_id), anio, ingresantes)
+    return JsonResponse(data)
+
+def preview_bonos_por_carrera(request):
+    fecha_desde_raw = request.GET.get("fecha_desde")
+    fecha_hasta_raw = request.GET.get("fecha_hasta")
+
+    today = datetime.date.today()
+    try:
+        fecha_desde = datetime.datetime.strptime(fecha_desde_raw, '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        fecha_desde = today.replace(month=1, day=1)
+
+    try:
+        fecha_hasta = datetime.datetime.strptime(fecha_hasta_raw, '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        fecha_hasta = today
+
+    data = bonos_por_carrera_data(fecha_desde, fecha_hasta)
+    return JsonResponse(data, safe=False)
 
 def generar_pdf_bonos_por_carrera(request):
     header_url = request.build_absolute_uri(static("header.png"))

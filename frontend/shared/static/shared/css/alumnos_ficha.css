@@ -42,3 +42,29 @@ h3 {
     display: flex;
     gap: 20px;
 }
+
+.card-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+
+.card-body table th {
+  text-align: left;
+  font-size: 0.85rem;
+  color: #888;
+  font-weight: 600;
+  padding: 0.4rem 0.8rem 0.4rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.card-body table td {
+  padding: 0.5rem 0.8rem 0.5rem 0;
+  font-size: 0.9rem;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.card-body table tr:last-child td {
+  border-bottom: none;
+}

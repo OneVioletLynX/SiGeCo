@@ -4,12 +4,14 @@
 {% block title %}Estadísticas{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'shared/css/reportes.css' %}">
+<link rel="stylesheet" href="{% static 'shared/css/reportes.css' %}?v=2">
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-container">
-    <h1>Estadísticas</h1>
+<div class="table-wrapper">
+    <div class="form-header">
+        <h1>Estadísticas</h1>
+    </div>
     <div class="tabs">
         <div class="tab-buttons">
             <button class="tab-btn active" data-tab="contabilidad">Contabilidad</button>
@@ -92,61 +94,30 @@
             SECCIÓN 3: ADMINISTRATIVO
         =========================== -->
         <div class="tab-content" id="administrativo">
-            <h2>Estadísticas administrativas</h2>
+            <h2>Estadísticas administrativas <small style="font-size:0.7rem;color:#9ca3af;font-weight:400;">— mes en curso</small></h2>
             <!-- KPIs -->
             <div class="kpi">
                 <div class="card">
-                    <h3>Cantidad de trámites</h3>
-                    <p>24</p>
+                    <h3>Altas registradas</h3>
+                    <p id="kpiAltas">—</p>
                 </div>
                 <div class="card">
-                    <h3>Modificaciones de datos de alumnos</h3>
-                    <p>35</p>
+                    <h3>Modificaciones</h3>
+                    <p id="kpiModificaciones">—</p>
                 </div>
                 <div class="card">
-                    <h3>Bajas voluntarias</h3>
-                    <p>24</p>
+                    <h3>Bajas</h3>
+                    <p id="kpiBajas">—</p>
                 </div>
                 <div class="card">
-                    <h3>Reincorporaciones</h3>
-                    <p>15</p>
-                </div>
-                <div class="card">
-                    <h3>Mensajes enviados (mes/año)</h3>
-                    <p>120 / 1.450</p>
+                    <h3>Cobros registrados</h3>
+                    <p id="kpiCobros">—</p>
                 </div>
             </div>
 
-            <!-- GRÁFICOS -->
+            <!-- GRÁFICO -->
             <div class="dashboard">
                 <div id="chartAltasMensuales" class="chart"></div>
-
-                <!-- Tabla de trámites -->
-                <div class="table-container">
-                    <h3>Trámites más solicitados</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Trámite</th>
-                                <th>Cantidad</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Certificados de alumno regular</td>
-                                <td>180</td>
-                            </tr>
-                            <tr>
-                                <td>Reincorporación</td>
-                                <td>50</td>
-                            </tr>
-                            <tr>
-                                <td>Inscripciones</td>
-                                <td>45</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
             </div>
         </div>
     </div>

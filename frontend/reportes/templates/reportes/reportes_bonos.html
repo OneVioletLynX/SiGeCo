@@ -1,46 +1,115 @@
 {% extends "shared/base.html" %}
 {% load static %}
 
-{% block title %}Reporte de Bonos Cooperadores{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'shared/css/reportes_pdf.css' %}">
-{% endblock %}
+{% block title %}Bonos Cooperadores{% endblock %}
 
 {% block content %}
-<div class="main-report-container">
+<div class="table-wrapper">
 
-    <h2>Bonos Cooperadores Cobrados por Carrera 💰</h2>
+    <div class="form-header">
+        <h1>Bonos Cooperadores por Carrera</h1>
+        <a href="{% url 'reportes:reportes_index' %}" class="btn-secundario">← Reportes</a>
+    </div>
 
-    <div class="table-wrapper">
-        <div class="filter-container">
-            
-            <div class="filtro-group">
-                <label for="fecha_desde" class="form-label fw-bold">Fecha Desde</label>
-                <input type="date" id="fecha_desde" class="form-control" value="2025-01-01">
+    <!-- Filtros -->
+    <div class="filter-container" style="justify-content: space-between; align-items: flex-end;">
+        <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end;">
+            <div>
+                <label for="filtroCarrera">Carrera</label>
+                <select id="filtroCarrera" class="form-select">
+                    <option value="">Seleccioná una carrera</option>
+                </select>
             </div>
-
-            <div class="filtro-group">
-                <label for="fecha_hasta" class="form-label fw-bold">Fecha Hasta</label>
-                <input type="date" id="fecha_hasta" class="form-control" value="{% now "Y-m-d" %}">
+            <div>
+                <label for="filtroAnio">Año</label>
+                <select id="filtroAnio" class="form-select" style="width:110px;"></select>
             </div>
-
-            <div class="action-button-wrapper">
-                <button id="generar-pdf-bonos-btn" class="btn btn-primary"
-                    data-icon-url="{% static 'shared/assets/print.svg' %}">
-                    <img src="{% static 'shared/assets/print.svg' %}" alt="Imprimir"
-                        style="width: 20px; height: 20px; vertical-align: middle;">
-                    Generar PDF de Bonos
-                </button>
+            <div style="display:flex; align-items:center; gap:0.5rem; padding-bottom:4px;">
+                <input type="checkbox" id="chkIngresantes" checked
+                    style="width:16px; height:16px; accent-color:var(--color-primary); cursor:pointer;">
+                <label for="chkIngresantes" style="margin:0; font-weight:600; cursor:pointer;">
+                    Mostrar ingresantes
+                </label>
             </div>
         </div>
-
-        <p class="mt-3">Asegúrate de seleccionar las fechas y presiona "Generar PDF de Bonos" para obtener el reporte.</p>
-
+        <button id="btnCargar" class="button-predeterminado" disabled>
+            <span class="material-icons" style="font-size:1.1rem; vertical-align:middle;">table_chart</span>
+            Cargar
+        </button>
     </div>
+
+    <!-- Tabla matriz -->
+    <div id="matrizArea" style="display:none; margin-top:1rem; overflow-x:auto;">
+        <table id="tablaMatriz" style="border-collapse:collapse; width:100%; min-width:700px;">
+            <thead id="matrizHead"></thead>
+            <tbody id="matrizBody"></tbody>
+        </table>
+    </div>
+
+    <!-- Estado vacío / cargando -->
+    <div id="matrizMensaje" style="display:none; text-align:center; padding:3rem; color:var(--text-muted);">
+        <span class="material-icons" style="font-size:2.5rem; display:block; margin-bottom:0.5rem; opacity:0.4;" id="matrizMensajeIcon">receipt_long</span>
+        <span id="matrizMensajeTexto">Seleccioná una carrera y un año para ver los datos.</span>
+    </div>
+
 </div>
+
+<style>
+#tablaMatriz th,
+#tablaMatriz td {
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.45rem 0.5rem;
+    font-size: 0.82rem;
+    white-space: nowrap;
+}
+#tablaMatriz thead th {
+    background: var(--background-color);
+    font-weight: 700;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+#tablaMatriz th.col-mes,
+#tablaMatriz td.col-mes {
+    text-align: center;
+    min-width: 38px;
+    padding: 0.45rem 0.2rem;
+}
+#tablaMatriz td.col-legajo {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+}
+#tablaMatriz td.col-nombre {
+    font-weight: 600;
+    min-width: 200px;
+}
+#tablaMatriz td.col-total {
+    text-align: center;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+.pago-si  { color: #16a34a; font-weight: 700; font-size: 1rem; }
+.pago-no  { color: #d1d5db; }
+.badge-ingresante {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    background: #fef9c3;
+    color: #854d0e;
+    border: 1px solid #fde68a;
+    border-radius: 20px;
+    padding: 1px 6px;
+    margin-left: 5px;
+    vertical-align: middle;
+}
+tr.fila-ingresante {
+    background: #fffbeb;
+}
+</style>
+
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'shared/js/reportes_bonos.js' %}" defer></script> 
+<script src="{% static 'shared/js/reportes_bonos.js' %}?v=3" defer></script>
 {% endblock %}

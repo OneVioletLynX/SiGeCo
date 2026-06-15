@@ -58,7 +58,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'frontend.middleware.TokenCookieMiddleware',  # protección server-side
+    'frontend.middleware.TokenCookieMiddleware',   # protección server-side
+    'frontend.middleware.AdminRouteMiddleware',    # bloquea /administracion/ sin cookie
 ]
 
 ROOT_URLCONF = 'frontend.urls'

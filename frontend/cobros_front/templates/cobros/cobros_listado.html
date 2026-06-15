@@ -1,0 +1,334 @@
+{% extends "shared/base.html" %}
+{% load static %}
+{% block title %}Cobros{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'shared/css/alumnos.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="table-wrapper">
+
+    <div class="form-header">
+        <h1>Cobros</h1>
+    </div>
+
+    <div class="filter-container" style="justify-content: space-between;">
+        <div class="filter-container" style="margin-bottom:0;">
+            <div>
+                <label>Método de pago</label>
+                <select id="filtroMetodo" class="form-select filtro">
+                    <option value="">Todos</option>
+                </select>
+            </div>
+            <div>
+                <label>Carrera</label>
+                <select id="filtroCarrera" class="form-select filtro">
+                    <option value="">Todas</option>
+                </select>
+            </div>
+        </div>
+        <a href="{% url 'cobros_front:cobros' %}" class="button-predeterminado" style="align-self:flex-end;">
+            <span class="material-icons" style="font-size:1.1rem; vertical-align:middle;">add</span>
+            Nuevo Cobro
+        </a>
+    </div>
+
+    <table id="tablaCobros">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Alumno</th>
+                <th>Método</th>
+                <th>Meses</th>
+                <th>Importe</th>
+                <th class="acciones-col">Acciones</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <nav aria-label="Paginación" class="ulpgcds-pager">
+        <ul id="paginador"></ul>
+    </nav>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auth global desde auth.js (cargado en base.html)
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (!getToken()) { logout(); return; }
+
+  const API = "http://127.0.0.1:8000";
+
+  let cobrosData   = [];
+  let paginaActual = 1;
+  const POR_PAGINA = 15;
+
+  let filtroMetodoVal  = "";
+  let filtroCarreraVal = "";
+
+  // ===========================
+  // CARGAR FILTROS
+  // ===========================
+  async function cargarFiltros() {
+    const [rMetodos, rCarreras] = await Promise.all([
+      authFetch(`${API}/ctacte/metodos-pagos/`),
+      authFetch(`${API}/api/carreras/`),
+    ]);
+
+    if (rMetodos && rMetodos.ok) {
+      const metodos = await rMetodos.json();
+      const sel = document.getElementById("filtroMetodo");
+      metodos.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m.id_metodo_pago;
+        opt.textContent = m.descripcion;
+        sel.appendChild(opt);
+      });
+    }
+
+    if (rCarreras && rCarreras.ok) {
+      const carreras = await rCarreras.json();
+      const sel = document.getElementById("filtroCarrera");
+      carreras.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.id_carrera;
+        opt.textContent = c.descripcion;
+        sel.appendChild(opt);
+      });
+    }
+  }
+
+  // ===========================
+  // CARGAR COBROS
+  // ===========================
+  async function cargarCobros() {
+    const tbody = document.querySelector("#tablaCobros tbody");
+    if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted);">Cargando...</td></tr>`;
+
+    let url = `${API}/ctacte/pagos/?limit=200`;
+    if (filtroMetodoVal)  url += `&metodo=${filtroMetodoVal}`;
+    if (filtroCarreraVal) url += `&carrera=${filtroCarreraVal}`;
+
+    const resp = await authFetch(url);
+    if (!resp) return;
+    const data = await resp.json();
+    if (!Array.isArray(data)) return;
+
+    cobrosData   = data;
+    paginaActual = 1;
+    mostrarPagina();
+  }
+
+  // ===========================
+  // MOSTRAR TABLA
+  // ===========================
+  function mostrarPagina() {
+    const tbody = document.querySelector("#tablaCobros tbody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    const inicio = (paginaActual - 1) * POR_PAGINA;
+    const pag    = cobrosData.slice(inicio, inicio + POR_PAGINA);
+
+    if (!pag.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align:center;padding:3rem;color:var(--text-muted);">
+            <span class="material-icons" style="font-size:2.5rem;display:block;margin-bottom:0.5rem;opacity:0.4;">payments</span>
+            Sin cobros registrados.
+          </td>
+        </tr>`;
+      mostrarPaginador();
+      return;
+    }
+
+    pag.forEach(pago => {
+      const fecha = new Date(pago.fecha_pago).toLocaleDateString("es-AR", {
+        day: "2-digit", month: "2-digit", year: "numeric"
+      });
+
+      const mesesTexto = (pago.detalles || [])
+        .map(d => `${d.mes_nombre} ${d.anio_pago}`)
+        .join(", ");
+
+      const importe = `$${Number(pago.importe_total).toLocaleString("es-AR")}`;
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${fecha}</td>
+        <td>${pago.alumno_nombre || "—"}</td>
+        <td>
+          <span style="
+            display:inline-flex; align-items:center;
+            background:#ede9fe; color:#5b21b6;
+            border-radius:20px; padding:2px 10px;
+            font-size:0.78rem; font-weight:600;
+          ">${pago.metodo}</span>
+        </td>
+        <td style="font-size:0.85rem; color:#6b7280;">${mesesTexto || "—"}</td>
+        <td style="font-weight:700;">${importe}</td>
+        <td class="acciones-col">
+          <div style="position:relative; display:inline-block;">
+            <button class="btn-menu-cobro" data-id="${pago.id_pago}"
+              style="background:none; border:none; cursor:pointer; padding:0.3rem 0.6rem;
+                     border-radius:6px; color:#6b7280; font-size:1.4rem; line-height:1;
+                     transition: background 0.15s;"
+              onmouseenter="this.style.background='#f3f4f6'"
+              onmouseleave="this.style.background='none'">
+              ⋮
+            </button>
+            <div class="dropdown-menu-cobro hidden" data-id="${pago.id_pago}"
+              style="position:fixed; background:#fff; border:1px solid #e5e7eb;
+                     border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.12);
+                     min-width:190px; z-index:1000; overflow:hidden; padding:4px 0;">
+
+              <button class="menu-item-cobro btn-ver-comprobante" data-id="${pago.id_pago}"
+                style="display:flex; align-items:center; gap:0.7rem;
+                       width:100%; padding:0.55rem 1rem;
+                       background:none; border:none; cursor:pointer;
+                       font-size:0.88rem; color:#374151; text-align:left;
+                       font-family:inherit;">
+                <span class="material-icons" style="font-size:18px; color:#6b7280;">print</span>
+                Ver comprobante
+              </button>
+
+              <button class="menu-item-cobro btn-ir-cobros" data-alumno="${pago.id_alumno || ''}"
+                style="display:flex; align-items:center; gap:0.7rem;
+                       width:100%; padding:0.55rem 1rem;
+                       background:none; border:none; cursor:pointer;
+                       font-size:0.88rem; color:#374151; text-align:left;
+                       font-family:inherit;">
+                <span class="material-icons" style="font-size:18px; color:#6b7280;">payments</span>
+                Ir a cobros
+              </button>
+
+            </div>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Hover en items del menú
+    document.querySelectorAll(".menu-item-cobro").forEach(item => {
+      item.addEventListener("mouseenter", () => item.style.background = "#f3f4f6");
+      item.addEventListener("mouseleave", () => item.style.background = "none");
+    });
+
+    mostrarPaginador();
+  }
+
+  // ===========================
+  // MENÚ ⋮ — abrir/cerrar
+  // ===========================
+  document.addEventListener("click", e => {
+    if (!e.target.closest(".btn-menu-cobro") && !e.target.closest(".dropdown-menu-cobro")) {
+      document.querySelectorAll(".dropdown-menu-cobro").forEach(m => m.classList.add("hidden"));
+    }
+  });
+
+  document.addEventListener("click", e => {
+    const btn = e.target.closest(".btn-menu-cobro");
+    if (!btn) return;
+    e.stopPropagation();
+
+    const id       = btn.dataset.id;
+    const dropdown = document.querySelector(`.dropdown-menu-cobro[data-id="${id}"]`);
+
+    document.querySelectorAll(".dropdown-menu-cobro").forEach(m => {
+      if (m !== dropdown) m.classList.add("hidden");
+    });
+
+    if (dropdown.classList.contains("hidden")) {
+      const rect = btn.getBoundingClientRect();
+      dropdown.style.top  = `${rect.bottom + window.scrollY + 4}px`;
+      dropdown.style.left = `${rect.right - dropdown.offsetWidth + window.scrollX}px`;
+      dropdown.classList.remove("hidden");
+
+      requestAnimationFrame(() => {
+        const dr = dropdown.getBoundingClientRect();
+        if (dr.right > window.innerWidth) {
+          dropdown.style.left = `${window.innerWidth - dr.width - 8 + window.scrollX}px`;
+        }
+        if (dr.bottom > window.innerHeight) {
+          dropdown.style.top = `${rect.top + window.scrollY - dr.height - 4}px`;
+        }
+      });
+    } else {
+      dropdown.classList.add("hidden");
+    }
+  });
+
+  document.addEventListener("click", e => {
+    const btn = e.target.closest(".btn-ver-comprobante");
+    if (!btn) return;
+    document.querySelectorAll(".dropdown-menu-cobro").forEach(m => m.classList.add("hidden"));
+    window.open(`/cobros/comprobante/${btn.dataset.id}/`, "_blank");
+  });
+
+  document.addEventListener("click", e => {
+    const btn = e.target.closest(".btn-ir-cobros");
+    if (!btn) return;
+    document.querySelectorAll(".dropdown-menu-cobro").forEach(m => m.classList.add("hidden"));
+    const alumnoId = btn.dataset.alumno;
+    if (alumnoId) window.location.href = `/cobros/cobros/?alumno=${alumnoId}`;
+  });
+
+  // ===========================
+  // PAGINADOR
+  // ===========================
+  function mostrarPaginador() {
+    const cont = document.getElementById("paginador");
+    if (!cont) return;
+    cont.innerHTML = "";
+
+    const total = Math.ceil(cobrosData.length / POR_PAGINA);
+    if (total <= 1) return;
+
+    function addBtn(label, page, disabled = false) {
+      const li  = document.createElement("li");
+      const btn = document.createElement("a");
+      btn.href        = "#";
+      btn.textContent = label;
+      if (!disabled) {
+        btn.addEventListener("click", e => {
+          e.preventDefault();
+          paginaActual = page;
+          mostrarPagina();
+        });
+      }
+      li.appendChild(btn);
+      cont.appendChild(li);
+    }
+
+    addBtn("<", paginaActual - 1, paginaActual === 1);
+    for (let i = 1; i <= total; i++) addBtn(i, i);
+    addBtn(">", paginaActual + 1, paginaActual === total);
+  }
+
+  // ===========================
+  // EVENTOS FILTROS
+  // ===========================
+  document.getElementById("filtroMetodo").addEventListener("change", e => {
+    filtroMetodoVal = e.target.value;
+    cargarCobros();
+  });
+
+  document.getElementById("filtroCarrera").addEventListener("change", e => {
+    filtroCarreraVal = e.target.value;
+    cargarCobros();
+  });
+
+  // ===========================
+  // INICIALIZAR
+  // ===========================
+  cargarFiltros();
+  cargarCobros();
+});
+</script>
+{% endblock %}

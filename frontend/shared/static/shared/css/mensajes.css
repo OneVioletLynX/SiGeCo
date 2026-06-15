@@ -1,15 +1,16 @@
+    /* Mensajes usa variables globales de style.css */
     :root {
-        --primary: #2563eb;
-        --primary-hover: #1d4ed8;
-        --success: #10b981;
-        --danger: #ef4444;
-        --warning: #f59e0b;
-        --surface: #ffffff;
-        --bg: #f3f4f6;
-        --text-main: #1f2937;
-        --text-secondary: #6b7280;
-        --border: #e5e7eb;
-        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        --primary:        var(--color-primary);
+        --primary-hover:  var(--color-primary-dark);
+        --success:        var(--color-success);
+        --danger:         var(--color-danger);
+        --warning:        var(--color-warning);
+        --surface:        var(--background-color);
+        --bg:             var(--background-body);
+        --text-main:      var(--text-color);
+        --text-secondary: var(--text-muted);
+        --border:         var(--border-color);
+        --shadow:         var(--shadow-soft);
     }
 
     * {

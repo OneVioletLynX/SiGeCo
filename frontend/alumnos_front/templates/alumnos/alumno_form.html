@@ -106,8 +106,8 @@
 <div class="form-page">
 
     <div class="form-header">
-        <h1>Nuevo Alumno</h1>
-        <a href="/alumnos/alumnos/" class="btn-secundario">Volver</a>
+        <h1 id="formTitulo">Nuevo Alumno</h1>
+        <button type="button" class="btn-secundario" id="btnVolver">← Volver</button>
     </div>
 
     <form id="alumnoForm" class="form-card">
@@ -128,15 +128,15 @@
                     <span class="error-msg" id="error-apellido"></span>
                 </div>
                 <div class="input-field">
-                    <input type="number" placeholder=" " name="dni" maxlength="8">
+                    <input type="text" inputmode="numeric" placeholder=" " name="dni" maxlength="8">
                     <label>Número de documento <span class="rojo">*</span></label>
-                    <span class="text-helper">debe tener 8 dígitos</span>
+                    <span class="text-helper">debe tener 7 u 8 dígitos</span>
                     <span class="error-msg" id="error-dni"></span>
                 </div>
                 <div class="input-field">
-                    <input type="number" placeholder=" " name="cuit" maxlength="11">
-                    <label>Número de CUIT</label>
-                    <span class="text-helper">debe tener 11 dígitos</span>
+                    <input type="text" inputmode="numeric" placeholder=" " name="cuit" maxlength="11">
+                    <label>CUIT <span class="rojo">*</span></label>
+                    <span class="text-helper">11 dígitos sin guiones</span>
                     <span class="error-msg" id="error-cuit"></span>
                 </div>
                 <div class="input-field">
@@ -171,7 +171,7 @@
                     <span class="error-msg" id="error-direccion"></span>
                 </div>
                 <div class="input-field">
-                    <input type="number" placeholder=" " name="numero">
+                    <input type="text" inputmode="numeric" placeholder=" " name="numero" maxlength="6">
                     <label>Altura <span class="rojo">*</span></label>
                     <span class="error-msg" id="error-numero"></span>
                 </div>
@@ -181,20 +181,20 @@
                     <span class="error-msg" id="error-departamento"></span>
                 </div>
                 <div class="input-field">
-                    <input type="number" placeholder=" " name="piso">
+                    <input type="text" inputmode="numeric" placeholder=" " name="piso" maxlength="3">
                     <label>Piso</label>
                     <span class="error-msg" id="error-piso"></span>
                 </div>
                 <div class="input-field" style="grid-row: 3;">
-                    <input type="number" placeholder=" " name="prefijo">
+                    <input type="text" inputmode="numeric" placeholder=" " name="prefijo" maxlength="5">
                     <label>Prefijo <span class="rojo">*</span></label>
                     <span class="text-helper">ejemplo: 3467</span>
                     <span class="error-msg" id="error-prefijo"></span>
                 </div>
                 <div class="input-field" style="grid-row: 3;">
-                    <input type="number" placeholder=" " name="telefono">
+                    <input type="text" inputmode="numeric" placeholder=" " name="telefono" maxlength="10">
                     <label>Celular <span class="rojo">*</span></label>
-                    <span class="text-helper">ejemplo: 641684</span>
+                    <span class="text-helper" id="preview-telefono">ejemplo: 641684</span>
                     <span class="error-msg" id="error-telefono"></span>
                 </div>
                 <div class="input-field" style="grid-column: span 2;">
@@ -232,12 +232,13 @@
             </div>
         </section>
 
-        <div style="display: flex; justify-content: space-around;">
-            <button type="submit" class="button-predeterminado" id="btnGuardar">
-                <img src="{% static 'shared/assets/check.svg' %}">Guardar
+        <div style="display: flex; gap: 12px; justify-content: flex-end; padding-top: 0.5rem;">
+            <button onclick="window.location.href='/alumnos/alumnos/'" type="button"
+                class="button-predeterminado" style="background:#6b7280;">
+                Cancelar
             </button>
-            <button onclick="window.location.href='/alumnos/alumnos/'" type="button" class="button-predeterminado">
-                <img src="{% static 'shared/assets/close.svg' %}">Cancelar
+            <button type="submit" class="button-predeterminado" id="btnGuardar">
+                Guardar
             </button>
         </div>
     </form>

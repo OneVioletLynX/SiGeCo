@@ -1,143 +1,100 @@
 {% extends "shared/base.html" %}
 {% load static %}
-{% block title %}Inicio{%endblock %}
+
+{% block title %}Carreras{% endblock %}
+
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'shared/css/carreras.css' %}" />
+<link rel="stylesheet" href="{% static 'shared/css/carreras.css' %}">
 {% endblock %}
+
 {% block content %}
-<div id="customAlert" class="custom-alert hidden">
-    <div class="custom-alert-content">
-        <span id="customAlertMessage"></span>
-    </div>
-</div>
+<div class="table-wrapper">
 
-<div>
-    <div class="toolbar">
-        <div class="action-button">
-            <img src="{% static 'shared/assets/add.svg' %}" alt="" />
-            <div class="text">Alta</div>
-        </div>
-        <!-- <div class="action-button">
-            <img src="{% static 'shared/assets/remove.svg' %}" alt="" />
-            <div class="text">Baja</div>
-        </div>
-        <div class="action-button">
-            <img src="{% static 'shared/assets/edit.svg' %}" alt="" />
-            <div class="text">Modificacion</div>
-        </div> -->
-    </div>
-    <div style="display: flex; flex-direction: column; gap: 25px">
-        <table id="sortableTable">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Estado</th>
-                    <th>Cuota</th>
-                    <th>Inscripción</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="tabla-carreras"></tbody>
-        </table>
-        <!-- <table>
-            <thead>
-                <tr>
-                    <th>Descripcion</th>
-                    <th>Valor</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Importe Cuota</td>
-                    <td id="valorCuota">$140.000</td>
-                </tr>
-                <tr>
-                    <td>Inscripcion</td>
-                    <td id="valorInscripcion">$100.000</td>
-                </tr>
-                <tr>
-                    <td>Estado</td>
-                    <td id="estadoCarrera">Activa</td>
-                </tr>
-            </tbody>
-        </table> -->
-    </div>
-</div>
-<div id="modalCarrera" class="modal">
-  <div class="modal-content">
-
-    <span class="close">&times;</span>
-
-    <h2 id="modalCarreraTitle">Nueva Carrera</h2>
-
-    <form id="formCarrera" class="form-grid">
-      {% csrf_token %}
-      <input type="hidden" id="carreraId" />
-      <input type="hidden" id="colorCarrera" />
-
-      <!-- ========================= -->
-      <!-- NOMBRE -->
-      <!-- ========================= -->
-
-      <div class="form-group" style="column-span: 2;">
-        <label>Nombre *</label>
-        <input type="text" id="descripcion" class="form-input" />
-        <span class="error-msg" id="error-descripcion"></span>
-      </div>
-
-      <!-- ========================= -->
-      <!-- COLOR -->
-      <!-- ========================= -->
-
-      <div class="form-group">
-        <label>Color identificador</label>
-        <div class="color-picker" id="colorPicker"></div>
-
-        <div class="chip-preview">
-          <span class="chip-demo">
-            <span class="dot"></span>
-            Carrera ejemplo
-          </span>
-        </div>
-      </div>
-
-      <!-- ========================= -->
-      <!-- VALORES -->
-      <!-- ========================= -->
-
-      <div class="form-section">
-        <h3 class="form-subtitle">Valores</h3>
-
-        <div class="form-group">
-          <label>Inscripción *</label>
-          <input type="number" id="inscripcion" class="form-input" />
-          <span class="error-msg" id="error-inscripcion"></span>
-        </div>
-
-        <div class="form-group">
-          <label>Cuota *</label>
-          <input type="number" id="cuota" class="form-input" />
-          <span class="error-msg" id="error-cuota"></span>
-        </div>
-      </div>
-
-      <!-- ========================= -->
-      <!-- BOTÓN -->
-      <!-- ========================= -->
-
-      <div class="form-actions">
-        <button type="submit" class="button-predeterminado">
-          Guardar
-        </button>
-      </div>
-
-    </form>
+  <!-- Encabezado de página -->
+  <div class="form-header">
+    <h1>Carreras</h1>
   </div>
+
+  <!-- Buscador + botón -->
+  <div class="filter-container" id="barraBusqueda" style="justify-content: space-between;">
+    <div>
+      <label for="buscadorCarrera">Buscar</label>
+      <input type="text" id="buscadorCarrera" class="form-control" placeholder="Nombre de carrera" style="width:260px;">
+    </div>
+    <button class="button-predeterminado" id="btnNuevaCarrera" style="align-self:flex-end;">
+      <span class="material-icons" style="font-size:1.1rem; vertical-align:middle;">add</span>
+      Nueva Carrera
+    </button>
+  </div>
+
+  <!-- Formulario inline (oculto por defecto) -->
+  <div id="seccionFormCarrera" style="display:none; margin-bottom:1.5rem;">
+    <div class="carrera-form-card">
+
+      <div class="carrera-form-header">
+        <h2 id="formCarreraTitle">Nueva Carrera</h2>
+      </div>
+
+      <form id="formCarrera">
+        {% csrf_token %}
+        <input type="hidden" id="carreraId">
+        <input type="hidden" id="colorCarrera">
+
+        <div class="form-field">
+          <label for="descripcion">Nombre *</label>
+          <input type="text" id="descripcion" placeholder="Ej: Tecnicatura en Informática">
+          <span class="error-msg" id="error-descripcion"></span>
+        </div>
+
+        <div class="form-field">
+          <label>Color identificador</label>
+          <div class="color-picker" id="colorPicker"></div>
+          <div class="chip-preview">
+            <span class="chip-demo">
+              <span class="dot"></span>
+              Carrera ejemplo
+            </span>
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-field">
+            <label for="inscripcion">Inscripción *</label>
+            <input type="number" id="inscripcion" placeholder="0" min="0">
+            <span class="error-msg" id="error-inscripcion"></span>
+          </div>
+          <div class="form-field">
+            <label for="cuota">Cuota mensual *</label>
+            <input type="number" id="cuota" placeholder="0" min="0">
+            <span class="error-msg" id="error-cuota"></span>
+          </div>
+        </div>
+
+        <div class="carrera-form-footer">
+          <button type="button" class="btn-cancelar" id="btnCancelarForm">Cancelar</button>
+          <button type="submit" class="btn-guardar-modal" id="btnGuardarCarrera">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <table id="sortableTable">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Estado</th>
+        <th>Cuota</th>
+        <th>Inscripción</th>
+        <th class="acciones-col">Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="tabla-carreras"></tbody>
+  </table>
+
 </div>
-
-
-
 {% endblock %}
+
 {% block extra_js %}
-<script src="{% static 'shared/js/carreras.js' %}"></script>
+<script src="{% static 'shared/js/carreras.js' %}?v=4"></script>
 {% endblock %}

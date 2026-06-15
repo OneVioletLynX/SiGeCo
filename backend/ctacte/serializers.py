@@ -65,7 +65,9 @@ class PagoReadSerializer(serializers.ModelSerializer):
         ]
 
     def get_alumno_nombre(self, obj):
-        return str(obj.id_alumno) if obj.id_alumno else ""
+            if not obj.id_alumno:
+                return ""
+            return f"{obj.id_alumno.apellido}, {obj.id_alumno.nombre}"
 
 
 class PagoWriteSerializer(serializers.ModelSerializer):

@@ -16,6 +16,7 @@ from datetime import date as fecha_hoy
 from alumnos.models import Alumno
 from carreras.models import CarreraCursada
 from .models import MesPago, MetodoPago, Pago, PagoDetalle, Cuota
+from auditoria.models import registrar
 from .serializers import (
     MesPagoSerializer,
     MetodoPagoSerializer,
@@ -119,11 +120,26 @@ class MetodoPagoDetail(APIView):
 
 class PagoListCreate(APIView):
     def get(self, request):
-        pagos = Pago.objects.all().order_by('-fecha_pago', '-id_pago')
-        alumno_id = request.query_params.get('alumno')
-        if alumno_id:
-            pagos = pagos.filter(id_alumno_id=alumno_id)
-        return Response(PagoReadSerializer(pagos, many=True).data)
+            pagos = Pago.objects.all().select_related(
+                "id_alumno", "id_metodo_pago"
+            ).prefetch_related(
+                "detalles__carrera", "detalles__mes"
+            ).order_by('-fecha_pago', '-id_pago')
+    
+            alumno_id  = request.query_params.get('alumno')
+            metodo_id  = request.query_params.get('metodo')
+            carrera_id = request.query_params.get('carrera')
+            limit      = int(request.query_params.get('limit', 20))
+    
+            if alumno_id:
+                pagos = pagos.filter(id_alumno_id=alumno_id)
+            if metodo_id:
+                pagos = pagos.filter(id_metodo_pago_id=metodo_id)
+            if carrera_id:
+                pagos = pagos.filter(detalles__carrera_id=carrera_id).distinct()
+    
+            pagos = pagos[:limit]
+            return Response(PagoReadSerializer(pagos, many=True).data)
 
     def post(self, request):
         ser = PagoWriteSerializer(data=request.data)
@@ -318,6 +334,11 @@ class RegistrarPago(APIView):
                 anio=item["anio"],
             ).update(estado_id=1)  # 1 = "Pagada"
 
+        registrar(
+            request, 'COBRO', 'cobro',
+            f"Cobro ${importe_total:,.0f} — {alumno.apellido}, {alumno.nombre}",
+            pago.id_pago,
+        )
         return Response(
             PagoReadSerializer(pago).data,
             status=status.HTTP_201_CREATED

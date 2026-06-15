@@ -87,10 +87,7 @@
         const tokenGuardado = localStorage.getItem("sigeco_access");
         if (tokenGuardado) {
             document.cookie = `sigeco_access=${tokenGuardado}; path=/; SameSite=Lax`;
-            const rol = localStorage.getItem("sigeco_rol");
-            window.location.href = rol === "ADMIN"
-                ? "http://127.0.0.1:8000/usuarios/admin/dashboard/"
-                : "http://127.0.0.1:8001/inicio";
+            window.location.href = "http://127.0.0.1:8001/inicio/";
             return;
         }
 
@@ -146,11 +143,7 @@
                     // Cookie para el middleware del frontend
                     document.cookie = `sigeco_access=${data.access}; path=/; SameSite=Lax`;
 
-                    if (data.rol === "ADMIN") {
-                        window.location.href = "http://127.0.0.1:8000/usuarios/admin/dashboard/";
-                    } else {
-                        window.location.href = "http://127.0.0.1:8001/inicio";
-                    }
+                    window.location.href = "http://127.0.0.1:8001/inicio/";
                 } else {
                     mostrarError(data.error || "No se pudo iniciar sesión.");
                 }

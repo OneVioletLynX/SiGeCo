@@ -1,61 +1,59 @@
 {% extends "shared/base.html" %}
 {% load static %}
 
-{% block title %}Listado de Alumnos{% endblock %}
+{% block title %}Reporte de Alumnos{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'shared/css/reportes_pdf.css' %}">
+<link rel="stylesheet" href="{% static 'shared/css/reportes_pdf.css' %}?v=2">
 {% endblock %}
 
 {% block content %}
-<div class="main-report-container">
+<div class="table-wrapper">
 
-    <div class="table-wrapper">
-        <div class="filter-container">
+    <div class="form-header">
+        <h1>Reporte de Alumnos</h1>
+        <a href="{% url 'reportes:reportes_index' %}" class="btn-secundario">← Reportes</a>
+    </div>
 
-            <div class="filtro-group">
-                <label class="form-label fw-bold">Estado</label>
+    <div class="filter-container" style="justify-content: space-between;">
+        <div class="filter-container" style="margin-bottom:0;">
+            <div>
+                <label for="filtroEstado">Estado</label>
                 <select id="filtroEstado" class="form-select filtro">
                     <option value="all">Todos</option>
                 </select>
             </div>
-            <div class="filtro-group">
-                <label for="filtroCarrera" class="form-label fw-bold">Carreras</label>
+            <div>
+                <label for="filtroCarrera">Carrera</label>
                 <select id="filtroCarrera" class="form-select filtro">
                     <option value="all">Todas</option>
                 </select>
             </div>
-
-            <div class="action-button-wrapper">
-                <button id="generar-pdf-btn" class="btn btn-primary"
-                    data-icon-url="{% static 'shared/assets/print.svg' %}">
-                    <img src="{% static 'shared/assets/print.svg' %}" alt="Imprimir"
-                        style="width: 20px; height: 20px; vertical-align: middle;">
-                    Generar PDF Filtrado
-                </button>
-            </div>
-
         </div>
-
-        <div class="table-content-area">
-            <table id="tabla-alumnos">
-                <thead>
-                    <tr>
-                        <th>Legajo</th>
-                        <th>Apellido y Nombre</th>
-                        <th>Documento</th>
-                        <th>Estado</th>
-                        <th>Carrera</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-        </div>
+        <button id="generar-pdf-btn" class="button-predeterminado" style="align-self:flex-end;">
+            <span class="material-icons" style="font-size:1.1rem; vertical-align:middle;">picture_as_pdf</span>
+            Generar PDF
+        </button>
     </div>
+
+    <div class="table-content-area">
+        <table id="tabla-alumnos">
+            <thead>
+                <tr>
+                    <th>Legajo</th>
+                    <th>Apellido y Nombre</th>
+                    <th>Documento</th>
+                    <th>Estado</th>
+                    <th>Carrera</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'shared/js/reportes.js' %}" defer></script>
+<script src="{% static 'shared/js/reportes.js' %}?v=2" defer></script>
 {% endblock %}

@@ -1,179 +1,266 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Centro Universitario{% endblock %}</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SiGeCo{% endblock %}</title>
 
-    <link rel="stylesheet" href="{% static 'shared/css/style.css' %}">
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    {% block extra_css %}{% endblock %}
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      corePlugins: { preflight: false },
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50:  '#e3f0f4',
+              100: '#c0dde8',
+              200: '#9ccbdb',
+              500: '#0a6982',
+              600: '#053D4E',
+              700: '#032d38',
+              800: '#021e24',
+            }
+          },
+          fontFamily: {
+            sans: ['"Nunito Sans"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Flowbite CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet">
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- Fuente -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- CSS propio (chips, alerts, tablas, etc.) -->
+  <link rel="stylesheet" href="{% static 'shared/css/style.css' %}">
+
+  {% block extra_css %}{% endblock %}
 </head>
 
-<body>
+<body class="bg-gray-50 font-sans antialiased">
 
-    <header>
-        <div class="left">
-            <a href="{% url 'home' %}" class="brand" style="text-decoration: none;">
-                <span class="name">Centro Universitario</span>
-            </a>
-        </div>
+  <!-- ============================
+       NAVBAR TOP
+       ============================ -->
+  <nav class="fixed top-0 left-0 right-0 z-50 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6">
 
-        <div class="right">
-            <span id="headerNombreUsuario" style="font-size:0.9rem; color:var(--text-color); opacity:0.7;"></span>
-            <span id="headerRolUsuario"    style="font-size:0.78rem; color:var(--text-color); opacity:0.45; margin-left:-0.8rem;"></span>
-            <a href="#" id="btnLogout" title="Cerrar sesión" style="padding:0.3rem 0.6rem;">
-                <img src="{% static 'shared/assets/account.svg' %}" style="width:1.4rem; opacity:0.6;">
-            </a>
-        </div>
-    </header>
+    <a href="{% url 'home' %}" class="flex items-center gap-2 text-brand-600 no-underline">
+      <span class="material-icons text-2xl">school</span>
+      <span class="name text-base font-black tracking-tight">Centro Universitario</span>
+    </a>
 
-    <div class="sidebar-" id="sidebar">
-        <nav>
-            <ul>
-                <!-- Carreras — todos -->
-                <li data-seccion="carreras"><a href="{% url 'carreras_front:carreras' %}">
-                    <img src="{% static 'shared/assets/school.svg' %}">
-                    <span>Carreras</span></a>
-                </li>
-
-                <!-- Cobros — ADMIN y SECRETARIA -->
-                <li data-seccion="cobros"><a href="{% url 'cobros_front:cobros' %}">
-                    <img src="{% static 'shared/assets/payments.svg' %}">
-                    <span>Cobros</span></a>
-                </li>
-
-                <!-- Alumnos — todos -->
-                <li data-seccion="alumnos"><a href="{% url 'alumnos_front:alumnos' %}">
-                    <img src="{% static 'shared/assets/group.svg' %}">
-                    <span>Alumnos</span></a>
-                </li>
-
-                <!-- Mensajería — todos -->
-                <li data-seccion="mensajes"><a href="{% url 'mensajes_front:mensajes' %}">
-                    <img src="{% static 'shared/assets/mail.svg' %}">
-                    <span>Mensajería</span></a>
-                </li>
-
-                <!-- Estadísticas — todos -->
-                <li data-seccion="estadisticas"><a href="{% url 'reportes:estadisticas' %}">
-                    <img src="{% static 'shared/assets/finance.svg' %}">
-                    <span>Estadísticas</span></a>
-                </li>
-
-                <!-- Reportes — todos -->
-                <li class="has-submenu" data-seccion="reportes">
-                    <a href="#" class="submenu-toggle">
-                        <img src="{% static 'shared/assets/file_export.svg' %}">
-                        <span>Reportes</span>
-                        <svg class="arrow" width="14" height="14" fill="none" stroke="currentColor">
-                            <polyline points="6 9 12 15 18 9"/>
-                        </svg>
-                    </a>
-                    <ul class="submenu">
-                        <li><a href="{% url 'reportes:reportes_bonos' %}">
-                            <img src="{% static 'shared/assets/docs.svg' %}">
-                            <span>Bonos pagados</span></a></li>
-                        <li><a href="{% url 'reportes:reportes_alumnos' %}">
-                            <img src="{% static 'shared/assets/docs.svg' %}">
-                            <span>Listado alumnos</span></a></li>
-                        <li><a href="#">
-                            <img src="{% static 'shared/assets/docs.svg' %}">
-                            <span>Recaudación</span></a></li>
-                    </ul>
-                </li>
-            </ul>
-        </nav>
+    <div class="flex items-center gap-3">
+      <div class="text-right hidden sm:block">
+        <p id="headerNombreUsuario" class="text-sm font-semibold text-gray-700 leading-tight"></p>
+        <p id="headerRolUsuario"    class="text-xs text-gray-400 leading-tight"></p>
+      </div>
+      <button id="btnLogout" title="Cerrar sesión"
+        class="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors px-3 py-2 rounded-lg">
+        <span class="material-icons text-xl">logout</span>
+      </button>
     </div>
+  </nav>
 
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+  <!-- ============================
+       SIDEBAR
+       ============================ -->
+  <aside id="sidebar" class="fixed top-16 left-0 z-40 h-[calc(100vh-4rem)] w-64 bg-white border-r border-gray-200 flex flex-col">
+    <nav class="flex-1 overflow-y-auto px-3 py-4">
+      <ul class="space-y-0.5">
 
-    <!-- MODAL GLOBAL DE CONFIRMACIÓN -->
-    <div id="confirmModal" class="confirm-overlay hidden">
-        <div class="confirm-box">
-            <h3 id="confirmTitle">Confirmación</h3>
-            <p id="confirmMessage"></p>
-            <div class="confirm-buttons">
-                <button id="confirmCancel" class="btn-cancel">Cancelar</button>
-                <button id="confirmAccept" class="btn-accept">Aceptar</button>
-            </div>
-        </div>
+        <!-- Carreras -->
+        <li data-seccion="carreras">
+          <a href="{% url 'carreras_front:carreras' %}"
+            class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors group">
+            <span class="material-icons text-xl text-gray-400 group-hover:text-brand-600 transition-colors">school</span>
+            <span class="text-sm font-semibold">Carreras</span>
+          </a>
+        </li>
+
+        <!-- Cobros -->
+        <li data-seccion="cobros">
+          <a href="{% url 'cobros_front:listado_cobros' %}"
+            class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors group">
+            <span class="material-icons text-xl text-gray-400 group-hover:text-brand-600 transition-colors">payments</span>
+            <span class="text-sm font-semibold">Cobros</span>
+          </a>
+        </li>
+
+        <!-- Alumnos -->
+        <li data-seccion="alumnos">
+          <a href="{% url 'alumnos_front:alumnos' %}"
+            class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors group">
+            <span class="material-icons text-xl text-gray-400 group-hover:text-brand-600 transition-colors">group</span>
+            <span class="text-sm font-semibold">Alumnos</span>
+          </a>
+        </li>
+
+        <!-- Mensajería -->
+        <li data-seccion="mensajes">
+          <a href="{% url 'mensajes_front:mensajes' %}"
+            class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors group">
+            <span class="material-icons text-xl text-gray-400 group-hover:text-brand-600 transition-colors">mail</span>
+            <span class="text-sm font-semibold">Mensajería</span>
+          </a>
+        </li>
+
+        <!-- Estadísticas -->
+        <li data-seccion="estadisticas">
+          <a href="{% url 'reportes:estadisticas' %}"
+            class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors group">
+            <span class="material-icons text-xl text-gray-400 group-hover:text-brand-600 transition-colors">bar_chart</span>
+            <span class="text-sm font-semibold">Estadísticas</span>
+          </a>
+        </li>
+
+        <!-- Reportes -->
+        <li data-seccion="reportes">
+          <a href="{% url 'reportes:reportes_index' %}"
+            class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors group">
+            <span class="material-icons text-xl text-gray-400 group-hover:text-brand-600 transition-colors">description</span>
+            <span class="text-sm font-semibold">Reportes</span>
+          </a>
+        </li>
+
+        <!-- Administración (submenu) -->
+        <li class="has-submenu" data-seccion="administracion">
+          <button type="button" data-submenu="dropdown-admin"
+            class="submenu-toggle flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors group text-left">
+            <span class="material-icons text-xl text-gray-400 group-hover:text-brand-600 transition-colors">manage_accounts</span>
+            <span class="flex-1 text-sm font-semibold">Administración</span>
+            <span class="material-icons text-base text-gray-400 arrow-icon transition-transform duration-200">expand_more</span>
+          </button>
+          <ul class="submenu hidden pl-10 mt-0.5 space-y-0.5" id="dropdown-admin">
+            <li><a href="{% url 'usuarios_front:admin_usuarios' %}" class="sidebar-link block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">Usuarios</a></li>
+            <li><a href="{% url 'usuarios_front:admin_config' %}"   class="sidebar-link block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">Config. Instituto</a></li>
+          </ul>
+        </li>
+
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- ============================
+       MAIN CONTENT
+       ============================ -->
+  <main class="ml-64 pt-16 min-h-screen bg-gray-50">
+    <div class="p-6">
+      {% block content %}{% endblock %}
     </div>
+  </main>
 
-    <!-- ALERTA GLOBAL -->
-    <div id="customAlert" class="custom-alert hidden">
-        <div class="custom-alert-content">
-            <span id="customAlertMessage"></span>
-        </div>
+  <!-- MODAL GLOBAL DE CONFIRMACIÓN -->
+  <div id="confirmModal" class="confirm-overlay hidden">
+    <div class="confirm-box">
+      <h3 id="confirmTitle">Confirmación</h3>
+      <p id="confirmMessage"></p>
+      <div class="confirm-buttons">
+        <button id="confirmCancel" class="btn-cancel">Cancelar</button>
+        <button id="confirmAccept" class="btn-accept">Aceptar</button>
+      </div>
     </div>
+  </div>
 
-    <!-- JS global -->
-    <script src="{% static 'shared/js/script.js' %}"></script>
+  <!-- ALERTA GLOBAL -->
+  <div id="customAlert" class="custom-alert hidden">
+    <div class="custom-alert-content">
+      <span id="customAlertMessage"></span>
+    </div>
+  </div>
 
-    <!-- Protección de rutas + control de acceso por rol -->
-    <script>
-    (function () {
-        const token    = localStorage.getItem("sigeco_access");
-        const nombre   = localStorage.getItem("sigeco_nombre");
-        const rol      = localStorage.getItem("sigeco_rol");
-        const permisos = JSON.parse(localStorage.getItem("sigeco_permisos") || "[]");
+  <!-- JS global -->
+  <script src="{% static 'shared/js/script.js' %}"></script>
+  <script src="{% static 'shared/js/auth.js' %}"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 
-        // 1. Sin token → login
-        if (!token) {
-            window.location.href = "http://127.0.0.1:8001/";
-            return;
-        }
+  <!-- Sidebar: submenú + ítem activo -->
+  <script>
+    // Submenú toggle
+    document.querySelectorAll('.submenu-toggle').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const targetId = this.dataset.submenu;
+        const target   = document.getElementById(targetId);
+        const arrow    = this.querySelector('.arrow-icon');
+        if (!target) return;
+        target.classList.toggle('hidden');
+        if (arrow) arrow.style.transform = target.classList.contains('hidden') ? '' : 'rotate(180deg)';
+      });
+    });
 
-        // 2. Mostrar nombre y rol en el header
-        const spanNombre = document.getElementById("headerNombreUsuario");
-        const spanRol    = document.getElementById("headerRolUsuario");
-        if (spanNombre && nombre) spanNombre.textContent = nombre;
-        if (spanRol    && rol)    spanRol.textContent    = rol.charAt(0) + rol.slice(1).toLowerCase();
-
-        // 3. Ocultar secciones del sidebar según permisos
-        document.querySelectorAll("[data-seccion]").forEach(li => {
-            const seccion = li.getAttribute("data-seccion");
-            if (!permisos.includes(seccion)) {
-                li.style.display = "none";
-            }
+    // Marcar ítem activo según ruta
+    const ruta = window.location.pathname;
+    document.querySelectorAll('.sidebar-link').forEach(a => {
+      const href = a.getAttribute('href');
+      if (href && href !== '#' && ruta.startsWith(href)) {
+        a.classList.add('bg-brand-50', 'text-brand-600', '!text-brand-600');
+        a.querySelectorAll('.material-icons').forEach(i => {
+          i.classList.remove('text-gray-400');
+          i.classList.add('text-brand-600');
         });
+      }
+    });
+  </script>
 
-        // 4. Si la página actual es una sección sin permiso → redirigir a inicio
-        const rutaActual = window.location.pathname;
-        const mapaSecciones = {
-            "/cobros/":      "cobros",
-            "/alumnos/":     "alumnos",
-            "/carreras/":    "carreras",
-            "/mensajes/":    "mensajes",
-            "/reportes/":    "reportes",
-            "/estadisticas/": "estadisticas",
-        };
+  <!-- Protección de rutas + control de acceso por rol -->
+  <script>
+  (function () {
+    const token    = localStorage.getItem("sigeco_access");
+    const nombre   = localStorage.getItem("sigeco_nombre");
+    const rol      = localStorage.getItem("sigeco_rol");
+    const permisos = JSON.parse(localStorage.getItem("sigeco_permisos") || "[]");
 
-        for (const [prefijo, seccion] of Object.entries(mapaSecciones)) {
-            if (rutaActual.startsWith(prefijo) && !permisos.includes(seccion)) {
-                window.location.href = "/inicio/";
-                return;
-            }
-        }
+    if (!token) { window.location.href = "http://127.0.0.1:8001/"; return; }
 
-        // 5. Botón logout
-        document.getElementById("btnLogout").addEventListener("click", function (e) {
-            e.preventDefault();
-            localStorage.removeItem("sigeco_access");
-            localStorage.removeItem("sigeco_refresh");
-            localStorage.removeItem("sigeco_rol");
-            localStorage.removeItem("sigeco_nombre");
-            localStorage.removeItem("sigeco_permisos");
-            document.cookie = "sigeco_access=; path=/; max-age=0";
-            window.location.href = "http://127.0.0.1:8001/";
-        });
-    })();
-    </script>
+    const spanNombre = document.getElementById("headerNombreUsuario");
+    const spanRol    = document.getElementById("headerRolUsuario");
+    if (spanNombre && nombre) spanNombre.textContent = nombre;
+    if (spanRol    && rol)    spanRol.textContent    = rol.charAt(0) + rol.slice(1).toLowerCase();
 
-    {% block extra_js %}{% endblock %}
+    document.querySelectorAll("[data-seccion]").forEach(li => {
+      if (!permisos.includes(li.getAttribute("data-seccion"))) li.style.display = "none";
+    });
+
+    const mapaSecciones = {
+      "/cobros/":         "cobros",
+      "/alumnos/":        "alumnos",
+      "/carreras/":       "carreras",
+      "/mensajes/":       "mensajes",
+      "/reportes/":       "reportes",
+      "/estadisticas/":   "estadisticas",
+      "/administracion/": "administracion",
+    };
+    const rutaActual = window.location.pathname;
+    for (const [prefijo, seccion] of Object.entries(mapaSecciones)) {
+      if (rutaActual.startsWith(prefijo) && !permisos.includes(seccion)) {
+        window.location.href = "/inicio/"; return;
+      }
+    }
+
+    document.getElementById("btnLogout").addEventListener("click", e => {
+      e.preventDefault();
+      ["sigeco_access","sigeco_refresh","sigeco_rol","sigeco_nombre","sigeco_permisos"]
+        .forEach(k => localStorage.removeItem(k));
+      document.cookie = "sigeco_access=; path=/; max-age=0";
+      window.location.href = "http://127.0.0.1:8001/";
+    });
+  })();
+  </script>
+
+  <!-- Nombre del instituto -->
+  <script>
+    fetch("http://127.0.0.1:8000/config/api/")
+      .then(r => r.json())
+      .then(c => { const el = document.querySelector(".name"); if (el && c.nombre) el.textContent = c.nombre; })
+      .catch(() => {});
+  </script>
+
+  {% block extra_js %}{% endblock %}
 </body>
 </html>

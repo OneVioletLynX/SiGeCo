@@ -1,0 +1,141 @@
+{% extends "shared/base.html" %}
+{% load static %}
+
+{% block title %}Config. Instituto — SiGeCo{% endblock %}
+
+{% block extra_css %}
+<style>
+  .admin-header { margin-bottom: 1.5rem; }
+  .admin-header h2 {
+    font-size: 1.4rem; font-weight: 700;
+    color: var(--text-title-color); margin: 0;
+  }
+  .admin-header p { color: var(--text-muted); margin: 0.15rem 0 0; font-size: 0.9rem; }
+
+  .card-config {
+    background: var(--background-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow-soft);
+    padding: 2rem;
+    max-width: 480px;
+  }
+
+  .form-group { margin-bottom: 1.2rem; }
+  .form-group label {
+    display: block; font-weight: 600;
+    font-size: 0.88rem; margin-bottom: 0.35rem; color: var(--text-color);
+  }
+  .form-group input[type="text"] {
+    width: 100%; box-sizing: border-box;
+    border: 1px solid var(--border-color); border-radius: 7px;
+    padding: 0.52rem 0.75rem; font-size: 0.93rem;
+    transition: border-color 0.15s;
+  }
+  .form-group input[type="text"]:focus {
+    outline: none; border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(5, 61, 78, 0.12);
+  }
+
+  .btn-guardar {
+    background: var(--color-primary); color: #fff;
+    border: none; border-radius: 7px; padding: 0.6rem 1.5rem;
+    font-size: 0.93rem; font-weight: 700; cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-guardar:hover { opacity: 0.88; }
+  .btn-guardar:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .alert-msg {
+    padding: 0.6rem 1rem; border-radius: 7px;
+    font-size: 0.86rem; margin-bottom: 1rem; display: none;
+  }
+  .alert-success { background: var(--color-success-light); color: #0a3622; }
+  .alert-error   { background: var(--color-danger-light); color: #58151c; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+  <h2>Configuración del Instituto</h2>
+  <p>Nombre que aparece en el encabezado del sistema</p>
+</div>
+
+<div class="card-config">
+  <div id="alertaGlobal" class="alert-msg"></div>
+
+  <div class="form-group">
+    <label for="inputNombre">Nombre del Instituto</label>
+    <input type="text" id="inputNombre" placeholder="Centro Universitario">
+  </div>
+
+  <button class="btn-guardar" id="btnGuardar" onclick="guardarConfig()">
+    Guardar cambios
+  </button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const API = "http://127.0.0.1:8000/config/api/";
+
+  function getToken() {
+    return localStorage.getItem("sigeco_access") || "";
+  }
+
+  function mostrarAlerta(msg, tipo) {
+    const el = document.getElementById("alertaGlobal");
+    el.textContent = msg;
+    el.className = "alert-msg " + (tipo === "error" ? "alert-error" : "alert-success");
+    el.style.display = "block";
+    setTimeout(() => { el.style.display = "none"; }, 4000);
+  }
+
+  async function cargarConfig() {
+    try {
+      const resp = await fetch(API);
+      const data = await resp.json();
+      document.getElementById("inputNombre").value = data.nombre || "";
+    } catch {
+      mostrarAlerta("No se pudo cargar la configuración.", "error");
+    }
+  }
+
+  window.guardarConfig = async function () {
+    const nombre = document.getElementById("inputNombre").value.trim();
+    const btn    = document.getElementById("btnGuardar");
+
+    if (!nombre) { mostrarAlerta("El nombre no puede estar vacío.", "error"); return; }
+
+    btn.disabled = true;
+    btn.textContent = "Guardando...";
+
+    try {
+      const resp = await fetch(API, {
+        method: "PUT",
+        headers: {
+          "Content-Type":  "application/json",
+          "Authorization": "Bearer " + getToken(),
+        },
+        body: JSON.stringify({ nombre, color_primario: "#053D4E" }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) { mostrarAlerta(data.error || "Error al guardar.", "error"); return; }
+
+      // Actualizar el nombre en el header inmediatamente
+      const marca = document.querySelector(".brand .name");
+      if (marca) marca.textContent = nombre;
+
+      mostrarAlerta("Guardado correctamente.", "success");
+    } catch {
+      mostrarAlerta("Error de conexión.", "error");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Guardar cambios";
+    }
+  };
+
+  cargarConfig();
+})();
+</script>
+{% endblock %}

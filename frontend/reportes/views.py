@@ -1,5 +1,8 @@
 from django.shortcuts import render
 
+def reportes_index(request):
+    return render(request, 'reportes/reportes_index.html')
+
 def reportes_alumnos(request):
     return render(request, 'reportes/reportes_alumnos.html')
 

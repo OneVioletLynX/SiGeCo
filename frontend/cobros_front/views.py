@@ -11,7 +11,13 @@ from pypdf import PdfReader, PdfWriter
 from backend.ctacte.models import Pago, PagoDetalle, MesPago, MetodoPago
 
 
+def listado_cobros(request):
+    """Listado de cobros con filtros."""
+    return render(request, 'cobros/cobros_listado.html')
+
+
 def cobros(request):
+    """Pantalla de registrar cobro."""
     meses   = MesPago.objects.all().order_by('id_mes')
     metodos = MetodoPago.objects.all().order_by('id_metodo_pago')
     return render(request, 'cobros/index.html', {'meses': meses, 'metodos': metodos})
@@ -22,10 +28,6 @@ def comprobante_cobro_pdf(request, id_pago):
     detalles = PagoDetalle.objects.filter(pago=pago).select_related("mes", "carrera")
     alumno   = pago.id_alumno
 
-    # CORRECCIÓN: anio_ingreso ya no está en Alumno, está en CarreraCursada.
-    # Se toma la primera carrera cursada del alumno relacionada con este pago.
-    # Si el pago tiene detalles, se usa la carrera del primer detalle.
-    # Si no, se toma la primera carrera cursada del alumno.
     carrera_nombre = ""
     anio_ingreso   = ""
 
@@ -47,7 +49,7 @@ def comprobante_cobro_pdf(request, id_pago):
     def write(x, y, text):
         can.drawString(x, y, str(text))
 
-    columnas_x = [65, 335, 605]   # X base por cada talón
+    columnas_x = [65, 335, 605]
     y_fecha   = 450
     y_nombre  = 432
     y_estado  = 414
@@ -58,7 +60,6 @@ def comprobante_cobro_pdf(request, id_pago):
     y_total   = 45
 
     for x_base in columnas_x:
-
         write(x_base, y_fecha,   pago.fecha_pago.strftime("%d/%m/%Y %H:%M") if pago.fecha_pago else "")
         write(x_base, y_nombre,  f"{alumno.apellido.upper()} {alumno.nombre.upper()}")
         write(x_base, y_estado,  "Activo")

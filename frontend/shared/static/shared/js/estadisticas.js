@@ -84,7 +84,15 @@ const iniciarDashboardAdmin = async () => {
         console.error("No se recibieron datos del servidor.");
         return;
     }
-    const chartAltasMensuales = echarts.init(document.getElementById("chartAltasMensuales"))
+
+    const kpis = data.kpis || {};
+    const set  = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val ?? "—"; };
+    set("kpiAltas",          kpis.altas);
+    set("kpiModificaciones", kpis.modificaciones);
+    set("kpiBajas",          kpis.bajas);
+    set("kpiCobros",         kpis.cobros);
+
+    const chartAltasMensuales = echarts.init(document.getElementById("chartAltasMensuales"));
     chartAltasMensuales.setOption(data.charts.chartAltasMensuales);
     chartAltasMensuales.resize();
 };

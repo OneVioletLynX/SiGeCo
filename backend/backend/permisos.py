@@ -9,6 +9,7 @@ PERMISOS_POR_ROL = {
     'ADMIN': [
         'cobros', 'alumnos', 'carreras',
         'mensajes', 'reportes', 'estadisticas',
+        'administracion',
     ],
     'SECRETARIA': [
         'cobros', 'alumnos', 'carreras',

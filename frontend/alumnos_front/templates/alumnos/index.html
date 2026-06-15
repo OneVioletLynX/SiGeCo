@@ -1,40 +1,42 @@
 {% extends "shared/base.html" %}
 {% load static %}
-{% block title %}Inicio{% endblock %}
+
+{% block title %}Alumnos{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'shared/css/alumnos.css' %}">
 {% endblock %}
+
 {% block content %}
-
-
 <div class="table-wrapper">
-    <div class="filter-container" style="justify-content: space-between;">
-        <div class="filter-container">
-            <div style="display:flex ; flex-direction: column;">
-                <label for="buscadorAlumno" class="form-label fw-bold">Buscar</label>
-                <input type="text" id="buscadorAlumno" class="form-control" placeholder="Nombre">
-            </div>
 
-            <div style="display:flex ; flex-direction: column;">
-                <label for="filtroEstado" class="form-label fw-bold">Estados</label>
+    <div class="form-header">
+        <h1>Alumnos</h1>
+    </div>
+
+    <div class="filter-container" style="justify-content: space-between;">
+        <div class="filter-container" style="margin-bottom:0;">
+            <div>
+                <label for="buscadorAlumno">Buscar</label>
+                <input type="text" id="buscadorAlumno" class="form-control" placeholder="Nombre o apellido">
+            </div>
+            <div>
+                <label for="filtroEstado">Estado</label>
                 <select id="filtroEstado" class="form-select filtro">
-                    <option value="all" selected>Todos</option>
+                    <option value="all">Todos</option>
                 </select>
             </div>
-
-            <div style="display:flex ; flex-direction: column;">
-                <label for="filtroCarrera" class="form-label fw-bold">Carreras</label>
+            <div>
+                <label for="filtroCarrera">Carrera</label>
                 <select id="filtroCarrera" class="form-select filtro">
                     <option value="all">Todas</option>
                 </select>
             </div>
         </div>
-
-            <a href="{% url 'alumnos_front:alumno_nuevo' %}" class="button-predeterminado">
-                <img src="{% static 'shared/assets/add.svg' %}" />
-                <span class="text">Nuevo Alumno</span>
-            </a>
-
+        <a href="{% url 'alumnos_front:alumno_nuevo' %}" class="button-predeterminado" style="align-self:flex-end;">
+            <span class="material-icons" style="font-size:1.1rem; vertical-align:middle;">add</span>
+            Nuevo Alumno
+        </a>
     </div>
 
     <table id="tablaAlumnos">
@@ -46,17 +48,16 @@
                 <th class="acciones-col">Acciones</th>
             </tr>
         </thead>
-        <tbody>
-
-        </tbody>
+        <tbody></tbody>
     </table>
 
     <nav aria-label="Paginación" class="ulpgcds-pager">
         <ul id="paginador"></ul>
     </nav>
-</div>
 
+</div>
 {% endblock %}
+
 {% block extra_js %}
 <script src="{% static 'shared/js/alumnos.js' %}"></script>
 {% endblock %}

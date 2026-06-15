@@ -5,10 +5,16 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.core.cache import cache
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 import json
 
 from .models import Usuario, ROLES
 from backend.permisos import get_permisos
+from backend.permissions import TienePermisoRol
+from auditoria.models import registrar
 
 # Intentos máximos de login por IP antes de bloquear
 MAX_INTENTOS  = 5
@@ -89,14 +95,17 @@ def login_view(request):
     if request.session.get("usuario_id"):
         if request.session.get("rol") == "ADMIN":
             return redirect("usuarios:admin_dashboard")
-        return redirect("mensajes:index")
+        return redirect("http://127.0.0.1:8001/inicio")
 
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
         password = request.POST.get("password")
-
+        print("USERNAME:", username)
+        print("PASSWORD:", password[:3])
         try:
             usuario = Usuario.objects.get(username__iexact=username)
+            print("USUARIO ENCONTRADO:", usuario.rol)
+            print("CHECK:", check_password(password, usuario.password_hash))
             if check_password(password, usuario.password_hash):
                 request.session["usuario_id"]     = usuario.id
                 request.session["usuario_nombre"] = usuario.nombre
@@ -117,7 +126,7 @@ def login_view(request):
 # ========================================================
 def logout_view(request):
     request.session.flush()
-    return redirect("usuarios:login")
+    return redirect("http://127.0.0.1:8001/")
 
 
 # ========================================================
@@ -170,8 +179,151 @@ def admin_dashboard(request):
 
         return redirect("usuarios:admin_dashboard")
 
+    from auditoria.models import RegistroAuditoria
+    from config.models import ConfigInstituto
+    import re as _re
+
+    # Config POST
+    if request.method == "POST" and request.POST.get("accion") == "config":
+        nombre         = request.POST.get("nombre", "").strip()
+        color_primario = request.POST.get("color_primario", "").strip()
+        if not nombre:
+            messages.error(request, "El nombre no puede estar vacío.")
+        elif not _re.match(r'^#[0-9A-Fa-f]{6}$', color_primario):
+            messages.error(request, "Color inválido. Debe ser hexadecimal, ej: #053D4E")
+        else:
+            cfg = ConfigInstituto.get()
+            cfg.nombre         = nombre
+            cfg.color_primario = color_primario
+            cfg.save(update_fields=["nombre", "color_primario"])
+            messages.success(request, "Configuración guardada correctamente.")
+        return redirect("usuarios:admin_dashboard")
+
     usuarios = Usuario.objects.exclude(rol="ADMIN").order_by("-creado")
+
+    # Última actividad por usuario
+    usuarios_data = []
+    for u in usuarios:
+        ultimo = RegistroAuditoria.objects.filter(usuario_id=u.id).order_by('-fecha').first()
+        usuarios_data.append({"usuario": u, "ultima_actividad": ultimo})
+
+    # Feed de actividad reciente (últimas 20)
+    actividad_reciente = RegistroAuditoria.objects.select_related().order_by('-fecha')[:20]
+
+    # Config del instituto
+    config = ConfigInstituto.get()
+
     return render(request, "usuarios/admin_dashboard.html", {
-        "usuarios": usuarios,
-        "roles":    ROLES,
+        "usuarios_data":     usuarios_data,
+        "roles":             ROLES,
+        "actividad_reciente": actividad_reciente,
+        "config":            config,
     })
+
+
+# ========================================================
+# API REST — Gestión de usuarios (requiere JWT + rol ADMIN)
+# ========================================================
+class EsAdmin(IsAuthenticated):
+    message = "Solo los administradores pueden acceder a esta sección."
+
+    def has_permission(self, request, view):
+        return (
+            super().has_permission(request, view)
+            and getattr(request.user, 'rol', None) == 'ADMIN'
+        )
+
+
+class UsuarioAPIList(APIView):
+    permission_classes = [EsAdmin]
+
+    def get(self, request):
+        usuarios = Usuario.objects.all().order_by("-creado")
+        data = [
+            {
+                "id":       u.id,
+                "nombre":   u.nombre,
+                "apellido": u.apellido,
+                "username": u.username,
+                "email":    u.email,
+                "rol":      u.rol,
+                "creado":   u.creado.strftime("%d/%m/%Y") if u.creado else "",
+            }
+            for u in usuarios
+        ]
+        return Response(data)
+
+    def post(self, request):
+        nombre   = request.data.get("nombre", "").strip()
+        apellido = request.data.get("apellido", "").strip()
+        username = request.data.get("username", "").strip().lower()
+        password = request.data.get("password", "")
+        rol      = request.data.get("rol", "SECRETARIA")
+        email    = request.data.get("email", "").strip() or None
+
+        roles_validos = [r[0] for r in ROLES]
+        if not nombre or not apellido or not username or not password:
+            return Response({"error": "Campos requeridos: nombre, apellido, username, password."}, status=400)
+        if rol not in roles_validos:
+            return Response({"error": "Rol inválido."}, status=400)
+        if Usuario.objects.filter(username__iexact=username).exists():
+            return Response({"error": f"El usuario '{username}' ya existe."}, status=400)
+
+        usuario = Usuario.objects.create(
+            nombre=nombre,
+            apellido=apellido,
+            username=username,
+            email=email,
+            password_hash=make_password(password),
+            rol=rol,
+        )
+        registrar(request, 'ALTA', 'usuario',
+                  f"Alta de usuario: {username} ({rol})", usuario.id)
+        return Response({"id": usuario.id, "mensaje": f"Usuario '{username}' creado."}, status=201)
+
+
+class UsuarioAPIDetail(APIView):
+    permission_classes = [EsAdmin]
+
+    def get_object(self, pk):
+        return get_object_or_404(Usuario, pk=pk)
+
+    def put(self, request, pk):
+        usuario  = self.get_object(pk)
+        nombre   = request.data.get("nombre", usuario.nombre).strip()
+        apellido = request.data.get("apellido", usuario.apellido).strip()
+        username = request.data.get("username", usuario.username).strip().lower()
+        rol      = request.data.get("rol", usuario.rol)
+        email    = request.data.get("email", usuario.email or "").strip() or None
+        password = request.data.get("password", "")
+
+        roles_validos = [r[0] for r in ROLES]
+        if rol not in roles_validos:
+            return Response({"error": "Rol inválido."}, status=400)
+        if (
+            usuario.username != username
+            and Usuario.objects.filter(username__iexact=username).exists()
+        ):
+            return Response({"error": f"El usuario '{username}' ya existe."}, status=400)
+
+        usuario.nombre   = nombre
+        usuario.apellido = apellido
+        usuario.username = username
+        usuario.rol      = rol
+        usuario.email    = email
+        if password:
+            usuario.password_hash = make_password(password)
+        usuario.save()
+        registrar(request, 'MODIFICACION', 'usuario',
+                  f"Modificación de usuario: {usuario.username}", pk)
+        return Response({"mensaje": "Usuario actualizado."})
+
+    def delete(self, request, pk):
+        usuario = self.get_object(pk)
+        if usuario.rol == 'ADMIN':
+            return Response({"error": "No podés eliminar a un administrador."}, status=400)
+        username_guardado = usuario.username
+        usuario.delete()
+        registrar(request, 'BAJA', 'usuario',
+                  f"Eliminación de usuario: {username_guardado}", pk)
+        return Response({"mensaje": "Usuario eliminado."}, status=204)
