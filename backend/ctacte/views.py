@@ -371,16 +371,23 @@ class MesesPendientes(APIView):
             .order_by("anio", "mes_id")
         )
 
-        # Mapear cuota → id_pago buscando en PagoDetalle
-        # Buscar pagos del alumno y sus detalles
+        # Mapear cuota → info completa del pago
         pago_por_cuota = {}
         pagos_alumno = Pago.objects.filter(id_alumno=alumno).values_list("id_pago", flat=True)
         detalles = PagoDetalle.objects.filter(
             pago__in=pagos_alumno
-        ).select_related("pago")
+        ).select_related("pago", "pago__id_metodo_pago")
         for detalle in detalles:
             clave = (detalle.carrera_id, detalle.mes_id, detalle.anio_pago)
-            pago_por_cuota[clave] = detalle.pago.id_pago
+            pago = detalle.pago
+            fecha = pago.fecha_pago.strftime("%d/%m/%Y") if pago.fecha_pago else None
+            metodo = pago.id_metodo_pago.descripcion if pago.id_metodo_pago else None
+            pago_por_cuota[clave] = {
+                "id_pago":    pago.id_pago,
+                "fecha_pago": fecha,
+                "metodo":     metodo,
+                "importe":    float(detalle.importe),
+            }
 
         meses_por_anio = {}
         ultimo_pagado  = None
@@ -388,7 +395,7 @@ class MesesPendientes(APIView):
         for cuota in cuotas:
             anio   = str(cuota.anio)
             estado = cuota.estado.descripcion.lower()  # "pagada" o "pendiente"
-            id_pago = pago_por_cuota.get((cuota.carrera_id, cuota.mes_id, cuota.anio))
+            info   = pago_por_cuota.get((cuota.carrera_id, cuota.mes_id, cuota.anio), {})
 
             if anio not in meses_por_anio:
                 meses_por_anio[anio] = []
@@ -399,7 +406,10 @@ class MesesPendientes(APIView):
                 "carrera":     cuota.carrera.id_carrera,
                 "estado":      estado,
                 "pagado":      estado == "pagada",
-                "id_pago":     id_pago,
+                "id_pago":     info.get("id_pago"),
+                "fecha_pago":  info.get("fecha_pago"),
+                "metodo":      info.get("metodo"),
+                "importe":     info.get("importe") if estado == "pagada" else float(cuota.importe),
             })
 
             # Rastrear el último mes pagado para calcular bloqueos

@@ -50,7 +50,7 @@ class CarreraSerializer(serializers.ModelSerializer):
         return valor.importe if valor else None
 
     def get_cuota_vigente(self, obj):
-        concepto = Concepto.objects.filter(descripcion__iexact="Cuota").first()
+        concepto = Concepto.objects.filter(descripcion__iexact="Importe cuota").first()
         if not concepto:
             return None
         valor = Valor.objects.filter(id_carrera=obj, id_concepto=concepto).order_by("-fecha_inicio").first()
@@ -68,7 +68,7 @@ class CarreraSerializer(serializers.ModelSerializer):
             descripcion__iexact="Inscripción", defaults={"descripcion": "Inscripción"}
         )
         concepto_cuota, _ = Concepto.objects.get_or_create(
-            descripcion__iexact="Cuota", defaults={"descripcion": "Cuota"}
+            descripcion__iexact="Importe cuota", defaults={"descripcion": "Importe cuota"}
         )
 
         if inscripcion is not None:
@@ -97,7 +97,7 @@ class CarreraSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
 
         concepto_insc = Concepto.objects.filter(descripcion__iexact="Inscripción").first()
-        concepto_cuota = Concepto.objects.filter(descripcion__iexact="Cuota").first()
+        concepto_cuota = Concepto.objects.filter(descripcion__iexact="Importe cuota").first()
 
         if inscripcion is not None and concepto_insc:
             Valor.objects.create(

@@ -13,18 +13,25 @@ def alumno_nuevo(request):
 
 def ficha_alumno(request, alumno_id):
 
-    alumno = Alumno.objects.select_related(
-        "ciudad__departamento__provincia"
-    ).get(id_alumno=alumno_id)
+    alumno = get_object_or_404(Alumno, id_alumno=alumno_id)
 
     carreras = CarreraCursada.objects.select_related(
-        "carrera",
-        "id_estado"
+        "carrera", "id_estado"
     ).filter(alumno=alumno)
 
-    localidad = alumno.ciudad
+    # La tabla geografia_localidad usa IDs INDEC — algunos alumnos pueden
+    # tener ciudad_id que no existe en esa tabla.
+    try:
+        localidad = alumno.ciudad
+        ciudad_nombre = localidad.nombre if localidad else "—"
+        try:
+            provincia_nombre = localidad.departamento.provincia.nombre
+        except Exception:
+            provincia_nombre = "—"
+    except Exception:
+        ciudad_nombre = "—"
+        provincia_nombre = "—"
 
-    # calcular edad
     edad = None
     if alumno.fecha_nacimiento:
         hoy = date.today()
@@ -36,9 +43,10 @@ def ficha_alumno(request, alumno_id):
         request,
         "alumnos/alumno_ficha.html",
         {
-            "alumno": alumno,
-            "carreras": carreras,
-            "localidad": localidad,
-            "edad": edad
+            "alumno":           alumno,
+            "carreras":         carreras,
+            "ciudad_nombre":    ciudad_nombre,
+            "provincia_nombre": provincia_nombre,
+            "edad":             edad,
         }
     )

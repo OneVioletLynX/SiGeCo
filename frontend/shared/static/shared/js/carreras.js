@@ -170,6 +170,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="material-icons" style="font-size:18px; color:#6b7280;">edit</span>
                 Editar
               </button>
+              <button class="menu-item-carrera btn-historial-carrera" data-id="${carrera.id_carrera}" data-nombre="${carrera.descripcion}">
+                <span class="material-icons" style="font-size:18px; color:#6b7280;">history</span>
+                Ver historial
+              </button>
               <div style="border-top:1px solid #e5e7eb; margin:4px 0;"></div>
               <button class="menu-item-carrera btn-cambiar-estado-carrera danger"
                 data-id="${carrera.id_carrera}" data-estado="${carrera.estado_actual}">
@@ -270,29 +274,84 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Cambiar estado
-  document.addEventListener("click", async e => {
+  let _bajaCarreraId    = null;
+  let _bajaCarreraActual = null;
+
+  const modalBaja          = document.getElementById("modalBajaCarrera");
+  const checkInactivar     = document.getElementById("checkInactivarAlumnos");
+  const btnConfirmarBaja   = document.getElementById("btnConfirmarBaja");
+
+  function cerrarModalBaja() {
+    modalBaja.classList.add("hidden");
+    checkInactivar.checked = false;
+    _bajaCarreraId     = null;
+    _bajaCarreraActual = null;
+  }
+
+  document.getElementById("btnCerrarBaja")?.addEventListener("click", cerrarModalBaja);
+  document.getElementById("btnCancelarBaja")?.addEventListener("click", cerrarModalBaja);
+  modalBaja?.addEventListener("click", e => { if (e.target === modalBaja) cerrarModalBaja(); });
+
+  document.addEventListener("click", e => {
     const btn = e.target.closest(".btn-cambiar-estado-carrera");
     if (!btn) return;
     document.querySelectorAll(".dropdown-menu-carrera").forEach(m => m.classList.add("hidden"));
 
     const estadoActual = btn.dataset.estado;
-    const nuevoEstado  = (estadoActual || "").toLowerCase() === "activo" ? 2 : 1;
-    const accion       = nuevoEstado === 2 ? "dar de baja" : "reactivar";
+    const esActivo     = (estadoActual || "").toLowerCase() === "activo";
 
-    const ok = await showConfirm(`¿Querés ${accion} esta carrera?`, "Confirmar");
-    if (!ok) return;
+    if (esActivo) {
+      // Dar de baja → abrir modal custom con checkbox
+      const bajaId = btn.dataset.id;
+      if (!bajaId || bajaId === "null" || isNaN(bajaId)) return;
+      _bajaCarreraId     = bajaId;
+      _bajaCarreraActual = estadoActual;
+      modalBaja.classList.remove("hidden");
+    } else {
+      // Reactivar → confirmación simple
+      const reactivarId = btn.dataset.id;
+      if (!reactivarId || reactivarId === "null") return;
+      showConfirm("¿Querés reactivar esta carrera?", "Confirmar").then(async ok => {
+        if (!ok) return;
+        try {
+          const resp = await authFetch(`${API}/carreras/${reactivarId}/`, {
+            method : "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body   : JSON.stringify({ id_estado: 1 }),
+          });
+          if (resp && resp.ok) {
+            showAlert("Carrera reactivada correctamente.", "success");
+            await cargarCarreras();
+          } else {
+            showAlert("No se pudo reactivar la carrera.", "error");
+          }
+        } catch {
+          showAlert("Error de conexión.", "error");
+        }
+      });
+    }
+  });
+
+  btnConfirmarBaja?.addEventListener("click", async () => {
+    if (!_bajaCarreraId || _bajaCarreraId === "null" || isNaN(_bajaCarreraId)) return;
+    const idParaBaja       = _bajaCarreraId;   // capturar antes de que cerrarModalBaja lo resetee
+    const inactivarAlumnos = checkInactivar.checked;
+    cerrarModalBaja();
 
     try {
-      const resp = await authFetch(`${API}/carreras/${btn.dataset.id}/`, {
+      const resp = await authFetch(`${API}/carreras/${idParaBaja}/`, {
         method:  "PATCH",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ id_estado: nuevoEstado }),
+        body:    JSON.stringify({ id_estado: 2, inactivar_alumnos: inactivarAlumnos }),
       });
       if (resp && resp.ok) {
-        showAlert("Estado actualizado correctamente.", "success");
+        const msg = inactivarAlumnos
+          ? "Carrera dada de baja y alumnos activos inactivados."
+          : "Carrera dada de baja correctamente.";
+        showAlert(msg, "success");
         await cargarCarreras();
       } else {
-        showAlert("No se pudo actualizar el estado.", "error");
+        showAlert("No se pudo dar de baja la carrera.", "error");
       }
     } catch {
       showAlert("Error de conexión.", "error");
@@ -403,7 +462,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const textoOriginal = btnGuardar?.textContent || "Guardar";
     if (btnGuardar) { btnGuardar.textContent = "Guardando..."; btnGuardar.disabled = true; }
 
-    const id   = document.getElementById("carreraId").value;
+    const idRaw = document.getElementById("carreraId").value;
+    const id    = idRaw && idRaw !== "null" && !isNaN(idRaw) ? idRaw : null;
     const data = {
       descripcion,
       inscripcion: parseFloat(inscripcion),
@@ -452,6 +512,81 @@ document.addEventListener("DOMContentLoaded", () => {
     } finally {
       isSubmitting = false;
       if (btnGuardar) { btnGuardar.textContent = textoOriginal; btnGuardar.disabled = false; }
+    }
+  });
+
+  // ===========================
+  // HISTORIAL DE VALORES
+  // ===========================
+  const modalHistorial   = document.getElementById("modalHistorial");
+  const historialContent = document.getElementById("historialContent");
+  const historialTitulo  = document.getElementById("historialTitulo");
+
+  function cerrarHistorial() {
+    modalHistorial.classList.add("hidden");
+  }
+
+  document.getElementById("btnCerrarHistorial")?.addEventListener("click", cerrarHistorial);
+  modalHistorial?.addEventListener("click", e => {
+    if (e.target === modalHistorial) cerrarHistorial();
+  });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && !modalHistorial.classList.contains("hidden")) cerrarHistorial();
+  });
+
+  document.addEventListener("click", async e => {
+    const btn = e.target.closest(".btn-historial-carrera");
+    if (!btn) return;
+    document.querySelectorAll(".dropdown-menu-carrera").forEach(m => m.classList.add("hidden"));
+
+    const id     = btn.dataset.id;
+    const nombre = btn.dataset.nombre;
+    historialTitulo.textContent = `Historial de valores — ${nombre}`;
+    historialContent.innerHTML  = `<p class="historial-empty">Cargando...</p>`;
+    modalHistorial.classList.remove("hidden");
+
+    try {
+      const resp = await authFetch(`${API}/valores/?id_carrera=${id}`);
+      if (!resp || !resp.ok) throw new Error();
+      const valores = await resp.json();
+
+      if (!valores.length) {
+        historialContent.innerHTML = `<p class="historial-empty">Sin registros de valores para esta carrera.</p>`;
+        return;
+      }
+
+      // Agrupar por concepto dinámicamente
+      const grupos = {};
+      valores.forEach(v => {
+        const key = v.id_concepto_nombre || `Concepto ${v.id_concepto}`;
+        if (!grupos[key]) grupos[key] = [];
+        grupos[key].push(v);
+      });
+
+      function renderSeccion(titulo, registros) {
+        const rows = registros.map((v, i) => {
+          const fecha   = new Date(v.fecha_inicio + "T00:00:00").toLocaleDateString("es-AR", { day:"2-digit", month:"2-digit", year:"numeric" });
+          const badge   = i === 0 ? `<span class="historial-vigente-badge">Vigente</span>` : "";
+          const importe = `$${Number(v.importe).toLocaleString("es-AR", { minimumFractionDigits: 2 })}`;
+          return `<tr>
+            <td>${fecha}${badge}</td>
+            <td style="font-weight:${i===0?'600':'400'}">${importe}</td>
+          </tr>`;
+        }).join("");
+        return `
+          <p class="historial-section-title">${titulo}</p>
+          <table class="historial-table">
+            <thead><tr><th>Fecha de vigencia</th><th>Importe</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>`;
+      }
+
+      historialContent.innerHTML = Object.entries(grupos)
+        .map(([nombre, registros]) => renderSeccion(nombre, registros))
+        .join("");
+
+    } catch {
+      historialContent.innerHTML = `<p class="historial-empty">No se pudo cargar el historial.</p>`;
     }
   });
 

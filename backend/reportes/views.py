@@ -3,7 +3,7 @@ import datetime
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django.shortcuts import render
-from reportes.services import get_contabilidad_data, get_alumnos_data, get_admin_data, alumnos_filter_data, bonos_por_carrera_data, bonos_matriz_data
+from reportes.services import get_contabilidad_data, get_alumnos_data, get_admin_data, alumnos_filter_data, bonos_por_carrera_data, bonos_matriz_data, demografico_data
 from xhtml2pdf import pisa
 from carreras.models import Estado, Carrera
 from django.templatetags.static import static
@@ -165,5 +165,47 @@ def generar_pdf_bonos_por_carrera(request):
 
     if pisa_status.err:
         return HttpResponse('<h1>Error al generar el PDF de bonos</h1>' + html_string, status=500)
+
+    return response
+
+
+def preview_demografico(request):
+    carrera_id = request.GET.get("carrera")
+    anio_raw   = request.GET.get("anio")
+
+    carrera_id = int(carrera_id) if carrera_id and carrera_id.isdigit() else None
+    anio       = int(anio_raw)   if anio_raw   and anio_raw.isdigit()   else None
+
+    data = demografico_data(carrera_id=carrera_id, anio=anio)
+    return JsonResponse(data, safe=False)
+
+
+def generar_pdf_demografico(request):
+    header_url = request.build_absolute_uri(static("header.png"))
+    footer_url = request.build_absolute_uri(static("footer.png"))
+
+    carrera_id = request.GET.get("carrera")
+    anio_raw   = request.GET.get("anio")
+
+    carrera_id = int(carrera_id) if carrera_id and carrera_id.isdigit() else None
+    anio       = int(anio_raw)   if anio_raw   and anio_raw.isdigit()   else None
+
+    data = demografico_data(carrera_id=carrera_id, anio=anio)
+
+    contexto = {
+        "titulo_reporte": "Reporte Demográfico",
+        "fecha_generacion": datetime.date.today().strftime("%d/%m/%Y"),
+        "header_url": header_url,
+        "footer_url": footer_url,
+        **data,
+    }
+
+    html_string = render_to_string("reportes/reportes_demografico_pdf.html", contexto)
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = 'attachment; filename="reporte_demografico.pdf"'
+    pisa_status = pisa.CreatePDF(html_string, dest=response)
+
+    if pisa_status.err:
+        return HttpResponse("<h1>Error al generar el PDF</h1>" + html_string, status=500)
 
     return response

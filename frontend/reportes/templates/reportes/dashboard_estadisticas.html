@@ -4,129 +4,221 @@
 {% block title %}Estadísticas{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'shared/css/reportes.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'shared/css/reportes.css' %}?v=3">
 {% endblock %}
 
 {% block content %}
 <div class="table-wrapper">
-    <div class="form-header">
-        <h1>Estadísticas</h1>
+
+  <div class="form-header">
+    <h1>Estadísticas</h1>
+  </div>
+
+  <!-- TABS PILL -->
+  <div class="tab-buttons">
+    <button class="tab-btn active" data-tab="contabilidad">
+      <span class="material-icons">account_balance</span>
+      Contabilidad
+    </button>
+    <button class="tab-btn" data-tab="alumnos">
+      <span class="material-icons">group</span>
+      Alumnos
+    </button>
+    <button class="tab-btn" data-tab="administrativo">
+      <span class="material-icons">manage_accounts</span>
+      Administrativo
+    </button>
+  </div>
+
+  <!-- ===========================
+       CONTABILIDAD
+  ============================ -->
+  <div class="tab-content active" id="contabilidad">
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#dcfce7; color:#16a34a;">
+          <span class="material-icons">payments</span>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="ingresosMes">—</span>
+          <span class="kpi-label">Ingresos este mes</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#dcfce7; color:#16a34a;">
+          <span class="material-icons">trending_up</span>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="ingresosAnio">—</span>
+          <span class="kpi-label">Ingresos este año</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#e0f2fe; color:#0369a1;">
+          <span class="material-icons">receipt_long</span>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="cuotasCoPen">—</span>
+          <span class="kpi-label">Cuotas cobradas / estimadas</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#fee2e2; color:#dc2626;">
+          <span class="material-icons">warning_amber</span>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="tasaMorosidad">—</span>
+          <span class="kpi-label">Tasa de morosidad</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#ede9fe; color:#7c3aed;">
+          <span class="material-icons">check_circle</span>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="alumnosAlDia">—</span>
+          <span class="kpi-label">Alumnos al día</span>
+        </div>
+      </div>
     </div>
-    <div class="tabs">
-        <div class="tab-buttons">
-            <button class="tab-btn active" data-tab="contabilidad">Contabilidad</button>
-            <button class="tab-btn" data-tab="alumnos">Alumnos</button>
-            <button class="tab-btn" data-tab="administrativo">Administrativo</button>
-        </div>
-        <!-- ==========================
-            SECCIÓN 1: CONTABILIDAD
-        =========================== -->
-        <div class="tab-content active" id="contabilidad">
-            <h2>Indicadores económicos</h2>
-            <!-- KPIs -->
-            <div class="kpi">
-                <div class="card">
-                    <h3>Ingresos totales</h3>
-                    <div id="ingresosMes"></div>
-                    <div id="ingresosAnio"></div>
-                </div>
-                <div class="card">
-                    <h3>Cuotas cobradas / Estimadas este año</h3>
-                    <div id="cuotasCoPen"></div>
-                </div>
-                <div class="card">
-                    <h3>Tasa de Morosidad</h3>
-                    <div id="tasaMorosidad"></div>
-                </div>
-                <div class="card">
-                    <h3>% de Alumnos al día</h3>
-                    <div id="alumnosAlDia"></div>
-                </div>
-            </div>
 
-            <!-- GRÁFICOS -->
-            <div class="chart-grid">
-                <div id="chartIngresos" class="chart"></div>
-                <div id="chartMediosPago" class="chart"></div>
-                <div id="chartDeudaPromedio" class="chart"></div>
-                <div id="chartDemoraPagos" class="chart"></div>
-            </div>
-        </div>
-        <!-- ==========================
-            SECCIÓN 2: ALUMNOS
-        =========================== -->
-        <div class="tab-content" id="alumnos">
-            <h2>Estadísticas sobre alumnos</h2>
-            <div class="kpi">
-
-                <div class="card">
-                    <h3>Total alumnos activos</h3>
-                    <div id="alumnos_activos"></div>
-                </div>
-
-                <div class="card">
-                    <h3>Total Egresados</h3>
-                    <div id="alumnos_egresados"></div>
-                    <h3 id="label_ingresantes">Ingresantes ({{ anio_actual }})</h3>
-                    <div id="alumnos_ingresantes"></div>
-                </div>
-
-                <div class="card">
-                    <h3>Tasa de retención</h3>
-                    <div id="tasaRetencion"></div>
-                </div>
-                <div class="card">
-                    <h3>Promedio años de permanencia</h3>
-                    <div id="promPermanencia"></div>
-                </div>
-            </div>
-
-            <div class="chart-grid">
-                <div id="chartEgreIngre" class="chart"></div>
-                <div id="chartPorCarrera" class="chart"></div>
-                <div id="chartGenero" class="chart"></div>
-                <div id="chartEdad" class="chart"></div>
-                <div id="chartGeografia" class="chart"></div>
-            </div>
-        </div>
-
-        <!-- ==========================
-            SECCIÓN 3: ADMINISTRATIVO
-        =========================== -->
-        <div class="tab-content" id="administrativo">
-            <h2>Estadísticas administrativas <small style="font-size:0.7rem;color:#9ca3af;font-weight:400;">— mes en curso</small></h2>
-            <!-- KPIs -->
-            <div class="kpi">
-                <div class="card">
-                    <h3>Altas registradas</h3>
-                    <p id="kpiAltas">—</p>
-                </div>
-                <div class="card">
-                    <h3>Modificaciones</h3>
-                    <p id="kpiModificaciones">—</p>
-                </div>
-                <div class="card">
-                    <h3>Bajas</h3>
-                    <p id="kpiBajas">—</p>
-                </div>
-                <div class="card">
-                    <h3>Cobros registrados</h3>
-                    <p id="kpiCobros">—</p>
-                </div>
-            </div>
-
-            <!-- GRÁFICO -->
-            <div class="dashboard">
-                <div id="chartAltasMensuales" class="chart"></div>
-            </div>
-        </div>
+    <div class="seccion-subtitulo">
+      <span class="material-icons">bar_chart</span>
+      Gráficos
     </div>
-    {% endblock %}
+    <div class="chart-grid-2">
+      <div id="chartIngresos"      class="chart"></div>
+      <div id="chartMediosPago"    class="chart"></div>
+      <div id="chartDeudaPromedio" class="chart"></div>
+      <div id="chartDemoraPagos"   class="chart"></div>
+    </div>
+  </div>
 
+  <!-- ===========================
+       ALUMNOS
+  ============================ -->
+  <div class="tab-content" id="alumnos">
 
-<!-- SCRIPTS -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#dcfce7; color:#16a34a;">
+          <span class="material-icons">group</span>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="alumnos_activos">—</span>
+          <span class="kpi-label">Alumnos activos</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#e0f2fe; color:#0369a1;">
+          <span class="material-icons">school</span>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="alumnos_egresados">—</span>
+          <span class="kpi-label">Egresados</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#fef3c7; color:#d97706;">
+          <span class="material-icons">person_add</span>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="alumnos_ingresantes">—</span>
+          <span id="label_ingresantes" class="kpi-label">Ingresantes</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#ede9fe; color:#7c3aed;">
+          <span class="material-icons">autorenew</span>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="tasaRetencion">—</span>
+          <span class="kpi-label">Tasa de retención</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#fce7f3; color:#db2777;">
+          <span class="material-icons">schedule</span>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="promPermanencia">—</span>
+          <span class="kpi-label">Años de permanencia (prom.)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="seccion-subtitulo">
+      <span class="material-icons">bar_chart</span>
+      Gráficos
+    </div>
+    <div class="chart-grid-2">
+      <div id="chartEgreIngre"  class="chart"></div>
+      <div id="chartPorCarrera" class="chart"></div>
+      <div id="chartGenero"     class="chart"></div>
+      <div id="chartEdad"       class="chart"></div>
+      <div id="chartGeografia"  class="chart"></div>
+    </div>
+  </div>
+
+  <!-- ===========================
+       ADMINISTRATIVO
+  ============================ -->
+  <div class="tab-content" id="administrativo">
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#dcfce7; color:#16a34a;">
+          <span class="material-icons">person_add</span>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="kpiAltas">—</span>
+          <span class="kpi-label">Altas este mes</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#fef3c7; color:#d97706;">
+          <span class="material-icons">edit</span>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="kpiModificaciones">—</span>
+          <span class="kpi-label">Modificaciones este mes</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#fee2e2; color:#dc2626;">
+          <span class="material-icons">person_off</span>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="kpiBajas">—</span>
+          <span class="kpi-label">Bajas este mes</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#e0f2fe; color:#0369a1;">
+          <span class="material-icons">payments</span>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="kpiCobros">—</span>
+          <span class="kpi-label">Cobros este mes</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="seccion-subtitulo">
+      <span class="material-icons">bar_chart</span>
+      Gráficos
+    </div>
+    <div class="chart-grid-2" style="grid-template-columns:1fr;">
+      <div id="chartAltasMensuales" class="chart" style="height:360px;"></div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
 {% block extra_js %}
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
-    <script src="{% static 'shared/js/estadisticas_tabs.js' %}"></script>
-    <script src="{% static 'shared/js/estadisticas.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<script src="{% static 'shared/js/estadisticas_tabs.js' %}"></script>
+<script src="{% static 'shared/js/estadisticas.js' %}"></script>
 {% endblock %}

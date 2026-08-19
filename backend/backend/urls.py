@@ -32,7 +32,7 @@ from ctacte.views import (
 from mensajes.views import MensajeListCreate, MensajeDetail
 
 # Reportes
-from reportes.views import seccion_contabilidad, seccion_alumnos, seccion_admin, generar_pdf_alumnos, generar_pdf_bonos_por_carrera, preview_bonos_por_carrera, bonos_matriz_view
+from reportes.views import seccion_contabilidad, seccion_alumnos, seccion_admin, generar_pdf_alumnos, generar_pdf_bonos_por_carrera, preview_bonos_por_carrera, bonos_matriz_view, preview_demografico, generar_pdf_demografico
 
 # Auditoría
 from auditoria.views import lista_auditoria
@@ -115,6 +115,8 @@ urlpatterns = [
     path('api/generar_pdf_bonos/', generar_pdf_bonos_por_carrera, name='generar_pdf_bonos'),
     path('api/preview_bonos/', preview_bonos_por_carrera, name='preview_bonos'),
     path('api/bonos_matriz/', bonos_matriz_view, name='bonos_matriz'),
+    path('api/preview_demografico/', preview_demografico, name='preview_demografico'),
+    path('api/generar_pdf_demografico/', generar_pdf_demografico, name='generar_pdf_demografico'),
 
     # Auditoría
     path('api/auditoria/', lista_auditoria, name='auditoria-lista'),

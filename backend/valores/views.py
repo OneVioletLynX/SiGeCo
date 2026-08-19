@@ -11,8 +11,14 @@ from .serializers import ValorSerializer, ConceptoSerializer
 # --- CRUD de Valores ---
 class ValoresListCreate(APIView):
     def get(self, request):
-        valores = Valor.objects.all().order_by("id_valor")
-        serializer = ValorSerializer(valores, many=True)
+        qs = Valor.objects.all()
+        carrera = request.query_params.get("id_carrera")
+        concepto = request.query_params.get("id_concepto")
+        if carrera:
+            qs = qs.filter(id_carrera=carrera)
+        if concepto:
+            qs = qs.filter(id_concepto=concepto)
+        serializer = ValorSerializer(qs.order_by("-fecha_inicio"), many=True)
         return Response(serializer.data)
 
     def post(self, request):

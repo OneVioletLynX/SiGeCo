@@ -7,127 +7,124 @@
 {% endblock %}
 
 {% block content %}
-<div>
+<div class="table-wrapper">
 
   <div class="form-header" style="margin-bottom: 1.25rem;">
     <h1>Nuevo Cobro</h1>
     <a href="{% url 'cobros_front:listado_cobros' %}" class="btn-secundario">← Volver al listado</a>
   </div>
 
-  <div style="display: grid; grid-template-columns: auto auto; gap: 20px;">
-
-    <div style="position: relative; grid-column: 2;">
-      <label for="">Buscar</label>
-      <input type="text" id="buscador" placeholder="Nombre, Apellido o Documento" autocomplete="off"
-        class="form-control" />
+  <!-- Buscador -->
+  <div class="cobro-search-wrap">
+    <label for="buscador">Buscar alumno</label>
+    <div style="position:relative; max-width:440px;">
+      <input type="text" id="buscador" placeholder="Nombre, Apellido o Documento"
+        autocomplete="off" class="form-control" />
       <div id="sugerencias" class="suggestions-box"></div>
     </div>
+  </div>
 
-    <div class="toolbar" style="grid-column: 1;">
-      <button id="btnImprimirPago" class="button-predeterminado btn-secondary disabled"><img
-          src="{% static 'shared/assets/print.svg' %}">Imprimir
+  <!-- Card del alumno seleccionado -->
+  <div id="alumnoCard" class="alumno-card-cobro" style="display:none;"></div>
+
+  <!-- Panel principal (meses + detalle) -->
+  <div class="cobro-layout">
+
+    <!-- Barra de acciones sobre pago ya registrado -->
+    <div class="cobro-toolbar-row">
+      <button id="btnImprimirPago" class="button-predeterminado btn-secondary disabled">
+        <span class="material-icons" style="font-size:1.1rem;vertical-align:middle;">print</span>
+        Imprimir
       </button>
-      <button id="btnEliminarPago" class="button-predeterminado btn-danger disabled"><img
-          src="{% static 'shared/assets/close.svg' %}">Eliminar
+      <button id="btnEliminarPago" class="button-predeterminado btn-danger disabled">
+        <span class="material-icons" style="font-size:1.1rem;vertical-align:middle;">delete</span>
+        Eliminar
       </button>
     </div>
 
+    <!-- Meses + Detalle -->
+    <div class="cobro-main-row">
 
-
-    <!-- 🔹 MODAL DE ALTA DE COBRO -->
-    <div class="cobro-layout" style="grid-column: 2;">
-      <div class="modal-content" style="display: flex; flex-direction: row; max-width: fit-content;">
-
-        <!-- 🔹 Lado Izquierdo: Selección de Meses -->
-        <div class="meses-container">
-          <h2>Meses</h2>
-
-          {% regroup meses by anio as meses_por_anio %}
-          {% for grupo in meses_por_anio %}
-          <div class="year-group">
-            <h3>{{ grupo.grouper }}</h3>
-            <div class="months-grid">
-              {% for mes in grupo.list %}
-              <div class="month" data-id_mes="{{ mes.id_mes }}">
-                <span>{{ mes.descripcion }}</span>
-                <img src="{% static 'shared/assets/add.svg' %}" alt="Agregar" class="icono-mes">
-              </div>
-              {% endfor %}
-            </div>
-          </div>
-          {% endfor %}
+      <!-- Izquierdo: meses -->
+      <div class="meses-container">
+        <h2>Meses</h2>
+        <div class="meses-placeholder">
+          <span class="material-icons">calendar_month</span>
+          <span>Buscá un alumno para ver sus cuotas</span>
         </div>
+      </div>
 
-        <!-- 🔹 Lado Derecho: Detalle del Cobro -->
+      <!-- Derecho: formulario de cobro -->
+      <div class="detalle-panel">
         <form id="cobroForm">
           {% csrf_token %}
           <div class="detalle-container">
 
-            <div>
-              <h2>Detalle</h2>
+            <!-- Método de Pago -->
+            <div class="form-group">
+              <h3>Método de pago</h3>
+              <select id="metodo_pago" name="metodo_pago" required>
+                <option value="">Seleccionar...</option>
+                {% for metodo in metodos %}
+                <option value="{{ metodo.id_metodo_pago }}">{{ metodo.descripcion }}</option>
+                {% endfor %}
+              </select>
+            </div>
 
-              <!-- Método de Pago -->
-              <div class="form-group">
-                <h3>Método de pago</h3>
-                <select id="metodo_pago" name="metodo_pago" required>
-                  <option value="">Seleccionar...</option>
-                  {% for metodo in metodos %}
-                  <option value="{{ metodo.id_metodo_pago }}">{{ metodo.descripcion }}</option>
-                  {% endfor %}
-                </select>
-              </div>
+            <!-- Comprobante (solo transferencia) -->
+            <div class="form-group hidden" id="campo-comprobante">
+              <h3>N° de comprobante</h3>
+              <input type="text" id="nro_comprobante" name="nro_comprobante" placeholder="Ej: 12345678" />
+            </div>
 
-              <!-- Campo de comprobante (solo transferencia) -->
-              <div class="form-group hidden" id="campo-comprobante">
-                <h3>N° de comprobante</h3>
-                <input type="text" id="nro_comprobante" name="nro_comprobante" placeholder="Ej: 12345678" />
-              </div>
-
-              <!-- Campo de tarjeta (solo tarjeta) -->
-              <div class="form-group hidden" id="campo-tarjeta">
-                <h3>Seleccionar tarjeta</h3>
-                <select id="tarjeta" name="tarjeta">
-                  <option value="">Seleccionar...</option>
-                  <option value="marcos_juarez">Marcos Juárez</option>
-                  <option value="coyspu">Coyspu</option>
-                </select>
-              </div>
+            <!-- Tarjeta (solo tarjeta) -->
+            <div class="form-group hidden" id="campo-tarjeta">
+              <h3>Seleccionar tarjeta</h3>
+              <select id="tarjeta" name="tarjeta">
+                <option value="">Seleccionar...</option>
+                <option value="marcos_juarez">Marcos Juárez</option>
+                <option value="coyspu">Coyspu</option>
+              </select>
             </div>
 
             <!-- Importe -->
-            <div>
-              <div class="form-group">
-                <h3 for="importe">Importe</h3>
-                <input type="number" id="importe" name="importe" placeholder="$0.00" required />
-              </div>
-
-              <div class="form-group recargo">
-                <label class="toggle-label" for="recargo">
-                  <span>Recargo</span>
-                  <span class="toggle-switch">
-                    <input type="checkbox" id="recargo" name="recargo" />
-                    <span class="toggle-slider"></span>
-                  </span>
-                </label>
-              </div>
+            <div class="form-group">
+              <h3>Importe</h3>
+              <input type="number" id="importe" name="importe" placeholder="$0.00" required />
             </div>
+
+            <!-- Recargo -->
+            <div class="form-group recargo">
+              <label class="toggle-label" for="recargo">
+                <span>Recargo</span>
+                <span class="toggle-switch">
+                  <input type="checkbox" id="recargo" name="recargo" />
+                  <span class="toggle-slider"></span>
+                </span>
+              </label>
+            </div>
+
+            <!-- Botones del form -->
             <div class="modal-buttons">
-              <button type="submit" class="button-predeterminado" id="btnGuardar"><img
-                  src="{% static 'shared/assets/check.svg' %}">Guardar</button>
-              <button type="button" id="btnCancelar" class="btn-ghost-cobro"><img
-                  src="{% static 'shared/assets/close.svg' %}">Cancelar</button>
+              <button type="submit" class="button-predeterminado" id="btnGuardar">
+                <span class="material-icons" style="font-size:1.1rem;vertical-align:middle;">check</span>
+                Guardar
+              </button>
+              <button type="button" id="btnCancelar" class="btn-ghost-cobro">
+                <span class="material-icons" style="font-size:1.1rem;vertical-align:middle;">close</span>
+                Cancelar
+              </button>
             </div>
+
+            <input type="hidden" id="mesesSeleccionados" name="mesesSeleccionados" />
           </div>
-
-          <input type="hidden" id="mesesSeleccionados" name="mesesSeleccionados" />
-
-
         </form>
       </div>
+
     </div>
   </div>
-</div>
 
+</div>
 {% endblock %}
 
 {% block extra_js %}

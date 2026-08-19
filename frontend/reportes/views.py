@@ -11,3 +11,6 @@ def reportes_bonos(request):
 
 def dashboard_estadisticas(request):
     return render(request, 'reportes/dashboard_estadisticas.html')
+
+def reportes_demografico(request):
+    return render(request, 'reportes/reportes_demografico.html')

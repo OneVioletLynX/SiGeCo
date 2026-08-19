@@ -40,6 +40,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <!-- CSS propio (chips, alerts, tablas, etc.) -->
   <link rel="stylesheet" href="{% static 'shared/css/style.css' %}">
+  <!-- Ocultar ítems de nav por rol antes del primer paint -->
+  <style>[data-seccion] { display: none; }</style>
 
   {% block extra_css %}{% endblock %}
 </head>
@@ -57,7 +59,7 @@
     </a>
 
     <div class="flex items-center gap-3">
-      <div class="text-right hidden sm:block">
+      <div class="text-right">
         <p id="headerNombreUsuario" class="text-sm font-semibold text-gray-700 leading-tight"></p>
         <p id="headerRolUsuario"    class="text-xs text-gray-400 leading-tight"></p>
       </div>
@@ -145,6 +147,16 @@
 
       </ul>
     </nav>
+
+    <!-- Nosotros — pegado al fondo -->
+    <div class="px-3 py-3 border-t border-gray-200">
+      <a href="{% url 'nosotros' %}"
+        class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors group">
+        <span class="material-icons text-xl text-gray-400 group-hover:text-brand-600 transition-colors">info</span>
+        <span class="text-sm font-semibold">Nosotros</span>
+      </a>
+    </div>
+
   </aside>
 
   <!-- ============================
@@ -224,7 +236,7 @@
     if (spanRol    && rol)    spanRol.textContent    = rol.charAt(0) + rol.slice(1).toLowerCase();
 
     document.querySelectorAll("[data-seccion]").forEach(li => {
-      if (!permisos.includes(li.getAttribute("data-seccion"))) li.style.display = "none";
+      if (permisos.includes(li.getAttribute("data-seccion"))) li.style.display = "block";
     });
 
     const mapaSecciones = {
@@ -253,12 +265,25 @@
   })();
   </script>
 
-  <!-- Nombre del instituto -->
+  <!-- Nombre del instituto (cacheado en sessionStorage para no spamear /config/api/) -->
   <script>
-    fetch("http://127.0.0.1:8000/config/api/")
-      .then(r => r.json())
-      .then(c => { const el = document.querySelector(".name"); if (el && c.nombre) el.textContent = c.nombre; })
-      .catch(() => {});
+    (function () {
+      function aplicarConfig(c) {
+        const el = document.querySelector(".name");
+        if (el && c.nombre) el.textContent = c.nombre;
+      }
+      try {
+        const cached = sessionStorage.getItem("sigeco_config");
+        if (cached) { aplicarConfig(JSON.parse(cached)); return; }
+      } catch (_) {}
+      fetch("http://127.0.0.1:8000/config/api/")
+        .then(r => r.json())
+        .then(c => {
+          try { sessionStorage.setItem("sigeco_config", JSON.stringify(c)); } catch (_) {}
+          aplicarConfig(c);
+        })
+        .catch(() => {});
+    })();
   </script>
 
   {% block extra_js %}{% endblock %}

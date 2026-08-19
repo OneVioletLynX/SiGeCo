@@ -1,9 +1,10 @@
 from django.contrib import admin
 from django.urls import path, include
-from .views import home
+from .views import home, nosotros
 
 urlpatterns = [
-    path('inicio/', home, name='home'),  # 🟢 Home principal
+    path('inicio/', home, name='home'),
+    path('nosotros/', nosotros, name='nosotros'),
 
     # Secciones con prefijo
     path('carreras/', include('carreras_front.urls')),

@@ -42,6 +42,7 @@
     <table id="tablaAlumnos">
         <thead>
             <tr>
+                <th style="width:48px;"></th>
                 <th>Apellido y Nombre</th>
                 <th>Carrera</th>
                 <th>Estado</th>
@@ -51,9 +52,12 @@
         <tbody></tbody>
     </table>
 
-    <nav aria-label="Paginación" class="ulpgcds-pager">
-        <ul id="paginador"></ul>
-    </nav>
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-top:0.75rem;">
+        <span id="contadorAlumnos" style="font-size:0.82rem; color:var(--text-muted);"></span>
+        <nav aria-label="Paginación" class="ulpgcds-pager" style="margin-top:0;">
+            <ul id="paginador"></ul>
+        </nav>
+    </div>
 
 </div>
 {% endblock %}

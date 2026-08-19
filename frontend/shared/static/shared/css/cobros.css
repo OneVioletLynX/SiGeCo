@@ -8,187 +8,403 @@
 }
 
 /* =====================================================
+   Buscador de alumno
+   ===================================================== */
+
+.cobro-search-wrap {
+  margin-bottom: 1.25rem;
+}
+
+.cobro-search-wrap label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.4rem;
+}
+
+/* =====================================================
+   Card del alumno seleccionado
+   ===================================================== */
+
+.alumno-card-cobro {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  background: #f0fdf4;
+  border: 1.5px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1.25rem;
+  max-width: 480px;
+}
+
+.alumno-avatar-cobro {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.alumno-info-cobro {
+  flex: 1;
+  min-width: 0;
+}
+
+.alumno-nombre-cobro {
+  display: block;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-title-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.alumno-meta-cobro {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+.btn-cambiar-alumno {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: none;
+  border: 1.5px solid #86efac;
+  border-radius: 8px;
+  color: #16a34a;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.btn-cambiar-alumno:hover {
+  background: #dcfce7;
+}
+
+.btn-cambiar-alumno .material-icons {
+  font-size: 0.9rem;
+}
+
+/* =====================================================
+   Layout principal (cobro-layout)
+   ===================================================== */
+
+.cobro-layout {
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+.cobros-activo {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Barra de acciones sobre pago registrado */
+.cobro-toolbar-row {
+  display: flex;
+  gap: 0.6rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1.25rem;
+}
+
+#btnImprimirPago,
+#btnEliminarPago {
+  background: var(--background-color);
+  border: 1.5px solid var(--border-color);
+  color: var(--text-muted);
+  box-shadow: none;
+  font-size: 0.82rem;
+}
+
+#btnImprimirPago:not(.disabled):hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--background-hover);
+}
+
+#btnEliminarPago:not(.disabled):hover {
+  border-color: #dc2626;
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+/* Meses (arriba) + detalle (abajo), una sola columna */
+.cobro-main-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* =====================================================
+   Panel de detalle — barra horizontal, mismo lenguaje
+   visual que .filter-container (Alumnos/Carreras)
+   ===================================================== */
+
+.detalle-panel {
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  padding: 1rem 1.25rem;
+}
+
+.detalle-panel h3 {
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+/* =====================================================
    Contenedor de meses
    ===================================================== */
 
 .meses-container {
-  max-width: 700px;
-  margin-right: 25px;
-  padding-right: 25px;
-
   font-family: "Inter", sans-serif;
   color: var(--text-color);
-
-  max-height: 70vh;
-  overflow-y: auto;
 }
 
 /* Scroll */
-.meses-container::-webkit-scrollbar       { width: 8px; }
-.meses-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
-.meses-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-/* Título fijo */
 .meses-container h2 {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: var(--background-color);
-  padding-bottom: 10px;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-title-color);
+}
+
+/* Placeholder vacío */
+.meses-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+  font-size: 0.88rem;
   text-align: center;
 }
 
-/* =====================================================
-   Año
-   ===================================================== */
-
-.year-group { margin-bottom: 1.8rem; }
-
-/* =====================================================
-   Grilla
-   ===================================================== */
-
-.months-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-  margin-bottom: 20px;
-  padding: 10px;
+.meses-placeholder .material-icons {
+  font-size: 2.5rem;
+  opacity: 0.3;
 }
 
+/* Loading */
+.meses-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2.5rem 1rem;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+@keyframes rotating {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.rotating { animation: rotating 0.9s linear infinite; }
+
 /* =====================================================
-   Tarjeta Mes
+   Tabla de meses — mismos estilos que tablaAlumnos
+   (los estilos base: card, thead, th, td, hover vienen
+    todos de style.css — no se sobreescriben acá)
    ===================================================== */
 
-.month {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.meses-table th { cursor: default; }
 
-  background: var(--background-color);
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 2px solid transparent;
-
-  box-shadow: var(--shadow-soft);
-  transition: all 0.15s ease;
+tr.month {
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
 }
 
-.month:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-hover);
-  border-color: var(--mes-seleccionado);
+/* Fila separadora de año */
+.year-row { cursor: pointer; }
+
+.year-row-cell {
+  background: #f9fafb;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-color);
 }
 
-.month span {
-  font-size: 0.95rem;
-  color: #333;
+.meses-table tbody tr.year-row:first-child .year-row-cell { border-top: none; }
+
+.year-row:hover .year-row-cell { background: #f3f4f6; }
+
+.year-chevron {
+  font-size: 1rem !important;
+  vertical-align: middle;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+  margin-right: 4px;
+}
+
+.year-row-collapsed .year-chevron { transform: rotate(-90deg); }
+
+.year-row strong {
+  font-size: 0.8rem;
+  color: var(--text-title-color);
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.year-summary {
+  margin-left: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.year-hidden { display: none; }
+
+/* Contenido de columnas */
+.mes-nombre-col { font-weight: 600; }
+
+.mes-importe-col {
+  font-weight: 800;
+  font-size: 1rem;
+  color: #16a34a;
+  white-space: nowrap;
+}
+
+.mes-fecha-col {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Ícono checkbox */
+.mes-checkbox-icon {
+  font-size: 1.25rem !important;
+  vertical-align: middle;
+  color: #d1d5db;
+  transition: color 0.15s;
+}
+
+tr.month.pendiente .mes-checkbox-icon { color: #d97706; }
+tr.month.pagado    .mes-checkbox-icon { color: #16a34a; }
+
+/* Chip de método */
+.mes-metodo-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Badge pendiente */
+.mes-estado-tag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 0.78rem;
   font-weight: 600;
 }
 
-.month img.icono-mes {
-  width: 18px;
-  height: 18px;
-  transition: transform 0.2s ease;
-}
+.mes-estado-tag.pendiente { background: #fef3c7; color: #92400e; }
 
 /* =====================================================
-   Estados de mes
+   Estados de selección
    ===================================================== */
 
 /* Seleccionado para pagar (azul) */
-.month.selected {
-  background-color: var(--mes-seleccionado);
-  border: 2px solid var(--mes-seleccionado-dark);
-}
+tr.month.selected td { background: var(--mes-seleccionado); }
+tr.month.selected:hover td { background: var(--mes-seleccionado-dark); }
+tr.month.selected .mes-nombre-col    { color: #fff; }
+tr.month.selected .mes-importe-col   { color: rgba(255,255,255,0.9); }
+tr.month.selected .mes-fecha-col     { color: rgba(255,255,255,0.75); }
+tr.month.selected .mes-checkbox-icon { color: #fff; }
+tr.month.selected .mes-estado-tag    { background: rgba(255,255,255,0.2); color: #fff; }
 
-.month.selected span        { color: #fff; }
-.month.selected img.icono-mes { filter: invert(1); transform: scale(1.1); }
-
-/* Pagado (verde claro) */
-.month.pagado {
-  background-color: var(--background-color);
-  border: 2px solid var(--color-success);
-}
-
-/* Pendiente (amarillo) */
-.month.pendiente {
-  background-color: #fffbeb;
-  border: 2px solid #f0c419;
-  color: #8a6d00;
-}
-
-/* Pendiente seleccionado → azul sobre amarillo */
-.month.pendiente.selected {
-  background-color: var(--mes-seleccionado);
-  border: 2px solid var(--mes-seleccionado-dark);
-  color: #fff;
-}
-.month.pendiente.selected span { color: #fff; }
-
-/* Selección de pago pagado (verde) */
-.month.selected-pago {
-  background: var(--color-success);
-  color: #fff;
-}
+/* Pagado seleccionado para imprimir/eliminar (verde) */
+tr.month.selected-pago td { background: #16a34a; }
+tr.month.selected-pago:hover td { background: #15803d; }
+tr.month.selected-pago .mes-nombre-col    { color: #fff; }
+tr.month.selected-pago .mes-importe-col   { color: rgba(255,255,255,0.9); }
+tr.month.selected-pago .mes-fecha-col     { color: rgba(255,255,255,0.75); }
+tr.month.selected-pago .mes-checkbox-icon { color: #fff; }
+tr.month.selected-pago .mes-metodo-chip   { background: rgba(255,255,255,0.2) !important; color: #fff !important; }
 
 /* =====================================================
-   Encabezados del panel de detalle
-   ===================================================== */
-
-.modal-content h2 { text-align: center; margin-bottom: 20px; }
-
-.modal-content h3 {
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
-}
-
-/* =====================================================
-   Detalle de pago
+   Detalle de pago (formulario)
    ===================================================== */
 
 .detalle-container {
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
+  flex-direction: row;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  margin-bottom: 14px;
+  margin-bottom: 0;
 }
 
 .form-group label {
   color: var(--text-muted);
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .form-group input,
 .form-group select {
-  padding: 9px 12px;
+  padding: 0 12px;
+  height: 38px;
   border: 1.5px solid var(--border-color);
   border-radius: 8px;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   outline: none;
   width: 100%;
+  min-width: 170px;
   transition: border-color 0.15s;
   background: var(--background-color);
   color: var(--text-color);
 }
+
+#importe { min-width: 130px; }
 
 .form-group input:focus,
 .form-group select:focus {
@@ -202,16 +418,17 @@
    ===================================================== */
 
 .recargo {
-  margin-bottom: 14px;
+  margin-bottom: 0;
+  padding-bottom: 8px;
 }
 
 .toggle-label {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 10px;
   cursor: pointer;
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--text-muted);
@@ -262,39 +479,17 @@
 }
 
 /* =====================================================
-   Botones de toolbar (Imprimir / Eliminar)
+   Botones de acción del form
    ===================================================== */
 
-#btnImprimirPago,
-#btnEliminarPago {
-  background: var(--background-color);
-  border: 1.5px solid var(--border-color);
-  color: var(--text-muted);
-  box-shadow: none;
+.modal-buttons {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0;
+  flex-wrap: wrap;
 }
 
-#btnImprimirPago:not(.disabled):hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  background: var(--background-hover);
-}
-
-#btnEliminarPago:not(.disabled):hover {
-  border-color: #dc2626;
-  color: #dc2626;
-  background: #fef2f2;
-}
-
-#btnImprimirPago img,
-#btnEliminarPago img {
-  opacity: 0.5;
-  transition: opacity 0.15s;
-}
-
-#btnImprimirPago:not(.disabled):hover img,
-#btnEliminarPago:not(.disabled):hover img {
-  opacity: 1;
-}
 
 /* =====================================================
    Botones deshabilitados
@@ -326,32 +521,10 @@ button.disabled,
   font-family: inherit;
 }
 
-.btn-ghost-cobro img {
-  width: 16px;
-  height: 16px;
-  opacity: 0.5;
-}
-
 .btn-ghost-cobro:hover {
   background: var(--background-hover);
   border-color: #9ca3af;
   color: var(--text-color);
-}
-
-/* =====================================================
-   Estado inicial oculto / activo
-   ===================================================== */
-
-.toolbar,
-.cobro-layout {
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.35s ease;
-}
-
-.cobros-activo {
-  opacity: 1 !important;
-  pointer-events: auto !important;
 }
 
 /* =====================================================
@@ -369,13 +542,24 @@ button.disabled,
 
 .month.vibrar { animation: vibrar 0.25s ease; }
 
-/* Bloqueado */
-.month.bloqueado {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-.month.bloqueado:hover {
-  transform: none;
-  box-shadow: var(--shadow-soft);
-  border-color: transparent;
+/* =====================================================
+   Bloqueado
+   ===================================================== */
+
+.month.bloqueado { opacity: 0.35; cursor: not-allowed; }
+.month.bloqueado:hover { background-color: transparent; }
+
+/* =====================================================
+   Responsive
+   ===================================================== */
+
+@media (max-width: 700px) {
+  .detalle-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .form-group input,
+  .form-group select {
+    min-width: 0;
+  }
 }

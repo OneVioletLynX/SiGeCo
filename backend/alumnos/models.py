@@ -20,10 +20,15 @@ class Alumno(models.Model):
         max_length=100
     )
 
-    fecha_nacimiento = models.DateField()
+    fecha_nacimiento = models.DateField(
+        null=True,
+        blank=True
+    )
 
     dni = models.IntegerField(
-        unique=True
+        unique=True,
+        null=True,
+        blank=True
     )
 
     cuit = models.CharField(
@@ -36,14 +41,21 @@ class Alumno(models.Model):
     ciudad = models.ForeignKey(
         "geografia.Localidad",
         on_delete=models.PROTECT,
-        db_column="ciudad"
+        db_column="ciudad",
+        null=True,
+        blank=True
     )
 
     direccion = models.CharField(
-        max_length=100
+        max_length=100,
+        null=True,
+        blank=True
     )
 
-    numero = models.IntegerField()
+    numero = models.IntegerField(
+        null=True,
+        blank=True
+    )
 
     piso = models.CharField(
         max_length=5,
@@ -57,12 +69,20 @@ class Alumno(models.Model):
         null=True
     )
 
-    prefijo = models.IntegerField()
+    prefijo = models.IntegerField(
+        null=True,
+        blank=True
+    )
 
-    telefono = models.PositiveIntegerField()
+    telefono = models.PositiveIntegerField(
+        null=True,
+        blank=True
+    )
 
     email = models.EmailField(
-        unique=True
+        unique=True,
+        null=True,
+        blank=True
     )
 
     class Meta:

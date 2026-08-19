@@ -10,6 +10,44 @@
   let carreraSeleccionadaId = null;
   let pagoSeleccionado = null;
 
+  const AVATAR_COLORS = [
+    "#4f46e5","#0891b2","#059669","#d97706","#dc2626",
+    "#7c3aed","#db2777","#0284c7","#16a34a","#ca8a04"
+  ];
+
+  function avatarColor(name) {
+    let h = 0;
+    for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffff;
+    return AVATAR_COLORS[h % AVATAR_COLORS.length];
+  }
+
+  function getInitials(nombre, apellido) {
+    const n = (nombre || "").trim();
+    const a = (apellido || "").trim();
+    return ((a[0] || "") + (n[0] || "")).toUpperCase() || "?";
+  }
+
+  const METODO_COLORES = {
+    "efectivo":      { bg: "#dcfce7", color: "#166534" },
+    "transferencia": { bg: "#dbeafe", color: "#1e40af" },
+    "débito":        { bg: "#fef9c3", color: "#854d0e" },
+    "debito":        { bg: "#fef9c3", color: "#854d0e" },
+    "tarjeta":       { bg: "#fce7f3", color: "#9d174d" },
+    "crédito":       { bg: "#fce7f3", color: "#9d174d" },
+    "credito":       { bg: "#fce7f3", color: "#9d174d" },
+    "cheque":        { bg: "#d1fae5", color: "#065f46" },
+  };
+
+  function metodoChip(metodo) {
+    if (!metodo) return "";
+    const key = metodo.toLowerCase();
+    let style = { bg: "#ede9fe", color: "#5b21b6" };
+    for (const [k, v] of Object.entries(METODO_COLORES)) {
+      if (key.includes(k)) { style = v; break; }
+    }
+    return `<span class="mes-metodo-chip" style="background:${style.bg};color:${style.color};">${metodo}</span>`;
+  }
+
   const CONCEPTO_CUOTA_ID = 1;
   const CONCEPTO_INSCRIPCION_ID = 2;
 
@@ -54,6 +92,52 @@
     const btnEliminar = document.getElementById("btnEliminarPago");
 
     let ultimoPagadoGlobal = null;
+
+    // ===========================
+    // ALUMNO CARD
+    // ===========================
+
+    function renderAlumnoCard(alumno) {
+      const card = document.getElementById("alumnoCard");
+      if (!card) return;
+      const color = avatarColor(`${alumno.nombre} ${alumno.apellido}`);
+      const initials = getInitials(alumno.nombre, alumno.apellido);
+      const dni = alumno.dni ? `DNI ${String(alumno.dni).replace(/\B(?=(\d{3})+(?!\d))/g, ".")}` : "";
+      card.innerHTML = `
+        <div class="alumno-avatar-cobro" style="background:${color};">${initials}</div>
+        <div class="alumno-info-cobro">
+          <span class="alumno-nombre-cobro">${alumno.apellido}, ${alumno.nombre}</span>
+          <span class="alumno-meta-cobro">${dni}</span>
+        </div>
+        <button type="button" id="btnCambiarAlumno" class="btn-cambiar-alumno">
+          <span class="material-icons">close</span>
+          Cambiar
+        </button>
+      `;
+      card.style.display = "flex";
+
+      document.getElementById("btnCambiarAlumno")?.addEventListener("click", limpiarSeleccion);
+    }
+
+    function limpiarSeleccion() {
+      alumnoSeleccionado = null;
+      carreraSeleccionadaId = null;
+      pagoSeleccionado = null;
+      buscador.value = "";
+      const card = document.getElementById("alumnoCard");
+      if (card) card.style.display = "none";
+      contenedorMeses.innerHTML = `
+        <h2>Meses</h2>
+        <div class="meses-placeholder">
+          <span class="material-icons">calendar_month</span>
+          <span>Buscá un alumno para ver sus cuotas</span>
+        </div>
+      `;
+      document.querySelector(".cobro-layout")?.classList.remove("cobros-activo");
+      if (btnEliminar) btnEliminar.classList.add("disabled");
+      if (btnImprimir) btnImprimir.classList.add("disabled");
+      form.reset();
+    }
 
     // ===========================
     // BLOQUEO DE MESES
@@ -181,7 +265,7 @@
 
     async function buscarAlumnos(q) {
       try {
-        const resp = await authFetch(`${API_BASE}/api/alumnos/?search=${encodeURIComponent(q)}`);
+        const resp = await authFetch(`${API_BASE}/api/alumnos/?search=${encodeURIComponent(q)}&estado=1`);
         if (!resp) return;
         const data = await resp.json();
         const alumnos = Array.isArray(data) ? data : (data.results || []);
@@ -214,7 +298,7 @@
 
       alumnoSeleccionado = alumno;
 
-      document.querySelector(".toolbar")?.classList.add("cobros-activo");
+      renderAlumnoCard(alumno);
       document.querySelector(".cobro-layout")?.classList.add("cobros-activo");
 
       const carreras = alumno.carreras || [];
@@ -304,12 +388,20 @@
       form.reset();
       document.querySelectorAll(".month.selected").forEach(m => m.classList.remove("selected"));
       document.getElementById("importe").value = "";
+      setTimeout(() => recalcularBloqueos(), 0);
     });
 
     // ===========================
     // CARGAR MESES PENDIENTES
     // ===========================
     async function cargarMesesPendientes() {
+      contenedorMeses.innerHTML = `
+        <h2>Meses</h2>
+        <div class="meses-loading">
+          <span class="material-icons rotating">refresh</span>
+          Cargando cuotas...
+        </div>
+      `;
       try {
         const resp = await authFetch(`${API_BASE}/ctacte/pendientes/?alumno=${alumnoSeleccionado.id_alumno}`);
         if (!resp) return;
@@ -346,42 +438,99 @@
 
         contenedorMeses.innerHTML = headerHtml;
 
-        // Filtrar meses por carrera seleccionada
-        for (const anio in data.meses) {
-          const meses = data.meses[anio].filter(m => m.carrera === carreraSeleccionadaId);
+        const aniosOrdenados = Object.keys(data.meses).sort((a, b) => b - a);
+        const anioActual = new Date().getFullYear();
+
+        let tableHtml = `<table class="meses-table">
+          <thead><tr>
+            <th style="width:48px;"></th>
+            <th>Mes</th>
+            <th>Método</th>
+            <th>Importe</th>
+            <th>Fecha</th>
+          </tr></thead>
+          <tbody>`;
+
+        for (const anio of aniosOrdenados) {
+          const meses = data.meses[anio].filter(m => m.carrera === carreraSeleccionadaId)
+            .filter(m => !(m.id_mes == 1 && parseInt(anio) !== data.anio_ingreso));
+
           if (!meses.length) continue;
 
-          let html = `<div class="year-group"><h3>${anio}</h3><div class="months-grid">`;
+          const totalPagados    = meses.filter(m => m.estado === "pagada").length;
+          const totalPendientes = meses.filter(m => m.estado === "pendiente").length;
+          const summaryParts = [];
+          if (totalPagados)    summaryParts.push(`${totalPagados} pagado${totalPagados > 1 ? "s" : ""}`);
+          if (totalPendientes) summaryParts.push(`${totalPendientes} pendiente${totalPendientes > 1 ? "s" : ""}`);
+
+          const collapsed = parseInt(anio) < anioActual && totalPagados === meses.length;
+
+          tableHtml += `
+            <tr class="year-row${collapsed ? " year-row-collapsed" : ""}" data-anio="${anio}">
+              <td colspan="5" class="year-row-cell">
+                <span class="material-icons year-chevron">expand_more</span>
+                <strong>${anio}</strong>
+                ${summaryParts.length ? `<span class="year-summary">· ${summaryParts.join(" · ")}</span>` : ""}
+              </td>
+            </tr>
+          `;
 
           meses.forEach(m => {
-            const esInscripcion = m.id_mes == 1;
-            if (esInscripcion && parseInt(anio) !== data.anio_ingreso) return;
-
             const claseEstado = m.estado === "pagada" ? "pagado"
-              : m.estado === "pendiente" ? "pendiente"
-                : "";
+              : m.estado === "pendiente" ? "pendiente" : "";
+            const dataPago = m.id_pago ? `data-pago="${m.id_pago}"` : "";
+            const checkIcon = m.estado === "pagada" ? "check_box" : "check_box_outline_blank";
 
-            const dataPago = m.pagado && m.id_pago ? `data-pago="${m.id_pago}"` : "";
+            let metodoCell = "";
+            let importeCell = "";
+            let fechaCell = "";
 
-            html += `
-              <div class="month ${claseEstado}"
+            if (m.estado === "pagada" && m.fecha_pago) {
+              metodoCell  = metodoChip(m.metodo);
+              importeCell = m.importe
+                ? `$${parseFloat(m.importe).toLocaleString("es-AR", { minimumFractionDigits: 0 })}`
+                : "—";
+              fechaCell = m.fecha_pago;
+            } else if (m.estado === "pendiente") {
+              metodoCell = `<span class="mes-estado-tag pendiente">Pendiente</span>`;
+            }
+
+            tableHtml += `
+              <tr class="month ${claseEstado}${collapsed ? " year-hidden" : ""}"
                   data-id_mes="${m.id_mes}"
                   data-anio="${anio}"
                   ${dataPago}>
-                <span>${m.descripcion}</span>
-              </div>
+                <td style="padding-right:0; width:48px;">
+                  <span class="material-icons mes-checkbox-icon">${checkIcon}</span>
+                </td>
+                <td class="mes-nombre-col">${m.descripcion}</td>
+                <td>${metodoCell}</td>
+                <td><span class="mes-importe-col">${importeCell}</span></td>
+                <td><span class="mes-fecha-col">${fechaCell}</span></td>
+              </tr>
             `;
           });
-
-          html += `</div></div>`;
-          contenedorMeses.innerHTML += html;
         }
+
+        tableHtml += `</tbody></table>`;
+        contenedorMeses.innerHTML += tableHtml;
 
         setTimeout(() => recalcularBloqueos(), 0);
 
-
         document.querySelectorAll(".month").forEach(mes => {
           mes.addEventListener("click", () => onClickMes(mes));
+        });
+
+        // Toggle colapso por año
+        document.querySelectorAll(".year-row").forEach(row => {
+          row.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const anio = row.dataset.anio;
+            row.classList.toggle("year-row-collapsed");
+            document.querySelectorAll(`.month[data-anio="${anio}"]`).forEach(m => {
+              m.classList.toggle("year-hidden");
+            });
+          });
         });
 
         // Botón volver al selector de carreras
@@ -400,6 +549,17 @@
     // ===========================
     // CLICK EN MES
     // ===========================
+    function actualizarCheckIcon(mes) {
+      const icon = mes.querySelector(".mes-checkbox-icon");
+      if (!icon) return;
+      const esPagado = mes.classList.contains("pagado");
+      if (esPagado) {
+        icon.textContent = "check_box";
+      } else {
+        icon.textContent = mes.classList.contains("selected") ? "check_box" : "check_box_outline_blank";
+      }
+    }
+
     function onClickMes(mes) {
       const esPagado = mes.classList.contains("pagado");
 
@@ -418,10 +578,11 @@
         if (btnImprimir) btnImprimir.classList.add("disabled");
 
         mes.classList.toggle("selected");
+        actualizarCheckIcon(mes);
 
         if (!seleccionConsecutivaValida()) {
-          console.log("consecutiva invalida");
           mes.classList.toggle("selected");
+          actualizarCheckIcon(mes);
           mes.classList.add("vibrar");
           setTimeout(() => mes.classList.remove("vibrar"), 300);
           showAlert("Solo podés seleccionar meses consecutivos.", "warning");
@@ -434,10 +595,12 @@
         return;
       }
 
-      document.querySelectorAll(".month.selected").forEach(m => m.classList.remove("selected"));
+      document.querySelectorAll(".month.selected").forEach(m => {
+        m.classList.remove("selected");
+        actualizarCheckIcon(m);
+      });
       actualizarImporteAuto();
       setTimeout(() => recalcularBloqueos(), 0);
-
 
       const pagoId = mes.dataset.pago;
       if (!pagoId) return;
@@ -446,7 +609,9 @@
       document.querySelectorAll(".month").forEach(m => m.classList.remove("selected-pago"));
 
       if (!yaSeleccionado) {
-        document.querySelectorAll(`.month[data-pago='${pagoId}']`).forEach(m => m.classList.add("selected-pago"));
+        document.querySelectorAll(`.month[data-pago='${pagoId}']`).forEach(m => {
+          m.classList.add("selected-pago");
+        });
         pagoSeleccionado = pagoId;
         if (btnEliminar) btnEliminar.classList.remove("disabled");
         if (btnImprimir) btnImprimir.classList.remove("disabled");
@@ -614,7 +779,7 @@
         buscador.value = `${alumno.apellido}, ${alumno.nombre}`;
         alumnoSeleccionado = alumno;
 
-        document.querySelector(".toolbar")?.classList.add("cobros-activo");
+        renderAlumnoCard(alumno);
         document.querySelector(".cobro-layout")?.classList.add("cobros-activo");
 
         if (carreras.length === 0) return;

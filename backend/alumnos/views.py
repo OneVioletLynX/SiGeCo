@@ -2,10 +2,20 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from .models import Alumno
 from .serializers import AlumnoSerializer
+from carreras.models import CarreraCursada
 from auditoria.models import registrar
+
+
+def _alumno_qs():
+    return Alumno.objects.prefetch_related(
+        Prefetch(
+            'carreras_cursadas',
+            queryset=CarreraCursada.objects.select_related('carrera', 'id_estado')
+        )
+    )
 
 
 class AlumnoListCreate(APIView):
@@ -14,12 +24,18 @@ class AlumnoListCreate(APIView):
         carrera = request.query_params.get('carrera')
         search  = request.query_params.get('search')
 
-        alumnos = Alumno.objects.all()
+        alumnos = _alumno_qs()
 
-        if estado and estado != "all":
+        # Por defecto solo activos; pasar estado=all para ver todos
+        if estado == "all":
+            pass
+        elif estado:
             alumnos = alumnos.filter(carreras_cursadas__id_estado_id=estado)
-            if carrera and carrera != "all":
-                alumnos = alumnos.filter(carreras_cursadas__carrera_id=carrera)
+        else:
+            alumnos = alumnos.filter(carreras_cursadas__id_estado_id=1)
+
+        if carrera and carrera != "all":
+            alumnos = alumnos.filter(carreras_cursadas__carrera_id=carrera)
 
         if search:
             alumnos = alumnos.filter(
@@ -36,7 +52,7 @@ class AlumnoListCreate(APIView):
         if email:  alumnos = alumnos.filter(email=email)
         if legajo: alumnos = alumnos.filter(legajo=legajo)
 
-        alumnos = alumnos.order_by('id_alumno').distinct()
+        alumnos = alumnos.order_by('apellido', 'nombre').distinct()
         return Response(AlumnoSerializer(alumnos, many=True).data)
 
     def post(self, request):
@@ -53,7 +69,7 @@ class AlumnoListCreate(APIView):
 
 class AlumnoDetail(APIView):
     def get(self, request, pk):
-        alumno = get_object_or_404(Alumno, pk=pk)
+        alumno = get_object_or_404(_alumno_qs(), pk=pk)
         return Response(AlumnoSerializer(alumno).data)
 
     def put(self, request, pk):

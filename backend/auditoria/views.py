@@ -5,8 +5,16 @@ from .models import RegistroAuditoria
 
 @require_GET
 def lista_auditoria(request):
-    limit = min(int(request.GET.get('limit', 20)), 100)
-    qs = RegistroAuditoria.objects.all()[:limit]
+    limit      = min(int(request.GET.get('limit', 20)), 200)
+    entidad    = request.GET.get('entidad')
+    entidad_id = request.GET.get('entidad_id')
+
+    qs = RegistroAuditoria.objects.all()
+    if entidad:
+        qs = qs.filter(entidad=entidad)
+    if entidad_id:
+        qs = qs.filter(entidad_id=entidad_id)
+    qs = qs[:limit]
     data = [
         {
             "id":             r.id,

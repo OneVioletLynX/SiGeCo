@@ -6,10 +6,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const API = "http://127.0.0.1:8000/api";
 
-  let filtroEstado   = "all";
+  let filtroEstado   = "1";  // por defecto solo activos
   let filtroCarrera  = "all";
   let filtroBusqueda = "";
   let searchTimeout  = null;
+
+  // ===============================
+  // AVATAR CON INICIALES
+  // ===============================
+  const AVATAR_COLORS = [
+    ["#e0f2fe","#0369a1"], ["#dcfce7","#16a34a"], ["#ede9fe","#7c3aed"],
+    ["#fef3c7","#d97706"], ["#fce7f3","#db2777"], ["#fee2e2","#dc2626"],
+    ["#f0fdf4","#15803d"], ["#eff6ff","#1d4ed8"],
+  ];
+
+  function avatarColor(texto) {
+    let h = 0;
+    for (let i = 0; i < texto.length; i++) h = texto.charCodeAt(i) + ((h << 5) - h);
+    return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+  }
+
+  function renderAvatar(nombre, apellido) {
+    const ini  = ((apellido?.[0] ?? "") + (nombre?.[0] ?? "")).toUpperCase();
+    const [bg, color] = avatarColor((apellido + nombre).toLowerCase());
+    return `<div style="width:36px; height:36px; border-radius:50%; background:${bg};
+      color:${color}; font-size:0.78rem; font-weight:800;
+      display:flex; align-items:center; justify-content:center;
+      flex-shrink:0; letter-spacing:0.03em;">${ini}</div>`;
+  }
 
   // ===============================
   // FORMATEO VISUAL
@@ -84,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!pag.length) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="4" style="text-align:center;padding:3rem;color:var(--text-muted);">
+          <td colspan="5" style="text-align:center;padding:3rem;color:var(--text-muted);">
             <span class="material-icons" style="font-size:2.5rem;display:block;margin-bottom:0.5rem;opacity:0.4;">person_off</span>
             Sin alumnos para mostrar.
           </td>
@@ -106,8 +130,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const esActivo = estadoNombre?.toLowerCase() === "activo";
 
+      tr.style.cursor = "pointer";
+      tr.dataset.id   = alumno.id_alumno;
+
       tr.innerHTML = `
-        <td>${alumno.apellido}, ${alumno.nombre}</td>
+        <td style="padding-right:0; width:48px;">${renderAvatar(alumno.nombre, alumno.apellido)}</td>
+        <td>
+          ${alumno.apellido}, ${alumno.nombre}
+          <br><span style="font-size:0.78rem; color:var(--text-muted); font-weight:400;">DNI ${alumno.dni ?? ''}</span>
+        </td>
         <td>${formatearChipCarreras(carreras)}</td>
         <td>${formatearChipEstado(estadoNombre)}</td>
         <td class="acciones-col">
@@ -175,8 +206,31 @@ document.addEventListener("DOMContentLoaded", () => {
       item.addEventListener("mouseleave", () => item.style.background = "none");
     });
 
+    // Contador de resultados
+    const contador = document.getElementById("contadorAlumnos");
+    if (contador) {
+      const total  = alumnosData.length;
+      const desde  = total === 0 ? 0 : (paginaActual - 1) * POR_PAGINA + 1;
+      const hasta  = Math.min(paginaActual * POR_PAGINA, total);
+      contador.textContent = total > 0
+        ? `Mostrando ${desde}–${hasta} de ${total} alumnos`
+        : "";
+    }
+
     mostrarPaginador();
   }
+
+  // ===============================
+  // CLICK EN FILA → ir a ficha
+  // ===============================
+  document.addEventListener("click", e => {
+    const fila = e.target.closest("#tablaAlumnos tbody tr");
+    if (!fila) return;
+    // Si el click fue en el menú tres puntos o dentro del dropdown, no navegar
+    if (e.target.closest(".btn-menu") || e.target.closest(".dropdown-menu-alumno")) return;
+    const id = fila.dataset.id;
+    if (id) window.location.href = `/alumnos/${id}/`;
+  });
 
   // ===============================
   // MENÚ TRES PUNTOS
@@ -276,25 +330,64 @@ document.addEventListener("DOMContentLoaded", () => {
     const total = Math.ceil(alumnosData.length / POR_PAGINA);
     if (total <= 1) return;
 
-    function addBtn(label, page, disabled = false) {
+    function addBtn(label, page, activo = false) {
       const li  = document.createElement("li");
+      if (activo) li.classList.add("active");
       const btn = document.createElement("a");
       btn.href        = "#";
       btn.textContent = label;
-      if (!disabled) {
-        btn.addEventListener("click", e => {
-          e.preventDefault();
-          paginaActual = page;
-          mostrarPagina();
-        });
-      }
+      btn.addEventListener("click", e => {
+        e.preventDefault();
+        paginaActual = page;
+        mostrarPagina();
+      });
       li.appendChild(btn);
       cont.appendChild(li);
     }
 
-    addBtn("<", paginaActual - 1, paginaActual === 1);
-    for (let i = 1; i <= total; i++) addBtn(i, i);
-    addBtn(">", paginaActual + 1, paginaActual === total);
+    function addEllipsis() {
+      const li   = document.createElement("li");
+      const span = document.createElement("span");
+      span.textContent = "…";
+      span.style.cssText = "padding:0 0.5rem; color:var(--text-muted); line-height:2rem; display:block;";
+      li.appendChild(span);
+      cont.appendChild(li);
+    }
+
+    // Páginas a mostrar: siempre primera y última + ventana de ±2 alrededor de la actual
+    const visible = new Set([1, total]);
+    for (let i = Math.max(1, paginaActual - 2); i <= Math.min(total, paginaActual + 2); i++) {
+      visible.add(i);
+    }
+    const paginas = [...visible].sort((a, b) => a - b);
+
+    // Anterior
+    const liPrev = document.createElement("li");
+    const aPrev  = document.createElement("a");
+    aPrev.href        = "#";
+    aPrev.textContent = "‹";
+    aPrev.style.cssText = paginaActual === 1 ? "opacity:.35; pointer-events:none;" : "";
+    aPrev.addEventListener("click", e => { e.preventDefault(); if (paginaActual > 1) { paginaActual--; mostrarPagina(); } });
+    liPrev.appendChild(aPrev);
+    cont.appendChild(liPrev);
+
+    // Páginas con ellipsis
+    let anterior = null;
+    paginas.forEach(p => {
+      if (anterior !== null && p - anterior > 1) addEllipsis();
+      addBtn(String(p), p, p === paginaActual);
+      anterior = p;
+    });
+
+    // Siguiente
+    const liNext = document.createElement("li");
+    const aNext  = document.createElement("a");
+    aNext.href        = "#";
+    aNext.textContent = "›";
+    aNext.style.cssText = paginaActual === total ? "opacity:.35; pointer-events:none;" : "";
+    aNext.addEventListener("click", e => { e.preventDefault(); if (paginaActual < total) { paginaActual++; mostrarPagina(); } });
+    liNext.appendChild(aNext);
+    cont.appendChild(liNext);
   }
 
   // ===============================
@@ -317,6 +410,7 @@ document.addEventListener("DOMContentLoaded", () => {
             opt.textContent = e.descripcion;
             sel.appendChild(opt);
           });
+          sel.value = "1";  // pre-seleccionar Activo
         }
       }
 

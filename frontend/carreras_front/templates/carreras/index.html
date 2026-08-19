@@ -93,8 +93,49 @@
   </table>
 
 </div>
+
+<!-- Modal confirmación dar de baja carrera -->
+<div id="modalBajaCarrera" class="historial-overlay hidden">
+  <div class="historial-dialog" style="max-width:420px;">
+    <div class="historial-header">
+      <h2>Dar de baja la carrera</h2>
+      <button class="modal-close-btn" id="btnCerrarBaja">&#x2715;</button>
+    </div>
+    <div class="historial-body" style="padding:1.25rem 1.5rem 0.5rem;">
+      <p style="margin:0 0 1.1rem; color:var(--text-color); font-size:0.95rem;">
+        La carrera quedará <strong>inactiva</strong> y no podrán inscribirse nuevos alumnos.
+        Los alumnos que ya están cursando seguirán generando cuotas normalmente.
+      </p>
+      <label style="display:flex; align-items:flex-start; gap:0.6rem; cursor:pointer; font-size:0.9rem; color:var(--text-color);">
+        <input type="checkbox" id="checkInactivarAlumnos" style="margin-top:3px; cursor:pointer;">
+        <span>
+          Dar de baja también a los alumnos <strong>activos</strong> de esta carrera
+          <br><span style="font-size:0.8rem; color:var(--text-muted);">Los alumnos egresados no se verán afectados.</span>
+        </span>
+      </label>
+    </div>
+    <div class="historial-header" style="border-top:1px solid var(--border-color); border-bottom:none; justify-content:flex-end; gap:0.6rem; padding:1rem 1.5rem;">
+      <button class="btn-cancelar" id="btnCancelarBaja">Cancelar</button>
+      <button class="btn-danger-confirm" id="btnConfirmarBaja">Confirmar baja</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal historial de valores -->
+<div id="modalHistorial" class="historial-overlay hidden">
+  <div class="historial-dialog">
+    <div class="historial-header">
+      <h2 id="historialTitulo">Historial de valores</h2>
+      <button class="modal-close-btn" id="btnCerrarHistorial">&#x2715;</button>
+    </div>
+    <div class="historial-body">
+      <div id="historialContent"></div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'shared/js/carreras.js' %}?v=4"></script>
+<script src="{% static 'shared/js/carreras.js' %}?v=5"></script>
 {% endblock %}

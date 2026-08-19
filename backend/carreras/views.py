@@ -58,6 +58,15 @@ class CarreraDetail(APIView):
             label   = 'Baja' if nuevo_estado == 2 else 'Modificación'
             registrar(request, accion, 'carrera',
                       f"{label} de carrera: {carrera.descripcion}", pk)
+
+            if nuevo_estado == 2 and request.data.get('inactivar_alumnos'):
+                estado_inactivo = Estado.objects.filter(descripcion__iexact="Inactivo").first()
+                if estado_inactivo:
+                    CarreraCursada.objects.filter(
+                        carrera=carrera,
+                        id_estado__descripcion__iexact="Activo"
+                    ).update(id_estado=estado_inactivo)
+
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

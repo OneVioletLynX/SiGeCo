@@ -1,0 +1,121 @@
+{% extends "shared/base.html" %}
+{% load static %}
+
+{% block title %}Reporte Demográfico{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'shared/css/reportes_pdf.css' %}?v=2">
+{% endblock %}
+
+{% block content %}
+<div class="table-wrapper">
+
+  <div class="form-header">
+    <h1>Reporte Demográfico</h1>
+    <a href="{% url 'reportes:reportes_index' %}" class="btn-secundario">← Reportes</a>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filter-container" style="justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div class="filter-container" style="margin-bottom:0; flex-wrap:wrap; gap:0.75rem;">
+      <div>
+        <label for="filtroCarrera">Carrera</label>
+        <select id="filtroCarrera" class="form-select">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <div>
+        <label for="filtroAnio">Año de ingreso (ingresantes)</label>
+        <select id="filtroAnio" class="form-select">
+          <option value="">Todos los años</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex; gap:0.6rem; align-self:flex-end;">
+      <button id="btn-cargar" class="btn-secundario">
+        <span class="material-icons" style="font-size:1.1rem; vertical-align:middle;">refresh</span>
+        Cargar
+      </button>
+      <button id="btn-pdf" class="button-predeterminado">
+        <span class="material-icons" style="font-size:1.1rem; vertical-align:middle;">picture_as_pdf</span>
+        Generar PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- Preview sección 1 -->
+  <div id="seccion-general" style="margin-top:1.5rem; display:none;">
+    <h3 style="font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;
+               color:var(--text-muted); margin:0 0 0.6rem;">
+      Distribución general por localidad
+      <span id="badge-total" style="font-size:0.75rem; background:#e0f2fe; color:#0369a1;
+             padding:2px 10px; border-radius:20px; font-weight:600; margin-left:0.5rem; text-transform:none; letter-spacing:0;">
+      </span>
+    </h3>
+    <div class="table-content-area">
+      <table id="tabla-general">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Localidad</th>
+            <th>Provincia</th>
+            <th style="text-align:right;">Alumnos</th>
+            <th style="text-align:right;">%</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Preview sección 2 (por carrera) -->
+  <div id="seccion-carrera" style="margin-top:1.5rem; display:none;">
+    <h3 id="titulo-carrera" style="font-size:0.85rem; font-weight:700; text-transform:uppercase;
+               letter-spacing:0.05em; color:var(--text-muted); margin:0 0 0.6rem;">
+    </h3>
+    <div class="table-content-area">
+      <table id="tabla-carrera">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Localidad</th>
+            <th>Provincia</th>
+            <th style="text-align:right;">Alumnos</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Preview sección 3 (ingresantes) -->
+  <div id="seccion-ingresantes" style="margin-top:1.5rem; display:none;">
+    <h3 id="titulo-ingresantes" style="font-size:0.85rem; font-weight:700; text-transform:uppercase;
+               letter-spacing:0.05em; color:var(--text-muted); margin:0 0 0.6rem;">
+    </h3>
+    <div class="table-content-area">
+      <table id="tabla-ingresantes">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Localidad</th>
+            <th>Provincia</th>
+            <th style="text-align:right;">Ingresantes</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="msg-cargando" style="text-align:center; padding:2.5rem; color:var(--text-muted); display:none;">
+    <span class="material-icons" style="font-size:2rem; display:block; margin-bottom:0.5rem; opacity:0.4;">hourglass_empty</span>
+    Cargando datos...
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'shared/js/reportes_demografico.js' %}?v=1" defer></script>
+{% endblock %}

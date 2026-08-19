@@ -13,8 +13,12 @@
         <h1>Cobros</h1>
     </div>
 
-    <div class="filter-container" style="justify-content: space-between;">
-        <div class="filter-container" style="margin-bottom:0;">
+    <div class="filter-container" style="justify-content: space-between; flex-wrap:wrap; gap:0.75rem;">
+        <div class="filter-container" style="margin-bottom:0; flex-wrap:wrap; gap:0.75rem;">
+            <div>
+                <label for="buscadorCobro">Alumno</label>
+                <input type="text" id="buscadorCobro" class="form-control" placeholder="Nombre o apellido">
+            </div>
             <div>
                 <label>Método de pago</label>
                 <select id="filtroMetodo" class="form-select filtro">
@@ -37,20 +41,24 @@
     <table id="tablaCobros">
         <thead>
             <tr>
-                <th>Fecha</th>
+                <th style="width:48px;"></th>
                 <th>Alumno</th>
                 <th>Método</th>
                 <th>Meses</th>
                 <th>Importe</th>
+                <th>Fecha</th>
                 <th class="acciones-col">Acciones</th>
             </tr>
         </thead>
         <tbody></tbody>
     </table>
 
-    <nav aria-label="Paginación" class="ulpgcds-pager">
-        <ul id="paginador"></ul>
-    </nav>
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-top:0.75rem;">
+        <span id="contadorCobros" style="font-size:0.82rem; color:var(--text-muted);"></span>
+        <nav aria-label="Paginación" class="ulpgcds-pager" style="margin-top:0;">
+            <ul id="paginador"></ul>
+        </nav>
+    </div>
 
 </div>
 {% endblock %}
@@ -64,12 +72,60 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const API = "http://127.0.0.1:8000";
 
-  let cobrosData   = [];
-  let paginaActual = 1;
-  const POR_PAGINA = 15;
+  let cobrosData      = [];
+  let cobrosFiltrados = [];
+  let paginaActual    = 1;
+  const POR_PAGINA    = 15;
+
+  // ===========================
+  // AVATAR
+  // ===========================
+  const AVATAR_COLORS = [
+    ["#e0f2fe","#0369a1"], ["#dcfce7","#16a34a"], ["#ede9fe","#7c3aed"],
+    ["#fef3c7","#d97706"], ["#fce7f3","#db2777"], ["#fee2e2","#dc2626"],
+    ["#f0fdf4","#15803d"], ["#eff6ff","#1d4ed8"],
+  ];
+  function avatarColor(texto) {
+    let h = 0;
+    for (let i = 0; i < texto.length; i++) h = texto.charCodeAt(i) + ((h << 5) - h);
+    return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+  }
+  function renderAvatar(nombre) {
+    const partes = (nombre || "").trim().split(/[\s,]+/).filter(Boolean);
+    const ini    = (partes[0]?.[0] ?? "").toUpperCase() + (partes[1]?.[0] ?? "").toUpperCase();
+    const [bg, color] = avatarColor((nombre || "").toLowerCase());
+    return `<div style="width:36px;height:36px;border-radius:50%;background:${bg};
+      color:${color};font-size:0.78rem;font-weight:800;
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;">${ini || "?"}</div>`;
+  }
+
+  // ===========================
+  // CHIP MÉTODO DE PAGO
+  // ===========================
+  const METODO_ESTILOS = {
+    "efectivo":      { bg: "#dcfce7", color: "#16a34a" },
+    "transferencia": { bg: "#e0f2fe", color: "#0369a1" },
+    "débito":        { bg: "#fef3c7", color: "#d97706" },
+    "debito":        { bg: "#fef3c7", color: "#d97706" },
+    "crédito":       { bg: "#fce7f3", color: "#db2777" },
+    "credito":       { bg: "#fce7f3", color: "#db2777" },
+    "tarjeta":       { bg: "#fce7f3", color: "#db2777" },
+    "cheque":        { bg: "#f0fdf4", color: "#15803d" },
+  };
+  function chipMetodo(metodo) {
+    if (!metodo) return "—";
+    const key    = metodo.toLowerCase();
+    const estilo = Object.entries(METODO_ESTILOS).find(([k]) => key.includes(k))?.[1]
+                   ?? { bg: "#ede9fe", color: "#5b21b6" };
+    return `<span style="display:inline-flex;align-items:center;background:${estilo.bg};
+      color:${estilo.color};border-radius:20px;padding:2px 10px;
+      font-size:0.78rem;font-weight:600;">${metodo}</span>`;
+  }
 
   let filtroMetodoVal  = "";
   let filtroCarreraVal = "";
+  let filtroBusqueda   = "";
+  let searchTimeout    = null;
 
   // ===========================
   // CARGAR FILTROS
@@ -119,7 +175,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const data = await resp.json();
     if (!Array.isArray(data)) return;
 
-    cobrosData   = data;
+    cobrosData = data;
+    aplicarFiltroLocal();
+  }
+
+  // ===========================
+  // FILTRO LOCAL (búsqueda por alumno)
+  // ===========================
+  function aplicarFiltroLocal() {
+    const q = filtroBusqueda.toLowerCase();
+    cobrosFiltrados = q
+      ? cobrosData.filter(p => (p.alumno_nombre || "").toLowerCase().includes(q))
+      : cobrosData;
     paginaActual = 1;
     mostrarPagina();
   }
@@ -133,12 +200,12 @@ document.addEventListener("DOMContentLoaded", () => {
     tbody.innerHTML = "";
 
     const inicio = (paginaActual - 1) * POR_PAGINA;
-    const pag    = cobrosData.slice(inicio, inicio + POR_PAGINA);
+    const pag    = cobrosFiltrados.slice(inicio, inicio + POR_PAGINA);
 
     if (!pag.length) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="6" style="text-align:center;padding:3rem;color:var(--text-muted);">
+          <td colspan="7" style="text-align:center;padding:3rem;color:var(--text-muted);">
             <span class="material-icons" style="font-size:2.5rem;display:block;margin-bottom:0.5rem;opacity:0.4;">payments</span>
             Sin cobros registrados.
           </td>
@@ -152,26 +219,28 @@ document.addEventListener("DOMContentLoaded", () => {
         day: "2-digit", month: "2-digit", year: "numeric"
       });
 
-      const mesesTexto = (pago.detalles || [])
-        .map(d => `${d.mes_nombre} ${d.anio_pago}`)
-        .join(", ");
+      const detalles   = pago.detalles || [];
+      const mesesTexto = detalles.map(d => `${d.mes_nombre} ${d.anio_pago}`).join(", ");
+      const mesesCell  = detalles.length > 2
+        ? `<span title="${mesesTexto}" style="cursor:default;">
+             ${detalles.length} meses
+             <span style="font-size:0.75rem;color:var(--text-muted);">(${detalles[0].mes_nombre}–${detalles[detalles.length-1].mes_nombre})</span>
+           </span>`
+        : `<span style="font-size:0.85rem;color:#6b7280;">${mesesTexto || "—"}</span>`;
 
       const importe = `$${Number(pago.importe_total).toLocaleString("es-AR")}`;
 
       const tr = document.createElement("tr");
+      tr.style.cursor = "pointer";
+      tr.dataset.alumno = pago.id_alumno || "";
+
       tr.innerHTML = `
-        <td>${fecha}</td>
+        <td style="padding-right:0;width:48px;">${renderAvatar(pago.alumno_nombre)}</td>
         <td>${pago.alumno_nombre || "—"}</td>
-        <td>
-          <span style="
-            display:inline-flex; align-items:center;
-            background:#ede9fe; color:#5b21b6;
-            border-radius:20px; padding:2px 10px;
-            font-size:0.78rem; font-weight:600;
-          ">${pago.metodo}</span>
-        </td>
-        <td style="font-size:0.85rem; color:#6b7280;">${mesesTexto || "—"}</td>
-        <td style="font-weight:700;">${importe}</td>
+        <td>${chipMetodo(pago.metodo)}</td>
+        <td>${mesesCell}</td>
+        <td><span style="font-weight:800;font-size:1rem;color:#16a34a;">${importe}</span></td>
+        <td style="font-size:0.85rem;color:var(--text-muted);">${fecha}</td>
         <td class="acciones-col">
           <div style="position:relative; display:inline-block;">
             <button class="btn-menu-cobro" data-id="${pago.id_pago}"
@@ -220,8 +289,28 @@ document.addEventListener("DOMContentLoaded", () => {
       item.addEventListener("mouseleave", () => item.style.background = "none");
     });
 
+    // Contador
+    const contador = document.getElementById("contadorCobros");
+    if (contador) {
+      const total = cobrosFiltrados.length;
+      const desde = total === 0 ? 0 : (paginaActual - 1) * POR_PAGINA + 1;
+      const hasta = Math.min(paginaActual * POR_PAGINA, total);
+      contador.textContent = total > 0 ? `Mostrando ${desde}–${hasta} de ${total} cobros` : "";
+    }
+
     mostrarPaginador();
   }
+
+  // ===========================
+  // CLICK EN FILA → ficha alumno
+  // ===========================
+  document.addEventListener("click", e => {
+    const fila = e.target.closest("#tablaCobros tbody tr");
+    if (!fila) return;
+    if (e.target.closest(".btn-menu-cobro") || e.target.closest(".dropdown-menu-cobro")) return;
+    const alumnoId = fila.dataset.alumno;
+    if (alumnoId) window.location.href = `/alumnos/${alumnoId}/`;
+  });
 
   // ===========================
   // MENÚ ⋮ — abrir/cerrar
@@ -287,33 +376,76 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!cont) return;
     cont.innerHTML = "";
 
-    const total = Math.ceil(cobrosData.length / POR_PAGINA);
+    const total = Math.ceil(cobrosFiltrados.length / POR_PAGINA);
     if (total <= 1) return;
 
-    function addBtn(label, page, disabled = false) {
+    function addBtn(label, page, activo = false) {
       const li  = document.createElement("li");
+      if (activo) li.classList.add("active");
       const btn = document.createElement("a");
       btn.href        = "#";
       btn.textContent = label;
-      if (!disabled) {
-        btn.addEventListener("click", e => {
-          e.preventDefault();
-          paginaActual = page;
-          mostrarPagina();
-        });
-      }
+      btn.addEventListener("click", e => {
+        e.preventDefault();
+        paginaActual = page;
+        mostrarPagina();
+      });
       li.appendChild(btn);
       cont.appendChild(li);
     }
 
-    addBtn("<", paginaActual - 1, paginaActual === 1);
-    for (let i = 1; i <= total; i++) addBtn(i, i);
-    addBtn(">", paginaActual + 1, paginaActual === total);
+    function addEllipsis() {
+      const li   = document.createElement("li");
+      const span = document.createElement("span");
+      span.textContent = "…";
+      span.style.cssText = "padding:0 0.5rem; color:var(--text-muted); line-height:2rem; display:block;";
+      li.appendChild(span);
+      cont.appendChild(li);
+    }
+
+    const visible = new Set([1, total]);
+    for (let i = Math.max(1, paginaActual - 2); i <= Math.min(total, paginaActual + 2); i++) {
+      visible.add(i);
+    }
+    const paginas = [...visible].sort((a, b) => a - b);
+
+    const liPrev = document.createElement("li");
+    const aPrev  = document.createElement("a");
+    aPrev.href        = "#";
+    aPrev.textContent = "‹";
+    aPrev.style.cssText = paginaActual === 1 ? "opacity:.35; pointer-events:none;" : "";
+    aPrev.addEventListener("click", e => { e.preventDefault(); if (paginaActual > 1) { paginaActual--; mostrarPagina(); } });
+    liPrev.appendChild(aPrev);
+    cont.appendChild(liPrev);
+
+    let anterior = null;
+    paginas.forEach(p => {
+      if (anterior !== null && p - anterior > 1) addEllipsis();
+      addBtn(String(p), p, p === paginaActual);
+      anterior = p;
+    });
+
+    const liNext = document.createElement("li");
+    const aNext  = document.createElement("a");
+    aNext.href        = "#";
+    aNext.textContent = "›";
+    aNext.style.cssText = paginaActual === total ? "opacity:.35; pointer-events:none;" : "";
+    aNext.addEventListener("click", e => { e.preventDefault(); if (paginaActual < total) { paginaActual++; mostrarPagina(); } });
+    liNext.appendChild(aNext);
+    cont.appendChild(liNext);
   }
 
   // ===========================
   // EVENTOS FILTROS
   // ===========================
+  document.getElementById("buscadorCobro").addEventListener("input", e => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      filtroBusqueda = e.target.value.trim();
+      aplicarFiltroLocal();
+    }, 250);
+  });
+
   document.getElementById("filtroMetodo").addEventListener("change", e => {
     filtroMetodoVal = e.target.value;
     cargarCobros();

@@ -57,10 +57,14 @@ class AlumnoSerializer(serializers.ModelSerializer):
 
     # --------------------------------------------------
     # Helper — primera carrera (para campos legacy)
+    # Usa la caché del prefetch_related para evitar queries N+1.
     # --------------------------------------------------
 
     def _get_carrera(self, obj):
-        return obj.carreras_cursadas.select_related('carrera', 'id_estado').first()
+        if not hasattr(obj, '_carrera_cache'):
+            all_cc = list(obj.carreras_cursadas.all())
+            obj._carrera_cache = all_cc[0] if all_cc else None
+        return obj._carrera_cache
 
     # --------------------------------------------------
     # Campos calculados — legacy (primera carrera)
@@ -91,9 +95,7 @@ class AlumnoSerializer(serializers.ModelSerializer):
     # --------------------------------------------------
 
     def get_carreras(self, obj):
-        carreras_cursadas = obj.carreras_cursadas.select_related(
-            'carrera', 'id_estado'
-        ).all()
+        carreras_cursadas = obj.carreras_cursadas.all()
 
         return [
             {

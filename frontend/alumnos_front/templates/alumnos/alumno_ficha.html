@@ -1,6 +1,6 @@
 {% extends "shared/base.html" %}
 {% load static %}
-{% block title %}Inicio{% endblock %}
+{% block title %}Ficha del Alumno{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'shared/css/alumnos_ficha.css' %}">
 {% endblock %}
@@ -8,7 +8,7 @@
 
 <h2>Ficha del Alumno</h2>
 <div class="contenedor">
-    <div class="columna">     
+    <div class="columna">
         <div class="card-body">
             <h3>Informacion</h3>
             <p><b>Nombre</b></p>
@@ -54,10 +54,84 @@
             <p class="dato">Dpto. {{ alumno.departamento }}</p>
             {% endif %}
             <p><b>Ciudad:</b></p>
-            <p class="dato">{{ alumno.ciudad.nombre }} - {{ alumno.ciudad.departamento.provincia.nombre }}</p>
+            <p class="dato">{{ ciudad_nombre }}</p>
         </div>
     </div>
-
 </div>
+
+<!-- Historial de cambios -->
+<div class="card-body" style="margin-top:1.5rem; max-width:900px;">
+    <h3 style="display:flex; align-items:center; gap:0.5rem;">
+        <span class="material-icons" style="font-size:1.2rem; color:var(--color-primary);">history</span>
+        Historial de cambios
+    </h3>
+    <div id="historial-contenido">
+        <p style="color:var(--text-muted); font-size:0.9rem;">Cargando...</p>
+    </div>
+</div>
+
+<script>
+(function () {
+  const alumnoId = "{{ alumno.id_alumno }}";
+  const API = "http://127.0.0.1:8000";
+
+  const ICONOS = {
+    ALTA:         { icon: "person_add",  color: "#16a34a", bg: "#dcfce7" },
+    MODIFICACION: { icon: "edit",        color: "#d97706", bg: "#fef3c7" },
+    BAJA:         { icon: "person_off",  color: "#dc2626", bg: "#fee2e2" },
+    COBRO:        { icon: "payments",    color: "#7c3aed", bg: "#ede9fe" },
+  };
+
+  async function cargarHistorial() {
+    const token = localStorage.getItem("sigeco_access");
+    if (!token) return;
+
+    const res = await fetch(
+      `${API}/api/auditoria/?entidad=alumno&entidad_id=${alumnoId}&limit=50`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (!res.ok) { document.getElementById("historial-contenido").innerHTML = '<p style="color:var(--text-muted)">Sin registros.</p>'; return; }
+
+    const data = await res.json();
+    const cont = document.getElementById("historial-contenido");
+
+    if (!data.length) {
+      cont.innerHTML = '<p style="color:var(--text-muted); font-size:0.88rem;">Sin registros de cambios para este alumno.</p>';
+      return;
+    }
+
+    cont.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:0.6rem; margin-top:0.5rem;">
+        ${data.map(r => {
+          const cfg   = ICONOS[r.accion] || { icon: "info", color: "#6b7280", bg: "#f3f4f6" };
+          const fecha = new Date(r.fecha).toLocaleString("es-AR", {
+            day: "2-digit", month: "2-digit", year: "numeric",
+            hour: "2-digit", minute: "2-digit"
+          });
+          return `
+            <div style="display:flex; align-items:flex-start; gap:0.75rem; padding:0.65rem 0.75rem;
+                        background:#fafafa; border:1px solid #e5e7eb; border-radius:10px;">
+              <div style="width:32px; height:32px; border-radius:8px; background:${cfg.bg};
+                          display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <span class="material-icons" style="font-size:1rem; color:${cfg.color};">${cfg.icon}</span>
+              </div>
+              <div style="flex:1; min-width:0;">
+                <p style="margin:0; font-size:0.88rem; font-weight:600; color:#111827;">${r.descripcion}</p>
+                <p style="margin:0.15rem 0 0; font-size:0.78rem; color:#6b7280;">
+                  ${fecha}${r.usuario_nombre ? ' · ' + r.usuario_nombre : ''}
+                </p>
+              </div>
+              <span style="font-size:0.72rem; font-weight:600; padding:2px 8px; border-radius:20px;
+                           background:${cfg.bg}; color:${cfg.color}; flex-shrink:0; align-self:center;">
+                ${r.accion}
+              </span>
+            </div>`;
+        }).join("")}
+      </div>`;
+  }
+
+  cargarHistorial();
+})();
+</script>
 
 {% endblock %}
